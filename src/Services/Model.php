@@ -9,14 +9,15 @@ class Model extends \PDO
 
     public function __construct()
     {
-        $env = new Dotenv(__DIR__, 'env');
-        print_r($env);
+        $env = new Dotenv(getcwd(), '../.env');
+        $env->load();
+        $env->required(['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASS']);
 
         $engine = 'mysql';
-        $host = '127.0.0.1';
-        $database = 'adm_finance';
-        $user = 'root';
-        $pass = 'root';
+        $host = getenv('DB_HOST');
+        $database = getenv('DB_NAME');
+        $user = getenv('DB_USER');
+        $pass = getenv('DB_PASS');
         $dns = $engine.':dbname='.$database.";host=".$host;
 
         parent::__construct( $dns, $user, $pass );
