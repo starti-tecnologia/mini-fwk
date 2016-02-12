@@ -1,0 +1,21 @@
+{
+  "name": "jpizzribeiro/mini-fwk",
+  "description": "Mini Framework by Jonathas",
+  "license": "MIT",
+  "keywords": ["mini-fwk"],
+  "authors": [
+    {
+      "name": "Jonathas Pizzolato",
+      "email": "jpizzribeiro@gmail.com"
+    }
+  ],
+  "require": {},
+  "require-dev": {
+    "phpunit/phpunit": "4.0.*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Mini\\": "src"
+    }
+  }
+}
