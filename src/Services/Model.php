@@ -21,6 +21,15 @@ class Model extends \PDO
         $dns = $engine.':dbname='.$database.";host=".$host;
 
         parent::__construct( $dns, $user, $pass );
+
+    }
+
+    public function select($query) {
+        $sth = $this->prepare($query);
+        $sth->execute();
+
+        $result = $sth->fetchAll();
+        return $result;
     }
 
 }
