@@ -9,6 +9,8 @@
 namespace Mini\Entity\Behaviors;
 
 
+use Mini\Entity\Model;
+
 trait QueryAware
 {
 
@@ -19,22 +21,26 @@ trait QueryAware
 
     private static $instanceIdAttribute = "id";
 
+    private static $model;
+
     /**
      * @param mixed $instanceTable
      */
-    public static function instanceTable()
+    public static function instance()
     {
         $class = self::class;
         $obj = new $class;
         self::$instanceTable = $obj->getTable();
         if (isset($obj->idAttribute)) self::$instanceIdAttribute = $obj->idAttribute;
+
+        self::$model = new Model();
     }
 
     /**
      * @param $id
      */
     public static function find($id, $columns = ['*']) {
-        self::instanceTable();
+        self::instance();
 
         $sql = sprintf(
             "SELECT %s FROM %s WHERE %s = %d",
@@ -43,7 +49,7 @@ trait QueryAware
             self::$instanceIdAttribute,
             intval($id)
         );
-        $result = parent::select($sql);
+        $result = self::$model->select($sql);
         return $result;
     }
 
