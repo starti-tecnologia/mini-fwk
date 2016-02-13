@@ -9,13 +9,43 @@
 namespace Mini\Helpers;
 
 
+use Mini\Exceptions\MiniException;
+
 class Request extends RequestBase
 {
 
-    public static function instance() {
-        static::parse();
+    /**
+     * @var
+     */
+    private $data;
 
-        
+    /**
+     * @param mixed $data
+     */
+    public function setData($data)
+    {
+        $this->data = $data;
+    }
+
+    public function get($string) {
+        if (isset($this->data[$string]))
+            throw new MiniException(sprintf("The field '%s' not found", $string));
+
+        return $this->data[$string];
+    }
+
+    /**
+     * Instance a new Request object
+     *
+     * @return Request
+     */
+    public static function instance() {
+        $dataParsed = static::parse();
+
+        $obj = new Request();
+        $obj->setData($dataParsed);
+
+        return $obj;
     }
 
 }
