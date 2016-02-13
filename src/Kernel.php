@@ -19,7 +19,7 @@ class Kernel
      */
     public function __construct()
     {
-        $this->basePath = realpath(dirname($_SERVER['PHP_SELF']));
+        $this->basePath = realpath(dirname($_SERVER['DOCUMENT_ROOT']));
 
         include_once dirname(__FILE__) . '/Helpers/Instance/helpers.php';
     }

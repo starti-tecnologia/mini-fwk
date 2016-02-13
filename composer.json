@@ -12,6 +12,7 @@
   ],
   "require": {
     "vlucas/phpdotenv": "^2.2",
+    "symfony/yaml": "2.4.*@dev",
     "dannyvankooten/php-router": "dev-master"
   },
   "require-dev": {
