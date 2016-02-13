@@ -73,8 +73,16 @@ class Router
                     $route_uri = $route[0];
                     $route_controller = $route[1];
                     $route_method = $route[2];
-                    if ($route_uri == $request_uri && $method == $route_method) {
-                        self::loadClass($route_controller);
+
+                    $pattern = "@^" . preg_replace('/\\\:[a-zA-Z0-9\_\-]+/', '([a-zA-Z0-9\-\_]+)', preg_quote($route_uri)) . "$@D";
+                    $matches = Array();
+                    // check if the current request matches the expression
+                    if($method == $route_method && preg_match($pattern, $request_uri, $matches)) {
+                        // remove the first match
+                        array_shift($matches);
+                        // call the callback with the matched positions as params
+                        self::loadClass($route_controller, $matches);
+
                     }
                 }
             }
@@ -83,11 +91,16 @@ class Router
 
 
 
-    private static function loadClass($route_controller) {
+    private static function loadClass($route_controller, $params) {
         list($controller, $method) = explode(".", $route_controller);
 
         $obj = new $controller;
-        $obj->{$method}();
+        if (count($params) > 0) {
+            //$obj->{$method}();
+            call_user_func_array(array($obj, $method), $params);
+
+        } else
+            $obj->{$method}();
     }
 
 }
