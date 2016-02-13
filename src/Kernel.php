@@ -2,6 +2,7 @@
 
 namespace Mini;
 
+use Mini\Exceptions\MiniException;
 use Mini\Router\Router;
 
 class Kernel
@@ -27,10 +28,17 @@ class Kernel
      * Adding routing config file
      */
     public function addRouting() {
-
-        Router::setBasePath($this->basePath);
-        Router::loadConfigFile('router.yaml');
-        Router::matchRoutes();
+        try {
+            Router::setBasePath($this->basePath);
+            Router::loadConfigFile('router.yaml');
+            Router::matchRoutes();
+        } catch (MiniException $e) {
+            response()->json([
+                'data' => [
+                    'message' => $e->getMessage()
+                ]
+            ], 500);
+        }
 
     }
 

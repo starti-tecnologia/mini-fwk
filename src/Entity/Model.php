@@ -1,6 +1,6 @@
 <?php
 
-namespace Mini\Services;
+namespace Mini\Entity;
 
 use Dotenv\Dotenv;
 
