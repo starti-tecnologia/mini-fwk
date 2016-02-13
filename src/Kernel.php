@@ -22,6 +22,8 @@ class Kernel
         $this->basePath = realpath(dirname($_SERVER['DOCUMENT_ROOT']));
 
         include_once dirname(__FILE__) . '/Helpers/Instance/helpers.php';
+        
+        $this->addRouting();
     }
 
     /**
