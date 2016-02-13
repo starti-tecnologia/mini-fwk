@@ -53,4 +53,16 @@ trait QueryAware
         return $result;
     }
 
+    public static function findAll($columns = ['*']) {
+        self::instance();
+
+        $sql = sprintf(
+            "SELECT %s FROM %s",
+            implode(", ", $columns),
+            self::$instanceTable
+        );
+        $result = self::$model->select($sql);
+        return $result;
+    }
+
 }
