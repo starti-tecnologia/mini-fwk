@@ -36,16 +36,18 @@ class Mapper extends Model
         if (!isset($this->fields))
             throw new MiniException("Fields not declared.");
 
-        if (isset($this->fields['id'])) {
+        $idAttribute = isset($this->entity->idAttribute) ? $this->entity->idAttribute : 'id';
+
+        if (isset($this->fields[$idAttribute])) {
             $query = "";
 
-            $id = $this->fields['id'];
-            unset($this->fields['id']);
+            $id = $this->fields[$idAttribute];
+            unset($this->fields[$idAttribute]);
 
             $update = [];
             foreach ($this->fields as $field => $value) {
                 $update[] = sprintf(
-                    "% = '%'",
+                    "%s = '%s'",
                     $field,
                     $value
                 );
@@ -54,7 +56,7 @@ class Mapper extends Model
                 "UPDATE %s SET %s WHERE id = %d",
                 $this->entity->table,
                 implode(",", $update),
-                $id
+                intval($id)
             );
 
         } else {
