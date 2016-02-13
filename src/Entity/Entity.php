@@ -2,9 +2,19 @@
 
 namespace Mini\Entity;
 
-use Mini\Entity\Behaviors\QueryAware;
-
 abstract class Entity
 {
-    use QueryAware;
+
+    /**
+     * @var
+     */
+    protected $table;
+
+    /**
+     * @return mixed
+     */
+    public function getTable()
+    {
+        return $this->table;
+    }
 }
