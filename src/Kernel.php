@@ -30,6 +30,8 @@ class Kernel
 
         Router::setBasePath($this->basePath);
         Router::loadConfigFile('router.yaml');
+        Router::setOnloadControllers(true);
+        Router::matchRoutes();
 
     }
 
