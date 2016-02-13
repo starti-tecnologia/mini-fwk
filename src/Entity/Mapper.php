@@ -36,7 +36,7 @@ class Mapper extends Model
         if (!isset($this->fields))
             throw new MiniException("Fields not declared.");
 
-        $idAttribute = isset($this->entity->idAttribute) ? $this->entity->idAttribute : 'id';
+        $idAttribute = isset($this->entity->idAttribute) && $this->entity->idAttribute !== "" ? $this->entity->idAttribute : 'id';
 
         if (isset($this->fields[$idAttribute])) {
             $query = "";
