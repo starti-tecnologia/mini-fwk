@@ -63,7 +63,8 @@ class Router
         if (self::$onloadControllers) {
             $basePath = self::$basePath;
             spl_autoload_register(function ($className) use ($basePath) {
-                include $basePath . '/src/Controllers/' . $className . '.php';
+                $file = $basePath . '/src/Controllers/' . $className . '.php';
+                if (file_exists($file)) include $file;
             });
         }
 
