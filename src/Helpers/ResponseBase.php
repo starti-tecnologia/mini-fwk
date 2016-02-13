@@ -54,7 +54,7 @@ class ResponseBase
      */
     private function makeHeaders() {
         foreach ($this->headers as $type => $value) {
-            header($type, $value);
+            header($type . ":" . $value);
         }
     }
 
