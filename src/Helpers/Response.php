@@ -5,11 +5,6 @@ namespace Mini\Helpers;
 class Response extends ResponseBase
 {
 
-    function __construct()
-    {
-        return self;
-    }
-
     /**
      * @param $object
      * @param int $statuCode
