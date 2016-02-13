@@ -13,7 +13,7 @@ trait QueryAware
 {
 
     public static function find($id) {
-        echo self::$table;
+        print_r(self);
     }
 
 }
