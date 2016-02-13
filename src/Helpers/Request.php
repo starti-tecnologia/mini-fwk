@@ -28,8 +28,8 @@ class Request extends RequestBase
     }
 
     public function get($string) {
-        if (isset($this->data[$string]))
-            throw new MiniException(sprintf("The field '%s' not found", $string), null, null);
+        if (!isset($this->data[$string]))
+            throw new MiniException(sprintf("The field '%s' not found", $string));
 
         return $this->data[$string];
     }

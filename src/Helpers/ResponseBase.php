@@ -63,6 +63,7 @@ class ResponseBase
         $this->makeHeaders();
 
         echo $this->body;
+        exit;
     }
 
 }
