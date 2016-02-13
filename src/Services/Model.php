@@ -28,7 +28,7 @@ class Model extends \PDO
         $sth = $this->prepare($query);
         $sth->execute();
 
-        $result = $sth->fetchAll();
+        $result = $sth->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
 
