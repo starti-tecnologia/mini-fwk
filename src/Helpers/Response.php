@@ -23,9 +23,3 @@ class Response extends ResponseBase
     }
 
 }
-
-if (!function_exists('response')) {
-    function response() {
-        return new Response();
-    }
-}
