@@ -59,6 +59,7 @@ class ResponseBase
     }
 
     protected function make() {
+        http_response_code($this->statusCode);
         $this->makeHeaders();
 
         echo $this->body;
