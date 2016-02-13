@@ -2,10 +2,7 @@
 
 namespace Mini;
 
-use PHPRouter\RouteCollection;
-use PHPRouter\Config;
-use PHPRouter\Router;
-use PHPRouter\Route;
+use Mini\Router\Router;
 
 class Kernel
 {
@@ -22,17 +19,18 @@ class Kernel
         $this->basePath = realpath(dirname($_SERVER['DOCUMENT_ROOT']));
 
         include_once dirname(__FILE__) . '/Helpers/Instance/helpers.php';
-        
+
         $this->addRouting();
     }
 
     /**
-     *
+     * Adding routing config file
      */
     public function addRouting() {
-        $config = Config::loadFromFile($this->basePath . '/src/routers/router.yaml');
-        $router = Router::parseConfig($config);
-        $router->matchCurrentRequest();
+
+        Router::setBasePath($this->basePath);
+        Router::loadConfigFile('router.yaml');
+
     }
 
 }
