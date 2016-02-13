@@ -86,9 +86,8 @@ class Router
     private static function loadClass($route_controller) {
         list($controller, $method) = explode(".", $route_controller);
 
-        echo $controller . " - " . $method;
-
         $obj = new $controller;
+        $obj->{$method}();
     }
 
 }
