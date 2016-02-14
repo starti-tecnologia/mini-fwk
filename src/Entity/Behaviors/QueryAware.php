@@ -75,7 +75,7 @@ trait QueryAware
             intval($id)
         );
 
-        return self::$model->execute($sql);
+        return self::$model->exec($sql);
     }
 
 }
