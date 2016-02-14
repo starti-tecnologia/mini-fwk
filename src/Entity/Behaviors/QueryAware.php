@@ -65,4 +65,17 @@ trait QueryAware
         return $result;
     }
 
+    public static function destroy($id) {
+        self::instance();
+
+        $sql = sprintf(
+            "DELETE FROM %s WHERE %s = %d",
+            self::$instanceTable,
+            self::$instanceIdAttribute,
+            intval($id)
+        );
+
+        return self::$model->execute($sql);
+    }
+
 }

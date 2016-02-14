@@ -22,6 +22,8 @@ class Model extends \PDO
 
         parent::__construct( $dns, $user, $pass );
 
+        parent::exec("SET CHARACTER SET utf8");
+
     }
 
     public function select($query) {

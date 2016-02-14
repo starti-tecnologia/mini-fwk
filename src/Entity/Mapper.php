@@ -49,7 +49,7 @@ class Mapper extends Model
                 $update[] = sprintf(
                     "%s = '%s'",
                     $field,
-                    utf8_encode($value)
+                    $value
                 );
             }
             $query = sprintf(
@@ -63,7 +63,7 @@ class Mapper extends Model
             $insert_fields = $insert_values = [];
             foreach ($this->fields as $field => $value) {
                 $insert_fields[] = $field;
-                $insert_values[] = utf8_encode($value);
+                $insert_values[] = $value;
             }
             $query = sprintf(
                 "INSERT INTO %s (%s) VALUES ('%s')",
