@@ -30,7 +30,7 @@ class Kernel
     public function addRouting() {
         try {
             Router::setBasePath($this->basePath);
-            Router::loadConfigFile('router.yaml');
+            Router::loadConfigFile('routes.php');
             Router::matchRoutes();
         } catch (MiniException $e) {
             response()->json([
