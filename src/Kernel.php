@@ -15,19 +15,25 @@ class Kernel
     /**
      * Kernel constructor.
      */
-    public function __construct()
+    public function __construct($config)
     {
-        $this->basePath = realpath(dirname($_SERVER['DOCUMENT_ROOT']));
-
+        $this->basePath = isset($config['basePath']) ? $config['basePath'] : realpath(dirname($_SERVER['DOCUMENT_ROOT']));
         include_once dirname(__FILE__) . '/Helpers/Instance/helpers.php';
+    }
 
+    /**
+     * Starts the request routing
+     */
+    public function bootstrap()
+    {
         $this->addRouting();
     }
 
     /**
      * Adding routing config file
      */
-    public function addRouting() {
+    public function addRouting()
+    {
         try {
             Router::setBasePath($this->basePath);
             Router::loadConfigFile('router.yaml');
@@ -39,7 +45,10 @@ class Kernel
                 ]
             ], 500);
         }
-
     }
 
+    public function getBasePath()
+    {
+        return $this->basePath;
+    }
 }

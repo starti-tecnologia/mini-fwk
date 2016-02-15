@@ -13,6 +13,7 @@ class Router
     private static $parsedFile = null;
 
     private static $onloadControllers = false;
+
     /**
      * @param mixed $basePath
      */
@@ -43,7 +44,7 @@ class Router
 
 
         if (!file_exists($yamlFile)) {
-            throw new \Exception("Yaml config file not found.");
+            throw new \Exception("Yaml config file not found at: " . $yamlFile);
         }
 
         $yaml = new Parser();
