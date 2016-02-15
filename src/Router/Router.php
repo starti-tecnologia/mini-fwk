@@ -6,10 +6,24 @@ use Mini\Exceptions\MiniException;
 
 class Router
 {
+    /**
+     * @var
+     */
     private static $basePath;
 
+    /**
+     * @var null
+     */
     private static $parsedFile = null;
 
+    /**
+     * @var null
+     */
+    private static $middleware = null;
+
+    /**
+     * @var bool
+     */
     private static $onloadControllers = false;
     /**
      * @param mixed $basePath
@@ -35,7 +49,20 @@ class Router
         self::$onloadControllers = $onloadControllers;
     }
 
+    /**
+     * @param null $middleware
+     */
+    public static function setMiddleware($middleware)
+    {
+        self::$middleware = $middleware;
+    }
 
+
+    /**
+     * @param $config
+     * @throws MiniException
+     * @throws \Exception
+     */
     public static function loadConfigFile($config) {
         $routeFile = self::$basePath . '/src/routers/' . $config;
 
@@ -45,12 +72,31 @@ class Router
 
         include_once $routeFile;
 
-        if (isset($routes))
+        if (isset($routes)) {
             self::setParsedFile($routes);
-        else
+            self::loadMiddlewareFile();
+        } else
             throw new MiniException("Routes variable not found.");
     }
 
+    /**
+     *
+     */
+    private static function loadMiddlewareFile() {
+        $middlewareFile = self::$basePath . '/src/routers/middlewares.php';
+
+        if (file_exists($middlewareFile)) {
+            include_once $middlewareFile;
+
+            if (isset($middlewares))
+                self::setMiddleware($middlewares);
+        }
+    }
+
+    /**
+     * @param $routeMethod
+     * @return bool
+     */
     private static function matchMethod($routeMethod) {
         $method = $_SERVER['REQUEST_METHOD'];
 
@@ -68,6 +114,9 @@ class Router
 
     }
 
+    /**
+     * @throws MiniException
+     */
     public static function matchRoutes() {
         $request_uri = $_SERVER['REQUEST_URI'];
 
@@ -86,6 +135,7 @@ class Router
                     $route_uri = $route['route'];
                     $route_controller = $route['uses'];
                     $route_method = $route['method'];
+                    $route_middlewares = isset($route['middleware']) ? $route['middleware'] : [];
 
                     $pattern = "@^" . preg_replace('/\\\:[a-zA-Z0-9\_\-]+/', '([a-zA-Z0-9\-\_]+)', preg_quote($route_uri)) . "$@D";
                     $matches = Array();
@@ -94,7 +144,7 @@ class Router
                         // remove the first match
                         array_shift($matches);
                         // call the callback with the matched positions as params
-                        self::loadClass($route_controller, $matches);
+                        self::loadClass($route_controller, $route_middlewares, $matches);
                         $routeFound = true;
                     }
                 }
@@ -106,9 +156,33 @@ class Router
     }
 
 
-
-    private static function loadClass($route_controller, $params) {
+    /**
+     * @param $route_controller
+     * @param $params
+     */
+    private static function loadClass($route_controller, $route_middlewares, $params) {
         list($controller, $method) = explode("@", $route_controller);
+
+        if (count($route_middlewares) > 0) {
+            foreach ($route_middlewares as $string) {
+                list($middleware, $value) = explode(":", $string);
+
+                if (isset(self::$middleware[$middleware])) {
+                    $midClass = self::$middleware[$middleware];
+                    $midObj = new $midClass;
+
+                    if (method_exists($midObj, 'handler')) {
+                        call_user_func_array(array($midObj, 'handler'), [$value]);
+                    } else {
+                        throw new MiniException(sprintf(
+                            "Not found method handler on middleware (%s)",
+                            $middleware
+                        ));
+                    }
+                }
+            }
+
+        }
 
         $obj = new $controller;
         if (count($params) > 0) {
