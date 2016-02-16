@@ -2,6 +2,7 @@
 
 namespace Mini\Entity\Behaviors;
 use Mini\Entity\Model;
+use Mini\Exceptions\MiniException;
 
 /**
  * Trait QueryAware
@@ -109,6 +110,9 @@ trait QueryAware
 
     public static function where($fields, $orderBy = [], $columns = ['*']) {
         self::instance();
+
+        if (count($fields) == 0)
+            throw new MiniException("Fields array is empty.");
 
         $where = [];
         foreach ($fields as $field => $value) {
