@@ -8,33 +8,10 @@ abstract class Entity
     /**
      * @var
      */
-    protected $table;
+    public $table;
 
-    protected $useSoftDeletes = false;
+    public $useSoftDeletes = false;
 
-    protected $useTimeStamps = false;
+    public $useTimeStamps = false;
 
-    /**
-     * @return boolean
-     */
-    public function isUseSoftDeletes()
-    {
-        return $this->useSoftDeletes;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function isUseTimeStamps()
-    {
-        return $this->useTimeStamps;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getTable()
-    {
-        return $this->table;
-    }
 }

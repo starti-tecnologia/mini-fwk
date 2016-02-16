@@ -38,9 +38,9 @@ trait QueryAware
     {
         $class = self::class;
         $obj = new $class;
-        self::$instanceTable = $obj->getTable();
+        self::$instanceTable = $obj->table;
         if (isset($obj->idAttribute)) self::$instanceIdAttribute = $obj->idAttribute;
-        self::$instanceUseSoftDeletes = $obj->isUseSoftDeletes();
+        self::$instanceUseSoftDeletes = $obj->useSoftDeletes;
 
         self::$model = new Model();
     }
