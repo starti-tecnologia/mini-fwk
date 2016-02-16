@@ -4,6 +4,10 @@ namespace Mini\Router;
 
 use Mini\Exceptions\MiniException;
 
+/**
+ * Class Router
+ * @package Mini\Router
+ */
 class Router
 {
     /**
@@ -155,10 +159,11 @@ class Router
         }
     }
 
-
     /**
      * @param $route_controller
+     * @param $route_middlewares
      * @param $params
+     * @throws MiniException
      */
     private static function loadClass($route_controller, $route_middlewares, $params) {
         list($controller, $method) = explode("@", $route_controller);
@@ -175,13 +180,12 @@ class Router
                         call_user_func_array(array($midObj, 'handler'), [$value]);
                     } else {
                         throw new MiniException(sprintf(
-                            "Not found method handler on middleware (%s)",
+                            "Handler Method not found on middleware (%s)",
                             $middleware
                         ));
                     }
                 }
             }
-
         }
 
         $obj = new $controller;

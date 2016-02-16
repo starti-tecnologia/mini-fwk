@@ -1,16 +1,12 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: jonathas
- * Date: 13/02/16
- * Time: 16:40
- */
 
 namespace Mini\Entity\Behaviors;
-
-
 use Mini\Entity\Model;
 
+/**
+ * Trait QueryAware
+ * @package Mini\Entity\Behaviors
+ */
 trait QueryAware
 {
 
@@ -19,8 +15,14 @@ trait QueryAware
      */
     private static $instanceTable;
 
+    /**
+     * @var string
+     */
     private static $instanceIdAttribute = "id";
 
+    /**
+     * @var
+     */
     private static $model;
 
     /**
@@ -53,6 +55,29 @@ trait QueryAware
         return $result;
     }
 
+    /**
+     * @param $id
+     * @param array $columns
+     * @return mixed
+     */
+    public static function findOne($id, $columns = ['*']) {
+        self::instance();
+
+        $sql = sprintf(
+            "SELECT %s FROM %s WHERE %s = %d",
+            implode(", ", $columns),
+            self::$instanceTable,
+            self::$instanceIdAttribute,
+            intval($id)
+        );
+        $result = self::$model->select($sql);
+        return $result[0];
+    }
+
+    /**
+     * @param array $columns
+     * @return mixed
+     */
     public static function findAll($columns = ['*']) {
         self::instance();
 
@@ -65,6 +90,10 @@ trait QueryAware
         return $result;
     }
 
+    /**
+     * @param $id
+     * @return mixed
+     */
     public static function destroy($id) {
         self::instance();
 
@@ -76,6 +105,44 @@ trait QueryAware
         );
 
         return self::$model->exec($sql);
+    }
+
+    public static function where($fields, $orderBy = [], $columns = ['*']) {
+        self::instance();
+
+        $where = [];
+        foreach ($fields as $field => $value) {
+            $where[] = sprintf(
+                "%s = '%s'",
+                $field,
+                $value
+            );
+        }
+
+        if (count($orderBy) > 0) {
+            $orders = [];
+            foreach ($orderBy as $order => $dir) {
+                $orders[] = sprintf(
+                    "%s %s",
+                    $order,
+                    $dir
+                );
+            }
+            $orders = sprintf(
+                "ORDER BY %s",
+                implode(", ", $orders)
+            );
+        } else $orders = "";
+
+        $sql = sprintf(
+            "SELECT %s FROM %s WHERE %s %s",
+            implode(", ", $columns),
+            self::$instanceTable,
+            implode(" AND ", $where),
+            $orders
+        );
+
+        return self::$model->select($sql);
     }
 
 }
