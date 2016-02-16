@@ -24,7 +24,7 @@ class Container
     /**
      * Give acess to singleton
      */
-    public function instance()
+    public static function instance()
     {
         if (! self::$instance) {
             self::$instance = new self;
