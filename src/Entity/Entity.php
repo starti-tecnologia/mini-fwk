@@ -8,13 +8,10 @@ abstract class Entity
     /**
      * @var
      */
-    protected $table;
+    public $table;
 
-    /**
-     * @return mixed
-     */
-    public function getTable()
-    {
-        return $this->table;
-    }
+    public $useSoftDeletes = false;
+
+    public $useTimeStamps = false;
+
 }

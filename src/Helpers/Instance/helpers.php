@@ -2,6 +2,8 @@
 
 use Mini\Helpers\Response;
 
+use Mini\Container;
+
 if (!function_exists('response')) {
 
     function response() {
@@ -13,7 +15,7 @@ if (!function_exists('response')) {
 if (!function_exists('app')) {
 
     function app() {
-
+       return Container::instance();
     }
 
 }

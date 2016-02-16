@@ -2,16 +2,32 @@
 
 namespace Mini\Router;
 
-use Symfony\Component\Yaml\Exception\ParseException;
-use Symfony\Component\Yaml\Yaml;
-use Symfony\Component\Yaml\Parser;
+use Mini\Exceptions\MiniException;
 
+/**
+ * Class Router
+ * @package Mini\Router
+ */
 class Router
 {
+    /**
+     * @var
+     */
     private static $basePath;
 
+    /**
+     * @var null
+     */
     private static $parsedFile = null;
 
+    /**
+     * @var null
+     */
+    private static $middleware = null;
+
+    /**
+     * @var bool
+     */
     private static $onloadControllers = false;
 
     /**
@@ -38,27 +54,75 @@ class Router
         self::$onloadControllers = $onloadControllers;
     }
 
+    /**
+     * @param null $middleware
+     */
+    public static function setMiddleware($middleware)
+    {
+        self::$middleware = $middleware;
+    }
 
+
+    /**
+     * @param $config
+     * @throws MiniException
+     * @throws \Exception
+     */
     public static function loadConfigFile($config) {
-        $yamlFile = self::$basePath . '/src/routers/' . $config;
+        $routeFile = self::$basePath . '/src/routers/' . $config;
 
-
-        if (!file_exists($yamlFile)) {
-            throw new \Exception("Yaml config file not found at: " . $yamlFile);
+        if (!file_exists($routeFile)) {
+            throw new \Exception("Route config file not found.");
         }
 
-        $yaml = new Parser();
-        try {
-            $parsed = $yaml->parse(file_get_contents($yamlFile));
-            self::setParsedFile($parsed);
+        $routes = include_once $routeFile;
 
-        } catch (ParseException $e) {
-            printf("Unable to parse the YAML string: %s", $e->getMessage());
+        if (!empty($routes)) {
+            self::setParsedFile($routes);
+            self::loadMiddlewareFile();
+        } else
+            throw new MiniException("Routes variable not found.");
+    }
+
+    /**
+     *
+     */
+    private static function loadMiddlewareFile() {
+        $middlewareFile = self::$basePath . '/src/routers/middlewares.php';
+
+        if (file_exists($middlewareFile)) {
+            $middlewares = include_once $middlewareFile;
+
+            if (!empty($middlewares))
+                self::setMiddleware($middlewares);
         }
     }
 
-    public static function matchRoutes() {
+    /**
+     * @param $routeMethod
+     * @return bool
+     */
+    private static function matchMethod($routeMethod) {
         $method = $_SERVER['REQUEST_METHOD'];
+
+        if (preg_match("/|/", $routeMethod)) {
+            if (preg_match("/" . $method . "/", $routeMethod)) {
+                return true;
+            } else {
+                return false;
+            }
+        } else if ($method == $routeMethod) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    /**
+     * @throws MiniException
+     */
+    public static function matchRoutes() {
         $request_uri = $_SERVER['REQUEST_URI'];
 
         if (self::$onloadControllers) {
@@ -69,36 +133,64 @@ class Router
             });
         }
 
+        $routeFound = false;
         if (self::$parsedFile != null) {
-            if (isset(self::$parsedFile['routes'])) {
-                foreach (self::$parsedFile['routes'] as $route) {
-                    $route_uri = $route[0];
-                    $route_controller = $route[1];
-                    $route_method = $route[2];
+            if (count(self::$parsedFile) > 0) {
+                foreach (self::$parsedFile as $routeName => $route) {
+                    $route_uri = $route['route'];
+                    $route_controller = $route['uses'];
+                    $route_method = $route['method'];
+                    $route_middlewares = isset($route['middleware']) ? $route['middleware'] : [];
 
                     $pattern = "@^" . preg_replace('/\\\:[a-zA-Z0-9\_\-]+/', '([a-zA-Z0-9\-\_]+)', preg_quote($route_uri)) . "$@D";
                     $matches = Array();
                     // check if the current request matches the expression
-                    if($method == $route_method && preg_match($pattern, $request_uri, $matches)) {
+                    if(self::matchMethod($route_method) && preg_match($pattern, $request_uri, $matches)) {
                         // remove the first match
                         array_shift($matches);
                         // call the callback with the matched positions as params
-                        self::loadClass($route_controller, $matches);
-
+                        self::loadClass($route_controller, $route_middlewares, $matches);
+                        $routeFound = true;
                     }
                 }
+
+                if (!$routeFound)
+                    throw new MiniException("Route not found.");
             }
         }
     }
 
+    /**
+     * @param $route_controller
+     * @param $route_middlewares
+     * @param $params
+     * @throws MiniException
+     */
+    private static function loadClass($route_controller, $route_middlewares, $params) {
+        list($controller, $method) = explode("@", $route_controller);
 
+        if (count($route_middlewares) > 0) {
+            foreach ($route_middlewares as $string) {
+                list($middleware, $value) = explode(":", $string);
 
-    private static function loadClass($route_controller, $params) {
-        list($controller, $method) = explode(".", $route_controller);
+                if (isset(self::$middleware[$middleware])) {
+                    $midClass = self::$middleware[$middleware];
+                    $midObj = new $midClass;
+
+                    if (method_exists($midObj, 'handler')) {
+                        call_user_func_array(array($midObj, 'handler'), [$value]);
+                    } else {
+                        throw new MiniException(sprintf(
+                            "Handler Method not found on middleware (%s)",
+                            $middleware
+                        ));
+                    }
+                }
+            }
+        }
 
         $obj = new $controller;
         if (count($params) > 0) {
-            //$obj->{$method}();
             call_user_func_array(array($obj, $method), $params);
 
         } else

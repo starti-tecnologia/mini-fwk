@@ -10,21 +10,24 @@ class MiniException extends Exception
     /**
      * @var null
      */
-    private $message = null;
+    private $msg = null;
     /**
      * @var int
      */
     private $statusCode = 500;
 
-    function __construct($message, $code, Exception $previous)
+    function __construct($message)
     {
-        $this->message = $message;
+        $this->msg = $message;
         $this->render();
     }
 
     public function render() {
 
-        response()->json(['teste'], 200);
+        response()->json([
+            'data' => [],
+            'message' => $this->msg
+        ], $this->statusCode);
 
     }
 

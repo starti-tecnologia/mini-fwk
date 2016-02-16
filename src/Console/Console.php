@@ -44,8 +44,13 @@ class Console
 
     private function help()
     {
+        echo 'Mini-Fwk' . PHP_EOL . PHP_EOL;
+
+        echo 'Available Commands:' . PHP_EOL;
+
         foreach ($this->commands as $name => $command) {
-            echo $name . "\t\t" . $command->getDescription() . PHP_EOL;
+            $tabLength = floor(strlen($name) / 8);
+            echo $name . str_repeat("\t", 4 - $tabLength) . $command->getDescription() . PHP_EOL;
         }
 
         echo PHP_EOL;
@@ -53,22 +58,25 @@ class Console
 
     public function run()
     {
-        $argv = $_SERVER['argv'];
-
         $this->setUp();
-        $command = isset($this->commands[$argv[1]]) ? $this->commands[$argv[1]] : null;
+        $commandName = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : null;
+        $command = isset($this->commands[$commandName]) ? $this->commands[$commandName] : null;
+
+        unset($_SERVER['argv'][1]);
+
+        $_SERVER['argv'] = array_values($_SERVER['argv']);
 
         if (! $command) {
-            echo 'Command not found: ' . $argv[1] . PHP_EOL;
+            if ($commandName) {
+                echo 'Command not found: ' . $commandName . PHP_EOL;
+            }
+
             $this->help();
             return;
         }
 
         $commando = new Commando;
-        $commando->option()
-            ->require()
-            ->describedAs($command->getName());
-
+        $commando->setHelp($command->getDescription());
         $command->setKernel($this->kernel);
         $command->setUp($commando);
         $command->run($commando);
