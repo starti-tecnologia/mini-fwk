@@ -22,6 +22,11 @@ trait QueryAware
     private static $instanceIdAttribute = "id";
 
     /**
+     * @var bool
+     */
+    private static $instanceUseSoftDeletes = false;
+
+    /**
      * @var
      */
     private static $model;
@@ -35,6 +40,7 @@ trait QueryAware
         $obj = new $class;
         self::$instanceTable = $obj->getTable();
         if (isset($obj->idAttribute)) self::$instanceIdAttribute = $obj->idAttribute;
+        self::$instanceUseSoftDeletes = $obj->isUseSoftDeletes();
 
         self::$model = new Model();
     }
@@ -45,12 +51,18 @@ trait QueryAware
     public static function find($id, $columns = ['*']) {
         self::instance();
 
+        if (!self::$instanceUseSoftDeletes)
+            $where_soft_delete = "";
+        else
+            $where_soft_delete = " AND (deleted_at IS NULL)";
+
         $sql = sprintf(
-            "SELECT %s FROM %s WHERE %s = %d",
+            "SELECT %s FROM %s WHERE %s = %d %s",
             implode(", ", $columns),
             self::$instanceTable,
             self::$instanceIdAttribute,
-            intval($id)
+            intval($id),
+            $where_soft_delete
         );
         $result = self::$model->select($sql);
         return $result;
@@ -64,12 +76,18 @@ trait QueryAware
     public static function findOne($id, $columns = ['*']) {
         self::instance();
 
+        if (!self::$instanceUseSoftDeletes)
+            $where_soft_delete = "";
+        else
+            $where_soft_delete = " AND (deleted_at IS NULL)";
+
         $sql = sprintf(
-            "SELECT %s FROM %s WHERE %s = %d",
+            "SELECT %s FROM %s WHERE %s = %d %s",
             implode(", ", $columns),
             self::$instanceTable,
             self::$instanceIdAttribute,
-            intval($id)
+            intval($id),
+            $where_soft_delete
         );
         $result = self::$model->select($sql);
         return $result[0];
@@ -82,10 +100,16 @@ trait QueryAware
     public static function findAll($columns = ['*']) {
         self::instance();
 
+        if (!self::$instanceUseSoftDeletes)
+            $where_soft_delete = "";
+        else
+            $where_soft_delete = " WHERE (deleted_at IS NULL)";
+
         $sql = sprintf(
-            "SELECT %s FROM %s",
+            "SELECT %s FROM %s %s",
             implode(", ", $columns),
-            self::$instanceTable
+            self::$instanceTable,
+            $where_soft_delete
         );
         $result = self::$model->select($sql);
         return $result;
@@ -98,16 +122,32 @@ trait QueryAware
     public static function destroy($id) {
         self::instance();
 
-        $sql = sprintf(
-            "DELETE FROM %s WHERE %s = %d",
-            self::$instanceTable,
-            self::$instanceIdAttribute,
-            intval($id)
-        );
+        if (!self::$instanceUseSoftDeletes) {
+            $sql = sprintf(
+                "DELETE FROM %s WHERE %s = %d",
+                self::$instanceTable,
+                self::$instanceIdAttribute,
+                intval($id)
+            );
+        } else {
+            $sql = sprintf(
+                "UPDATE %s SET deleted_at = NOW() WHERE %s = %d",
+                self::$instanceTable,
+                self::$instanceIdAttribute,
+                intval($id)
+            );
+        }
 
         return self::$model->exec($sql);
     }
 
+    /**
+     * @param $fields
+     * @param array $orderBy
+     * @param array $columns
+     * @return mixed
+     * @throws MiniException
+     */
     public static function where($fields, $orderBy = [], $columns = ['*']) {
         self::instance();
 
@@ -122,6 +162,9 @@ trait QueryAware
                 $value
             );
         }
+
+        if (self::$instanceUseSoftDeletes)
+            $where[] = "(deleted_at IS NULL)";
 
         if (count($orderBy) > 0) {
             $orders = [];

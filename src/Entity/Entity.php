@@ -15,6 +15,22 @@ abstract class Entity
     protected $useTimeStamps = false;
 
     /**
+     * @return boolean
+     */
+    public function isUseSoftDeletes()
+    {
+        return $this->useSoftDeletes;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isUseTimeStamps()
+    {
+        return $this->useTimeStamps;
+    }
+
+    /**
      * @return mixed
      */
     public function getTable()
