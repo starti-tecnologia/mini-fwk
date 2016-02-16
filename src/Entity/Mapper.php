@@ -37,6 +37,7 @@ class Mapper extends Model
             throw new MiniException("Fields not declared.");
 
         $idAttribute = isset($this->entity->idAttribute) && $this->entity->idAttribute !== "" ? $this->entity->idAttribute : 'id';
+        $useTimeStamps = $this->entity->useTimeStamps;
 
         if (isset($this->fields[$idAttribute])) {
             $query = "";
@@ -52,6 +53,11 @@ class Mapper extends Model
                     $value
                 );
             }
+
+            if ($useTimeStamps) {
+                $update[] = "updated_at = NOW()";
+            }
+
             $query = sprintf(
                 "UPDATE %s SET %s WHERE id = %d",
                 $this->entity->table,
@@ -63,13 +69,21 @@ class Mapper extends Model
             $insert_fields = $insert_values = [];
             foreach ($this->fields as $field => $value) {
                 $insert_fields[] = $field;
-                $insert_values[] = $value;
+                $insert_values[] = sprintf("'%s'", $value);
             }
+            if ($useTimeStamps) {
+                $insert_fields[] = 'created_at';
+                $insert_values[] = 'NOW()';
+
+                $insert_fields[] = 'updated_at';
+                $insert_values[] = 'NOW()';
+            }
+
             $query = sprintf(
-                "INSERT INTO %s (%s) VALUES ('%s')",
+                "INSERT INTO %s (%s) VALUES (%s)",
                 $this->entity->table,
                 implode(",", $insert_fields),
-                implode("','", $insert_values)
+                implode(",", $insert_values)
             );
         }
         return $query;

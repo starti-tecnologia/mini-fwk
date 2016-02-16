@@ -10,6 +10,10 @@ abstract class Entity
      */
     protected $table;
 
+    protected $useSoftDeletes = false;
+
+    protected $useTimeStamps = false;
+
     /**
      * @return mixed
      */
