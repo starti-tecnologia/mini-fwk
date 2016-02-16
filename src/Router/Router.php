@@ -70,9 +70,9 @@ class Router
             throw new \Exception("Route config file not found.");
         }
 
-        include_once $routeFile;
+        $routes = include_once $routeFile;
 
-        if (isset($routes)) {
+        if (!empty($routes)) {
             self::setParsedFile($routes);
             self::loadMiddlewareFile();
         } else
@@ -86,9 +86,9 @@ class Router
         $middlewareFile = self::$basePath . '/src/routers/middlewares.php';
 
         if (file_exists($middlewareFile)) {
-            include_once $middlewareFile;
+            $middlewares = include_once $middlewareFile;
 
-            if (isset($middlewares))
+            if (!empty($middlewares))
                 self::setMiddleware($middlewares);
         }
     }
