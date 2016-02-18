@@ -79,6 +79,9 @@ class Console
         $commando->setHelp($command->getDescription());
         $command->setKernel($this->kernel);
         $command->setUp($commando);
-        $command->run($commando);
+
+        if (! in_array('--help', $_SERVER['argv']) && ! in_array('-h', $_SERVER['argv'])) {
+            $command->run($commando);
+        }
     }
 }

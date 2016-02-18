@@ -67,4 +67,9 @@ class Kernel
     {
         return $this->basePath . DIRECTORY_SEPARATOR . 'migrations';
     }
+
+    public function getEntitiesPath()
+    {
+        return $this->basePath . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'Models';
+    }
 }

@@ -6,6 +6,7 @@ class EntityTableParserTest extends PHPUnit_Framework_TestCase
 {
     /**
      * TODO: Test if a column can't have more than one type
+     * TODO: Test that ordering of modifiers must be the same of DatabaseParser ordering
      */
     public function testIsParsingEntity()
     {
@@ -19,12 +20,12 @@ class EntityTableParserTest extends PHPUnit_Framework_TestCase
             ' ',
             [
                 'CREATE TABLE users (',
-                    'id INTEGER(11) UNSIGNED PRIMARY KEY,',
-                    'guid VARCHAR(36),',
-                    'email VARCHAR(255),',
-                    'name VARCHAR(100),',
-                    'password VARCHAR(100),',
-                    'customer_id INTEGER(11) UNSIGNED',
+                    'id integer(11) unsigned primary key auto_increment,',
+                    'guid varchar(36),',
+                    'email varchar(255),',
+                    'name varchar(100),',
+                    'password varchar(100),',
+                    'customer_id integer(11) unsigned',
                 ');',
                 'CREATE UNIQUE INDEX users_guid_unique ON users (guid);',
                 'CREATE UNIQUE INDEX users_email_unique ON users (email);',
@@ -33,6 +34,6 @@ class EntityTableParserTest extends PHPUnit_Framework_TestCase
             ]
         );
 
-        $this->assertEquals($sql, $table->getCreateSql());
+        $this->assertEquals($sql, $table->makeCreateSql());
     }
 }

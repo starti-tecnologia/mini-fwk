@@ -5,11 +5,11 @@ namespace Mini\Entity\Migration;
 use Mini\Entity\Entity;
 use Mini\Entity\Definition\DefinitionParser;
 use Mini\Entity\Migration\Table;
-use Mini\Entity\Migration\Column;
+use Mini\Entity\Migration\TableItem;
 
 class EntityTableParser
 {
-    private $modifiers = ['unsigned', 'nullable', 'default'];
+    private $modifiers = ['unsigned', 'required', 'default', 'autoincrement'];
 
     private $types = [
         'char', 'string', 'text', 'mediumtext', 'longtext', 'biginteger', 'integer', 'mediuminteger', 'tinyinteger',
@@ -24,6 +24,36 @@ class EntityTableParser
         $this->definitionParser = new DefinitionParser;
     }
 
+    public function parse()
+    {
+        $result = [];
+        $kernel = app()->get('Mini\Kernel');
+        $pattern = $kernel->getEntitiesPath() . DIRECTORY_SEPARATOR . '*.php';
+        $files = glob($pattern);
+
+        foreach ($files as $file) {
+            $matches = null;
+            preg_match('@([^/]+).php$@', $file, $matches);
+            $className = $matches[1];
+
+            $matches = null;
+            $contents = file_get_contents($file);
+            preg_match('/namespace ([^ ]+\Models)/', str_replace("\n", '', $contents), $matches);
+            $namespace = $matches[1];
+
+            require_once $file;
+
+            $fullClassName = $namespace . '\\' . $className;
+            $entity = new $fullClassName;
+
+            if ($entity instanceof Entity) {
+                $result[$entity->table] = $this->parseEntity($entity);
+            }
+        }
+
+        return $result;
+    }
+
     public function parseEntity(Entity $entity)
     {
         $definition = $this->definitionParser->parse($entity);
@@ -36,7 +66,7 @@ class EntityTableParser
                 TableItem::TYPE_COLUMN,
                 $key
             );
-            $table->items[] = $column;
+            $table->items[$key] = $column;
 
             foreach ($tags as $tagName => $tagParameters) {
                 $this->processTag($table, $column, [$tagName, $tagParameters]);
@@ -71,13 +101,13 @@ class EntityTableParser
     public function processIntegerType(Table $table, TableItem $column, array $tagParameters)
     {
         $length = isset($tagParameters[0]) ? $tagParameters[0] : 11;
-        $column->sql .= ' ' . $column->name . ' INTEGER(' . $length . ')';
+        $column->sql .= $column->name . ' int(' . $length . ')';
     }
 
     public function processStringType(Table $table, TableItem $column, array $tagParameters)
     {
         $length = isset($tagParameters[0]) ? $tagParameters[0] : 255;
-        $column->sql .= ' ' . $column->name . ' VARCHAR(' . $length . ')';
+        $column->sql .= $column->name . ' varchar(' . $length . ')';
     }
 
     public function processUuidType(Table $table, TableItem $column, array $tagParameters)
@@ -92,7 +122,7 @@ class EntityTableParser
 
     public function processPkType(Table $table, TableItem $column, array $tagParameters)
     {
-        $column->sql .= ' ' . $column->name . ' INTEGER(11) UNSIGNED PRIMARY KEY';
+        $column->sql .= $column->name . ' int(11) unsigned not null primary key auto_increment';
     }
 
     /**
@@ -100,24 +130,29 @@ class EntityTableParser
      */
     public function processDefaultModifier(Table $table, TableItem $column, array $tagParameters)
     {
-        $column->sql .= ' DEFAULT ' . $tagParameters[0];
+        $column->sql .= ' default ' . $tagParameters[0];
+    }
+
+    public function processAutoincrementModifier(Table $table, TableItem $column, array $tagParameters)
+    {
+        $column->sql .= ' auto_increment';
     }
 
     public function processUnsignedModifier(Table $table, TableItem $column, array $tagParameters)
     {
-        $column->sql .= ' UNSIGNED ';
+        $column->sql .= ' unsigned';
     }
 
-    public function processNullableModifier(Table $table, TableItem $column, array $tagParameters)
+    public function processRequiredModifier(Table $table, TableItem $column, array $tagParameters)
     {
-        $column->sql .= ' NULLABLE ';
+        $column->sql .= ' not null';
     }
 
     public function processUniqueConstraint(Table $table, TableItem $column, array $tagParameters)
     {
         $keyName = $table->name . '_' . $column->name . '_unique';
 
-        $table->items[] = new TableItem(
+        $table->items[$keyName] = new TableItem(
             TableItem::TYPE_CONSTRAINT,
             $keyName,
             'CREATE UNIQUE INDEX ' . $keyName . ' ON ' . $table->name . ' (' . $column->name . ')'
@@ -131,7 +166,7 @@ class EntityTableParser
         $otherTableName = $tagParameters[0];
         $keyName = $table->name . '_' . $column->name . '_fk';
 
-        $table->items[] = new TableItem(
+        $table->items[$keyName] = new TableItem(
             TableItem::TYPE_CONSTRAINT,
             $keyName,
             'ALTER TABLE ' . $table->name . ' ADD CONSTRAINT ' . $keyName . ' FOREIGN KEY (' . $column->name . ') REFERENCES ' . $otherTableName . ' (id)'

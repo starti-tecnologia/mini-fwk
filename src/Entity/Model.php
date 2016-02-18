@@ -31,9 +31,9 @@ class Model extends \PDO
 
     }
 
-    public function select($query) {
+    public function select($query, $params = []) {
         $sth = $this->prepare($query);
-        $sth->execute();
+        $sth->execute($params);
 
         $result = $sth->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
