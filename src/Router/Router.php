@@ -123,7 +123,7 @@ class Router
      * @throws MiniException
      */
     public static function matchRoutes() {
-        $request_uri = $_SERVER['REQUEST_URI'];
+        $request_uri = $_SERVER['SCRIPT_URL'];
 
         if (self::$onloadControllers) {
             $basePath = self::$basePath;
