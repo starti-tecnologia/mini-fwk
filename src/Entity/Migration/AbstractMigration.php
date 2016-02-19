@@ -3,13 +3,14 @@
 namespace Mini\Entity\Migration;
 
 use Mini\Container;
+use Mini\Entity\Connection;
 
 abstract class AbstractMigration
 {
     /**
-     * @var Mini\Entity\Model
+     * @var Mini\Entity\Connection
      */
-    private $model;
+    private $connection;
 
     /**
      * @var array
@@ -27,14 +28,21 @@ abstract class AbstractMigration
 
     public function run($direction = 'up')
     {
-        $this->model = app()->get('Mini\Entity\Model');
         $this->{$direction}();
 
         foreach ($this->sqls as $sql) {
-            $stm = $this->model->prepare($sql[0]);
+            $stm = $this->connection->prepare($sql[0]);
             $stm->execute($sql[1]);
 
             echo 'Executing: ' . $sql[0] . ' ' . json_encode($sql[1]) . PHP_EOL;
         }
+    }
+
+    /**
+     * @params \Mini\Entity\Connection $connection
+     */
+    public function setConnection(Connection $connection)
+    {
+        $this->connection = $connection;
     }
 }

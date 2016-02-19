@@ -9,6 +9,11 @@ use Mini\Container;
 
 class MakeMigrationCommand extends AbstractCommand
 {
+    /**
+     * \Mini\Entity\Connection
+     */
+    private $connection;
+
     private $force = false;
 
     public function getName()
@@ -32,13 +37,18 @@ class MakeMigrationCommand extends AbstractCommand
             ->aka('f')
             ->describedAs('Ignore validations')
             ->boolean();
+
+        $commando->option('connection')
+            ->describedAs('Connection used on migration')
+            ->defaultsTo('default');
     }
 
     public function run(Commando $commando)
     {
-        $c = new \Colors\Color();
         $this->force = $commando['force'];
+        $this->connection = app()->get('Mini\Entity\ConnectionManager')->getConnection($commando['connection']);
 
+        $c = new \Colors\Color();
         $kernel = app()->get('Mini\Kernel');
         $path = $kernel->getMigrationsPath();
         $name = 'Migration' . date('YmdHis');
@@ -83,8 +93,12 @@ class MakeMigrationCommand extends AbstractCommand
 
     public function makeDiffMigration()
     {
-        $entityTables = (new EntityTableParser)->parse();
-        $databaseTables = (new DatabaseTableParser)->parse();
+        $entityTableParser = new EntityTableParser;
+        $databaseTableParser = new DatabaseTableParser;
+        $databaseTableParser->setConnection($this->connection);
+
+        $entityTables = $entityTableParser->parse($this->connection->name);
+        $databaseTables = $databaseTableParser->parse();
 
         $upDiff = $this->processTablesDiff($entityTables, $databaseTables);
         $downDiff = $this->processTablesDiff($databaseTables, $entityTables);

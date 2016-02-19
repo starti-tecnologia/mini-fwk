@@ -2,13 +2,17 @@
 
 namespace Mini\Console\Command;
 
+use Mini\Entity\Connection;
 use Commando\Command as Commando;
 use Mini\Container;
 use Exception;
 
 class MigrateCommand extends AbstractCommand
 {
-    private $model;
+    /**
+     * \Mini\Entity\Connection
+     */
+    private $connection;
 
     public function getName()
     {
@@ -24,7 +28,6 @@ class MigrateCommand extends AbstractCommand
     {
         $container = app();
         $this->kernel = $container->get('Mini\Kernel');
-        $this->model = $container->get('Mini\Entity\Model');
 
         $commando->option('version')
             ->describedAs('Migration version to execute, ex: 20160216164758')
@@ -41,6 +44,10 @@ class MigrateCommand extends AbstractCommand
         $commando->option('cleanup')
             ->describedAs('Rollback all migrations then migrate again')
             ->boolean();
+
+        $commando->option('connection')
+            ->describedAs('Connection used on migration')
+            ->defaultsTo('default');
     }
 
     public function run(Commando $commando)
@@ -48,6 +55,7 @@ class MigrateCommand extends AbstractCommand
         $c = new \Colors\Color();
         $startTime = microtime();
 
+        $this->connection = app()->get('Mini\Entity\ConnectionManager')->getConnection($commando['connection']);
         $this->ensureVersionsTableIsCreated();
 
         if ($commando['rollback']) {
@@ -82,7 +90,7 @@ class MigrateCommand extends AbstractCommand
             function ($row) {
                 return $row['version'];
             },
-            $this->model->select(
+            $this->connection->select(
                 'SELECT version FROM migrations ORDER BY version ' . ($direction == 'down' ? 'DESC' : 'ASC')
             )
         );
@@ -118,7 +126,7 @@ class MigrateCommand extends AbstractCommand
 
     public function rollbackLastMigration()
     {
-        $migration = $this->model->selectOne('select version from migrations order by version desc limit 1');
+        $migration = $this->connection->selectOne('select version from migrations order by version desc limit 1');
 
         if (! $migration) {
             throw new Exception('No migration to rollback.');
@@ -140,12 +148,13 @@ class MigrateCommand extends AbstractCommand
         echo ($direction == 'up' ? 'Migrating ' : 'Rollback version ') . $version . PHP_EOL;
 
         $instance = new $className;
+        $instance->setConnection($this->connection);
         $instance->run($direction);
 
         if ($direction == 'up') {
-            $stm = $this->model->prepare('INSERT INTO migrations(version) VALUES (?)');
+            $stm = $this->connection->prepare('INSERT INTO migrations(version) VALUES (?)');
         } elseif ($direction = 'down') {
-            $stm = $this->model->prepare('DELETE FROM migrations WHERE version LIKE ?');
+            $stm = $this->connection->prepare('DELETE FROM migrations WHERE version LIKE ?');
         }
 
         $stm->execute([$version]);
@@ -170,13 +179,13 @@ FROM
 WHERE
     TABLE_NAME = 'migrations'
 SQL;
-        $result = $this->model->select('SELECT TABLE_NAME FROM information_schema.TABLES');
+        $result = $this->connection->select('SELECT TABLE_NAME FROM information_schema.TABLES');
         return count($result) == 1;
     }
 
     public function createMigrationTable()
     {
         $sql = 'CREATE TABLE migrations (version VARCHAR(255) PRIMARY KEY)';
-        $this->model->exec($sql);
+        $this->connection->exec($sql);
     }
 }

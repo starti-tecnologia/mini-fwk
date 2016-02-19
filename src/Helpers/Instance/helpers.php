@@ -3,6 +3,7 @@
 use Mini\Helpers\Response;
 
 use Mini\Container;
+use Dotenv\Dotenv;
 
 if (!function_exists('response')) {
 
@@ -18,4 +19,21 @@ if (!function_exists('app')) {
        return Container::instance();
     }
 
+}
+
+if (!function_exists('env')) {
+    $env = null;
+
+    function env($name, $default = null) {
+        global $env;
+
+        if (! $env) {
+            $kernel = app()->get('Mini\Kernel');
+            $env = new Dotenv($kernel->getBasePath());
+            $env->load();
+        }
+
+        $result = getenv($name);
+        return $result !== null ? $result : $default;
+    }
 }

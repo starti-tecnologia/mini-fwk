@@ -52,7 +52,7 @@ class EntityTableParser
         $this->tagOrder = array_merge($this->types, $this->modifiers, $this->constraints);
     }
 
-    public function parse()
+    public function parse($connectionName)
     {
         $result = [];
         $kernel = app()->get('Mini\Kernel');
@@ -73,6 +73,10 @@ class EntityTableParser
 
             $fullClassName = $namespace . '\\' . $className;
             $entity = new $fullClassName;
+
+            if ($entity->connection != $connectionName) {
+                continue;
+            }
 
             if ($entity instanceof Entity) {
                 $result[$entity->table] = $this->parseEntity($entity);

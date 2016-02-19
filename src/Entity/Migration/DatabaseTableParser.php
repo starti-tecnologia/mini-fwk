@@ -6,9 +6,15 @@ use Mini\Entity\Entity;
 use Mini\Entity\Definition\DefinitionParser;
 use Mini\Entity\Migration\Table;
 use Mini\Entity\Migration\TableItem;
+use Mini\Entity\Connection;
 
 class DatabaseTableParser
 {
+    /**
+     * @var Mini\Entity\Connection
+     */
+    private $connection;
+
     public function parse()
     {
         $result = [];
@@ -41,9 +47,7 @@ class DatabaseTableParser
 
     public function findTables()
     {
-        $model = app()->get('Mini\Entity\Model');
-
-        return $model->select('
+        return $this->connection->select('
             SELECT
                 TABLE_NAME
             FROM
@@ -52,15 +56,13 @@ class DatabaseTableParser
                 TABLE_SCHEMA = :schemaName AND
                 TABLE_COMMENT = \'MINI_FWK_ENTITY\'
         ', [
-            'schemaName' => $model->database
+            'schemaName' => $this->connection->database
         ]);
     }
 
     public function findTableConstraints($tableName)
     {
-        $model = app()->get('Mini\Entity\Model');
-
-        return $model->select('
+        return $this->connection->select('
             SELECT
                 C.CONSTRAINT_SCHEMA,
                 C.CONSTRAINT_NAME,
@@ -82,15 +84,13 @@ class DatabaseTableParser
                 C.TABLE_SCHEMA = :schemaName
         ', [
             'tableName' => $tableName,
-            'schemaName' => $model->database
+            'schemaName' => $this->connection->database
         ]);
     }
 
     public function findTableColumns($tableName)
     {
-        $model = app()->get('Mini\Entity\Model');
-
-        return $model->select('
+        return $this->connection->select('
             SELECT
                 TABLE_SCHEMA,
                 TABLE_NAME,
@@ -116,7 +116,7 @@ class DatabaseTableParser
                 TABLE_SCHEMA = :schemaName
         ', [
             'tableName' => $tableName,
-            'schemaName' => $model->database
+            'schemaName' => $this->connection->database
         ]);
     }
 
@@ -191,5 +191,13 @@ class DatabaseTableParser
                 $sql
             );
         }
+    }
+
+    /**
+     * @params \Mini\Entity\Connection $connection
+     */
+    public function setConnection(Connection $connection)
+    {
+        $this->connection = $connection;
     }
 }
