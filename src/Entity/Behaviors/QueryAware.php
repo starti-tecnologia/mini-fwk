@@ -30,7 +30,7 @@ trait QueryAware
     /**
      * @var
      */
-    private static $model;
+    private static $instanceConnection;
 
     /**
      * @param mixed $instanceTable
@@ -43,7 +43,7 @@ trait QueryAware
         if (isset($obj->idAttribute)) self::$instanceIdAttribute = $obj->idAttribute;
         self::$instanceUseSoftDeletes = $obj->useSoftDeletes;
 
-        self::$model = app()->get('Mini\Entity\Model');
+        self::$instanceConnection = app()->get('Mini\Entity\ConnectionManager')->getConnection($obj->connection);
     }
 
     /**
@@ -65,7 +65,7 @@ trait QueryAware
             intval($id),
             $where_soft_delete
         );
-        $result = self::$model->select($sql);
+        $result = self::$instanceConnection->select($sql);
         return $result;
     }
 
@@ -90,7 +90,7 @@ trait QueryAware
             intval($id),
             $where_soft_delete
         );
-        $result = self::$model->select($sql);
+        $result = self::$instanceConnection->select($sql);
         return $result[0];
     }
 
@@ -112,7 +112,7 @@ trait QueryAware
             self::$instanceTable,
             $where_soft_delete
         );
-        $result = self::$model->select($sql);
+        $result = self::$instanceConnection->select($sql);
         return $result;
     }
 
@@ -139,7 +139,7 @@ trait QueryAware
             );
         }
 
-        return self::$model->exec($sql);
+        return self::$instanceConnection->exec($sql);
     }
 
     /**
@@ -190,7 +190,7 @@ trait QueryAware
             $orders
         );
 
-        return self::$model->select($sql);
+        return self::$instanceConnection->select($sql);
     }
 
 }

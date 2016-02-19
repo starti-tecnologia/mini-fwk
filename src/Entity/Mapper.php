@@ -8,7 +8,7 @@ use Mini\Exceptions\MiniException;
  * Class Mapper
  * @package Mini\Entity
  */
-class Mapper extends Model
+class Mapper extends Connection
 {
     /**
      * @var

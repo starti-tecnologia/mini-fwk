@@ -4,6 +4,7 @@ namespace Mini\Console;
 
 use Mini\Kernel;
 use Commando\Command as Commando;
+use Exception;
 
 class Console
 {
@@ -58,6 +59,19 @@ class Console
 
     public function run()
     {
+        $c = new \Colors\Color();
+
+        try {
+            $this->processRun();
+        } catch (Exception $e) {
+            echo $c($e->getMessage())->white()->bold()->highlight('red') . PHP_EOL;
+            echo $c($e->getTraceAsString())->white()->bold()->highlight('red') . PHP_EOL;
+            die;
+        }
+    }
+
+    public function processRun()
+    {
         $this->setUp();
         $commandName = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : null;
         $command = isset($this->commands[$commandName]) ? $this->commands[$commandName] : null;
@@ -79,6 +93,9 @@ class Console
         $commando->setHelp($command->getDescription());
         $command->setKernel($this->kernel);
         $command->setUp($commando);
-        $command->run($commando);
+
+        if (! in_array('--help', $_SERVER['argv']) && ! in_array('-h', $_SERVER['argv'])) {
+            $command->run($commando);
+        }
     }
 }

@@ -2,12 +2,17 @@
 
 namespace Mini\Console\Command;
 
+use Mini\Entity\Connection;
 use Commando\Command as Commando;
 use Mini\Container;
+use Exception;
 
 class MigrateCommand extends AbstractCommand
 {
-    private $model;
+    /**
+     * \Mini\Entity\Connection
+     */
+    private $connection;
 
     public function getName()
     {
@@ -23,55 +28,95 @@ class MigrateCommand extends AbstractCommand
     {
         $container = app();
         $this->kernel = $container->get('Mini\Kernel');
-        $this->model = $container->get('Mini\Entity\Model');
 
         $commando->option('version')
             ->describedAs('Migration version to execute, ex: 20160216164758')
             ->defaultsTo('');
+
+        $commando->option('rollback-all')
+            ->describedAs('Rollback all migrations')
+            ->boolean();
+
+        $commando->option('rollback')
+            ->describedAs('Rollback last migration')
+            ->boolean();
+
+        $commando->option('cleanup')
+            ->describedAs('Rollback all migrations then migrate again')
+            ->boolean();
+
+        $commando->option('connection')
+            ->describedAs('Connection used on migration')
+            ->defaultsTo('default');
     }
 
     public function run(Commando $commando)
     {
+        $c = new \Colors\Color();
         $startTime = microtime();
 
+        $this->connection = app()->get('Mini\Entity\ConnectionManager')->getConnection($commando['connection']);
         $this->ensureVersionsTableIsCreated();
 
-        if (! $commando['version']) {
-            $completedMigrations = $this->runPendingMigrations();
+        if ($commando['rollback']) {
+            $count = $this->rollbackLastMigration();
+        } else if ($commando['rollback-all']) {
+            $this->confirm();
+            $count = $this->runMigrations('down');
+        } else if ($commando['cleanup']) {
+            $this->confirm();
+            $this->runMigrations('down');
+            $count = $this->runMigrations('up');
+        } elseif (! $commando['version']) {
+            $count = $this->runMigrations('up');
         } else {
-            $completedMigrations = $this->runMigrationVersion($commando['version']);
+            $count = $this->runMigrationByVersion($commando['version'], 'up');
         }
 
-        if ($completedMigrations > 0) {
-            echo 'Migration completed in ' . number_format((microtime() - $startTime) / 1000, 5) . ' seconds' . PHP_EOL;
+        if ($count > 0) {
+            echo $c(
+                'Migration completed in ' . number_format((microtime() - $startTime) / 1000, 5) . ' seconds.'
+            )->green() . PHP_EOL;
         } else {
-            echo 'Nothing to migrate' . PHP_EOL;
+            echo $c('Nothing to migrate.')->yellow() . PHP_EOL;
         }
     }
 
-    public function runPendingMigrations()
+    public function runMigrations($direction = 'up')
     {
         $count = 0;
 
-        $previousVersions = array_map(function ($row) {
-            return $row['version'];
-        }, $this->model->select('SELECT version FROM migrations ORDER BY version'));
+        $previousVersions = array_map(
+            function ($row) {
+                return $row['version'];
+            },
+            $this->connection->select(
+                'SELECT version FROM migrations ORDER BY version ' . ($direction == 'down' ? 'DESC' : 'ASC')
+            )
+        );
 
-        $pattern = $this->kernel->getMigrationsPath() . DIRECTORY_SEPARATOR . 'Migration*.php';
-        $files = glob($pattern);
-        sort($files);
+        if ($direction == 'up') {
+            $pattern = $this->kernel->getMigrationsPath() . DIRECTORY_SEPARATOR . 'Migration*.php';
+            $files = glob($pattern);
+            sort($files);
 
-        foreach ($files as $file) {
-            $matches = null;
+            foreach ($files as $file) {
+                $matches = null;
 
-            if (! preg_match('/.+Migration([0-9]+).+$/', $file, $matches)) {
-                continue;
+                if (! preg_match('/.+Migration([0-9]+).+$/', $file, $matches)) {
+                    continue;
+                }
+
+                $version = $matches[1];
+
+                if (! in_array($version, $previousVersions)) {
+                    $this->runMigrationByVersion($version, $direction);
+                    ++$count;
+                }
             }
-
-            $version = $matches[1];
-
-            if (! in_array($version, $previousVersions)) {
-                $this->runMigrationVersion($version);
+        } elseif ($direction == 'down') {
+            foreach ($previousVersions as $version) {
+                $this->runMigrationByVersion($version, $direction);
                 ++$count;
             }
         }
@@ -79,19 +124,39 @@ class MigrateCommand extends AbstractCommand
         return $count;
     }
 
-    public function runMigrationVersion($version)
+    public function rollbackLastMigration()
+    {
+        $migration = $this->connection->selectOne('select version from migrations order by version desc limit 1');
+
+        if (! $migration) {
+            throw new Exception('No migration to rollback.');
+        }
+
+        $this->runMigrationByVersion($migration['version'], 'down');
+
+        return 1;
+    }
+
+    public function runMigrationByVersion($version, $direction = 'up')
     {
         $className = 'Migration' . $version;
+
         $file = $this->kernel->getMigrationsPath() . DIRECTORY_SEPARATOR . $className . '.php';
 
         include_once $file;
 
-        echo 'Migrating version ' . $version . PHP_EOL;
+        echo ($direction == 'up' ? 'Migrating ' : 'Rollback version ') . $version . PHP_EOL;
 
         $instance = new $className;
-        $instance->run();
+        $instance->setConnection($this->connection);
+        $instance->run($direction);
 
-        $stm = $this->model->prepare('INSERT INTO migrations(version) VALUES (?)');
+        if ($direction == 'up') {
+            $stm = $this->connection->prepare('INSERT INTO migrations(version) VALUES (?)');
+        } elseif ($direction = 'down') {
+            $stm = $this->connection->prepare('DELETE FROM migrations WHERE version LIKE ?');
+        }
+
         $stm->execute([$version]);
 
         return 1;
@@ -114,13 +179,13 @@ FROM
 WHERE
     TABLE_NAME = 'migrations'
 SQL;
-        $result = $this->model->select('SELECT TABLE_NAME FROM information_schema.TABLES');
+        $result = $this->connection->select('SELECT TABLE_NAME FROM information_schema.TABLES');
         return count($result) == 1;
     }
 
     public function createMigrationTable()
     {
         $sql = 'CREATE TABLE migrations (version VARCHAR(255) PRIMARY KEY)';
-        $this->model->exec($sql);
+        $this->connection->exec($sql);
     }
 }

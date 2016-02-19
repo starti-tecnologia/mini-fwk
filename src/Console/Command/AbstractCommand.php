@@ -21,4 +21,21 @@ abstract class AbstractCommand
     {
         $this->kernel = $kernel;
     }
+
+    public function confirm($message = 'Are you sure you want to do this', $yes = 'fwk-yes', $no = 'n')
+    {
+        $c = new \Colors\Color();
+        $message = 'Are you sure you want to do this ['. $yes .'/' . $no . '] ';
+
+        print $c($message)->bold();
+
+        flush();
+
+        $confirmation  =  trim(fgets(STDIN));
+
+        if ($confirmation !== $yes) {
+            print $c('Aborted.')->yellow() . PHP_EOL;
+            exit (0);
+        }
+    }
 }
