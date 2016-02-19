@@ -9,19 +9,47 @@ use Mini\Entity\Migration\TableItem;
 
 class EntityTableParser
 {
-    private $modifiers = ['unsigned', 'required', 'default', 'autoincrement'];
-
     private $types = [
-        'char', 'string', 'text', 'mediumtext', 'longtext', 'biginteger', 'integer', 'mediuminteger', 'tinyinteger',
-        'smallinteger', 'float', 'double', 'decimal', 'boolean', 'date', 'datetime',
-        'datetimetz', 'time', 'timetz', 'timestamp', 'timestamptz', 'binary', 'uuid', 'pk', 'email'
+        // Custom
+        'pk',
+        'email',
+        'uuid',
+
+        // Text
+        'char',
+        'string',
+        'text',
+
+        // Numeric and binary
+        'integer',
+        'float',
+        'double',
+        'decimal',
+        'boolean',
+        'binary',
+
+        // Date
+        'date',
+        'datetime',
+        'time',
     ];
 
-    private $constraints = ['belongsTo', 'belongsToOne', 'unique'];
+    private $modifiers = [
+        // Don't change this order to be compatible with database table parser
+        'unsigned',
+        'required',
+        'default'
+    ];
+
+    private $constraints = [
+        'belongsTo',
+        'unique'
+    ];
 
     public function __construct()
     {
         $this->definitionParser = new DefinitionParser;
+        $this->tagOrder = array_merge($this->types, $this->modifiers, $this->constraints);
     }
 
     public function parse()
@@ -62,6 +90,13 @@ class EntityTableParser
         $table->name = $entity->table;
 
         foreach ($definition as $key => $tags) {
+            uksort($tags, function ($tagA, $tagB) {
+                $a = array_search($tagA, $this->tagOrder);
+                $b = array_search($tagB, $this->tagOrder);
+
+                return $a == $b ? 0 : ($a > $b ? 1 : -1);
+            });
+
             $column = new TableItem(
                 TableItem::TYPE_COLUMN,
                 $key
@@ -72,6 +107,10 @@ class EntityTableParser
                 $this->processTag($table, $column, [$tagName, $tagParameters]);
             }
         }
+
+        uasort($table->items, function ($a, $b) {
+            return $a->type == $b->type ? 0 : ($a->type > $b->type ? 1 : -1);
+        });
 
         return $table;
     }
@@ -98,16 +137,98 @@ class EntityTableParser
     /**
      * Types
      */
-    public function processIntegerType(Table $table, TableItem $column, array $tagParameters)
+    public function processCharType(Table $table, TableItem $column, array $tagParameters)
     {
-        $length = isset($tagParameters[0]) ? $tagParameters[0] : 11;
-        $column->sql .= $column->name . ' int(' . $length . ')';
+        $column->sql = $column->name . " char({$tagParameters[0]})";
     }
 
     public function processStringType(Table $table, TableItem $column, array $tagParameters)
     {
-        $length = isset($tagParameters[0]) ? $tagParameters[0] : 255;
-        $column->sql .= $column->name . ' varchar(' . $length . ')';
+        $length = !empty($tagParameters[0]) ? $tagParameters[0] : 255;
+        $column->sql = $column->name . ' varchar(' . $length . ')';
+    }
+
+    public function processTextType(Table $table, TableItem $column, array $tagParameters)
+    {
+        $length = !empty($tagParameters[0]) ? intval($tagParameters[0]) : 65535;
+
+        if ($length <= 255) {
+            $type = 'tinytext(255)';
+        } elseif ($length <= 65535) {
+            $type = 'text';
+        } elseif ($length <= 16777215) {
+            $type = 'mediumtext';
+        } elseif ($length <= 4294967295) {
+            $type = 'longtext';
+        } else {
+            throw new Exception('Unsupported text length: ' . $length);
+        }
+
+        $column->sql = $column->name . ' ' . $type;
+    }
+
+    public function processIntegerType(Table $table, TableItem $column, array $tagParameters)
+    {
+        $length = !empty($tagParameters[0]) ? $tagParameters[0] : 11;
+
+        if ($length <= 4) {
+            $type = 'tinyint';
+        } elseif ($length <= 6) {
+            $type = 'smallint';
+        } elseif ($length <= 11) {
+            $type = 'int';
+        } elseif ($length <= 20) {
+            $type = 'bigint';
+        } else {
+            throw new Exception('Unsupported integer length: ' . $length);
+        }
+
+        $column->sql = $column->name . ' ' . $type . '(' . $length . ')';
+    }
+
+    public function processFloatType(Table $table, TableItem $column, array $tagParameters)
+    {
+        $column->sql = $column->name . ' float';
+    }
+
+    public function processDoubleType(Table $table, TableItem $column, array $tagParameters)
+    {
+        $column->sql = $column->name . ' double';
+    }
+
+    public function processDecimalType(Table $table, TableItem $column, array $tagParameters)
+    {
+        $pieces = explode(',', $tagParameters[0]);
+        $maximumNumberOfDigits = $pieces[0];
+        $numberOfDigitsToTheRight = $pieces[1];
+
+        $column->sql = $column->name . ' decimal(' . $maximumNumberOfDigits . ',' . $numberOfDigitsToTheRight . ')';
+    }
+
+    public function processBooleanType(Table $table, TableItem $column, array $tagParameters)
+    {
+        $column->sql = $column->name . ' tinyint(1)';
+    }
+
+    public function processDateType(Table $table, TableItem $column, array $tagParameters)
+    {
+        $column->sql = $column->name . ' date';
+    }
+
+    public function processDatetimeType(Table $table, TableItem $column, array $tagParameters)
+    {
+        $column->sql = $column->name . ' datetime';
+    }
+
+
+    public function processTimeType(Table $table, TableItem $column, array $tagParameters)
+    {
+        $column->sql = $column->name . ' time';
+    }
+
+    public function processBinaryType(Table $table, TableItem $column, array $tagParameters)
+    {
+        $column->sql = $column->name . ' blob';
     }
 
     public function processUuidType(Table $table, TableItem $column, array $tagParameters)
@@ -115,14 +236,14 @@ class EntityTableParser
         $this->processStringType($table, $column, [36]);
     }
 
+    public function processPkType(Table $table, TableItem $column, array $tagParameters)
+    {
+        $column->sql = $column->name . ' int(11) unsigned not null primary key auto_increment';
+    }
+
     public function processEmailType(Table $table, TableItem $column, array $tagParameters)
     {
         $this->processStringType($table, $column, [255]);
-    }
-
-    public function processPkType(Table $table, TableItem $column, array $tagParameters)
-    {
-        $column->sql .= $column->name . ' int(11) unsigned not null primary key auto_increment';
     }
 
     /**
@@ -130,12 +251,13 @@ class EntityTableParser
      */
     public function processDefaultModifier(Table $table, TableItem $column, array $tagParameters)
     {
-        $column->sql .= ' default ' . $tagParameters[0];
-    }
+        $default = $tagParameters[0];
 
-    public function processAutoincrementModifier(Table $table, TableItem $column, array $tagParameters)
-    {
-        $column->sql .= ' auto_increment';
+        if (! is_numeric($default)) {
+            $default = '\'' . $default . '\'';
+        }
+
+        $column->sql .= ' default ' . $default;
     }
 
     public function processUnsignedModifier(Table $table, TableItem $column, array $tagParameters)

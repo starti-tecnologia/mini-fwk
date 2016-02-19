@@ -9,6 +9,8 @@ use Mini\Container;
 
 class MakeMigrationCommand extends AbstractCommand
 {
+    private $force = false;
+
     public function getName()
     {
         return 'make:migration';
@@ -25,10 +27,18 @@ class MakeMigrationCommand extends AbstractCommand
             ->aka('d')
             ->describedAs('Make a diff migration from the current entities definition')
             ->boolean();
+
+        $commando->option('force')
+            ->aka('f')
+            ->describedAs('Ignore validations')
+            ->boolean();
     }
 
     public function run(Commando $commando)
     {
+        $c = new \Colors\Color();
+        $this->force = $commando['force'];
+
         $kernel = app()->get('Mini\Kernel');
         $path = $kernel->getMigrationsPath();
         $name = 'Migration' . date('YmdHis');
@@ -44,17 +54,23 @@ class MakeMigrationCommand extends AbstractCommand
         ];
 
         if ($commando['diff']) {
-            $replaces = array_merge($replaces, $this->makeDiffMigration());
+            $generatedReplaces = $this->makeDiffMigration();
         } else {
-            $replaces = array_merge($replaces, $this->makeEmptyMigration());
+            $generatedReplaces = $this->makeEmptyMigration();
         }
 
-        file_put_contents(
-            $file,
-            str_replace(array_keys($replaces), array_values($replaces), $template)
-        );
+        if ($generatedReplaces != null) {
+            $replaces = array_merge($replaces, $generatedReplaces);
 
-        echo 'Migration file created at ' . $file . PHP_EOL;
+            file_put_contents(
+                $file,
+                str_replace(array_keys($replaces), array_values($replaces), $template)
+            );
+
+            echo $c('Migration file created at ' . $file)->green() . PHP_EOL;
+        } else {
+            echo $c('No changes detected')->yellow() . PHP_EOL;
+        }
     }
 
     public function makeEmptyMigration()
@@ -70,9 +86,16 @@ class MakeMigrationCommand extends AbstractCommand
         $entityTables = (new EntityTableParser)->parse();
         $databaseTables = (new DatabaseTableParser)->parse();
 
+        $upDiff = $this->processTablesDiff($entityTables, $databaseTables);
+        $downDiff = $this->processTablesDiff($databaseTables, $entityTables);
+
+        if (! $upDiff) {
+            return null;
+        }
+
         return [
-            '/* UpMethodPlaceholder */' => $this->processTablesDiff($entityTables, $databaseTables),
-            '/* DownMethodPlaceholder */' => $this->processTablesDiff($databaseTables, $entityTables),
+            '/* UpMethodPlaceholder */' => $upDiff,
+            '/* DownMethodPlaceholder */' => $downDiff,
         ];
     }
 
@@ -104,10 +127,21 @@ class MakeMigrationCommand extends AbstractCommand
             $sourceTable = $sourceTables[$name];
             $destTable = $destTables[$name];
 
+            $addOperations = $sourceTable->makeAddOperations($destTable);
+            $dropOperations = $sourceTable->makeDropOperations($destTable);
+            $modifyOperations = $sourceTable->makeModifyOperations($destTable);
+
+            if (! $this->force) {
+                foreach ($modifyOperations as $modifyOperation) {
+                    $sourceTable->validateModifyOperation($modifyOperation);
+                }
+            }
+
             $operations = array_merge(
-                $sourceTable->makeAddOperations($destTable),
-                $sourceTable->makeDropOperations($destTable),
-                $sourceTable->makeModifyOperations($destTable)
+                $operations,
+                $addOperations,
+                $dropOperations,
+                $modifyOperations
             );
         }
 
@@ -115,6 +149,6 @@ class MakeMigrationCommand extends AbstractCommand
             return '$this->addSql(\'' . addslashes($operation) . '\');';
         }, $operations);
 
-        return implode("\n        ", $calls);
+        return implode(PHP_EOL . str_repeat(' ', 8), $calls);
     }
 }

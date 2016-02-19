@@ -5,6 +5,7 @@ namespace Mini;
 use Mini\Exceptions\MiniException;
 use Mini\Router\Router;
 use Mini\Entity\Model;
+use ErrorException;
 
 class Kernel
 {
@@ -20,6 +21,8 @@ class Kernel
     {
         $this->basePath = isset($config['basePath']) ? $config['basePath'] : realpath(dirname($_SERVER['DOCUMENT_ROOT']));
         include_once dirname(__FILE__) . '/Helpers/Instance/helpers.php';
+        set_error_handler([$this, 'handleError']);
+
         $this->setUpContainer();
     }
 
@@ -55,6 +58,25 @@ class Kernel
                     'message' => $e->getMessage()
                 ]
             ], 500);
+        }
+    }
+
+    /**
+     * Convert a PHP error to an ErrorException.
+     *
+     * @param  int  $level
+     * @param  string  $message
+     * @param  string  $file
+     * @param  int  $line
+     * @param  array  $context
+     * @return void
+     *
+     * @throws \ErrorException
+     */
+    public function handleError($level, $message, $file = '', $line = 0, $context = [])
+    {
+        if (error_reporting() & $level) {
+            throw new ErrorException($message, 0, $level, $file, $line);
         }
     }
 

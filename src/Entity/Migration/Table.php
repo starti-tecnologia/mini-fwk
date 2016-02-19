@@ -110,6 +110,17 @@ class Table
         return $sql;
     }
 
+    public function validateModifyOperation($operation)
+    {
+        if (strstr($operation, ' not null') && ! strstr($operation, ' default ')) {
+            throw new \Exception(
+                'You need to set a default value when changing a column from nullable to not null: ' .
+                $operation
+            );
+        }
+    }
+
+
     public function makeDropOperations(Table $other)
     {
         $dropItems = array_diff(array_keys($other->items), array_keys($this->items));

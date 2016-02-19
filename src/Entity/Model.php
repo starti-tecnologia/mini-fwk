@@ -35,7 +35,13 @@ class Model extends \PDO
         $sth = $this->prepare($query);
         $sth->execute($params);
 
-        $result = $sth->fetchAll(\PDO::FETCH_ASSOC);
-        return $result;
+        return $sth->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function selectOne($query, $params = []) {
+        $sth = $this->prepare($query);
+        $sth->execute($params);
+
+        return $sth->fetch(\PDO::FETCH_ASSOC);
     }
 }

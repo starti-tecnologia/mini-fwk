@@ -22,7 +22,7 @@ class DatabaseTableParserTest extends PHPUnit_Framework_TestCase
             'EXTRA' => ''
         ]);
 
-        $this->assertEquals($item->name, 'test2');
-        $this->assertEquals($item->sql, 'test2 int(11) not null default 0');
+        $this->assertEquals('test2', $item->name);
+        $this->assertEquals('test2 int(11) not null default 0', $item->sql);
     }
 }

@@ -26,9 +26,9 @@ class DatabaseTableParser
             return $this->parseColumn($row);
         }, $this->findTableColumns($tableName));
 
-        $constraints = array_map(function ($row) {
-            return $this->parseConstrait($row);
-        }, $this->findTableConstraints($tableName));
+        $constraints = array_filter(array_map(function ($row) {
+            return $this->parseConstraint($row);
+        }, $this->findTableConstraints($tableName)));
 
         if (count($columns)) {
             $table = new Table($tableName);
@@ -67,9 +67,9 @@ class DatabaseTableParser
                 C.TABLE_SCHEMA,
                 C.TABLE_NAME,
                 C.CONSTRAINT_TYPE,
-                T.COLUMN_NAME,
-                T.REFERENCED_TABLE_NAME,
-                T.REFERENCED_COLUMN_NAME
+                K.COLUMN_NAME,
+                K.REFERENCED_TABLE_NAME,
+                K.REFERENCED_COLUMN_NAME
             FROM
                 INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
                 LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE K ON (
@@ -78,8 +78,8 @@ class DatabaseTableParser
                     K.CONSTRAINT_NAME = C.CONSTRAINT_NAME
                 )
             WHERE
-                TABLE_NAME = :tableName AND
-                TABLE_SCHEMA = :schemaName
+                C.TABLE_NAME = :tableName AND
+                C.TABLE_SCHEMA = :schemaName
         ', [
             'tableName' => $tableName,
             'schemaName' => $model->database
@@ -148,7 +148,7 @@ class DatabaseTableParser
     {
         $sql = $row['COLUMN_NAME'] . ' ' . $row['COLUMN_TYPE'] .
             ($row['IS_NULLABLE'] == 'NO' ? ' not null' : '') .
-            ($row['COLUMN_DEFAULT'] ? ' default' . $row['COLUMN_DEFAULT'] : '') .
+            ($row['COLUMN_DEFAULT'] !== null ? ' default ' . $row['COLUMN_DEFAULT'] : '') .
             (stristr($row['COLUMN_KEY'], 'PRI') ? ' primary key' : '') .
             (stristr($row['EXTRA'], 'auto_increment') ? ' auto_increment' : '');
 
@@ -170,22 +170,26 @@ class DatabaseTableParser
      */
     public function parseConstraint(array $row)
     {
-        if ($row['CONSTRAINT_NAME'] == 'UNIQUE') {
+        $sql = null;
+
+        if ($row['CONSTRAINT_TYPE'] == 'UNIQUE') {
             $sql = sprintf(
                 'CREATE UNIQUE INDEX %s ON %s (%s)',
                 $row['CONSTRAINT_NAME'], $row['TABLE_NAME'], $row['COLUMN_NAME']
             );
-        } elseif ($row['CONSTRAINT_NAME'] == 'FOREIGN KEY') {
+        } elseif ($row['CONSTRAINT_TYPE'] == 'FOREIGN KEY') {
             $sql = sprintf(
                 'ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)',
                 $row['TABLE_NAME'], $row['CONSTRAINT_NAME'], $row['COLUMN_NAME'], $row['REFERENCED_TABLE_NAME'], $row['REFERENCED_COLUMN_NAME']
             );
         }
 
-        return new TableItem(
-            TableItem::TYPE_COLUMN,
-            $row['CONSTRAINT_NAME'],
-            $sql
-        );
+        if ($sql) {
+            return new TableItem(
+                TableItem::TYPE_CONSTRAINT,
+                $row['CONSTRAINT_NAME'],
+                $sql
+            );
+        }
     }
 }
