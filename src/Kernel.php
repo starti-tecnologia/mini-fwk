@@ -67,4 +67,14 @@ class Kernel
     {
         return $this->basePath . DIRECTORY_SEPARATOR . 'migrations';
     }
+
+    public function getControllersPath()
+    {
+        return $this->basePath . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'Controllers';
+    }
+
+    public function getRouterPath()
+    {
+        return $this->basePath . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'routers';
+    }
 }
