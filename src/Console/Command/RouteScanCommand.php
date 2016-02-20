@@ -60,7 +60,10 @@ class RouteScanCommand extends AbstractCommand
                 $match = $this->match($ann);
                 if ($match == 'method') {
                     $route = $annotation->getArg();
-                    $routesScanned[$fn] = [
+                    $length = '';
+                    if (isset($routesScanned[$fn]))
+                        $length = count($routesScanned[$fn]);
+                    $routesScanned[$fn . '-' . $length] = [
                         'route' => $route,
                         'uses' => sprintf(
                             '%s@%s',
