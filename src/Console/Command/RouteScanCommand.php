@@ -11,28 +11,46 @@ use Notoj\ReflectionClass;
 
 class RouteScanCommand extends AbstractCommand
 {
+    /**
+     *
+     */
     const METHODS = [
         'get', 'post', 'delete', 'put'
     ];
+    /**
+     *
+     */
     const HELPERS = [
         'middleware'
     ];
 
+    /**
+     * @return string
+     */
     public function getName()
     {
         return 'route:scan';
     }
 
+    /**
+     * @return string
+     */
     public function getDescription()
     {
         return 'Re-scan router file';
     }
 
+    /**
+     * @param Commando $commando
+     */
     public function setUp(Commando $commando)
     {
 
     }
 
+    /**
+     * @param Commando $commando
+     */
     public function run(Commando $commando)
     {
         $kernel = app()->get('Mini\Kernel');
@@ -63,6 +81,7 @@ class RouteScanCommand extends AbstractCommand
                     $length = '';
                     if (isset($routesScanned[$fn]))
                         $length = count($routesScanned[$fn]);
+
                     $routesScanned[$fn . '-' . $length] = [
                         'route' => $route,
                         'uses' => sprintf(
@@ -89,6 +108,10 @@ class RouteScanCommand extends AbstractCommand
         }
     }
 
+    /**
+     * @param $string
+     * @return string
+     */
     private function match($string) {
         if ($this->matchMethod($string)) {
             return 'method';
@@ -97,6 +120,10 @@ class RouteScanCommand extends AbstractCommand
         }
     }
 
+    /**
+     * @param $string
+     * @return bool
+     */
     private function matchMethod($string) {
         foreach (self::METHODS as $method) {
             $pttrn = '/' . $method . '/';
@@ -107,6 +134,10 @@ class RouteScanCommand extends AbstractCommand
         return false;
     }
 
+    /**
+     * @param $string
+     * @return string
+     */
     private function matchHelpers($string) {
         foreach (self::HELPERS as $helper) {
             $pttrn = '/' . $helper . '/';
