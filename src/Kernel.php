@@ -38,6 +38,9 @@ class Kernel
         $container->register('Mini\Entity\ConnectionManager', function () {
             return new ConnectionManager();
         });
+
+        Router::setBasePath($this->basePath);
+        Router::loadConfigFile('routes.php');
     }
 
     /**
@@ -45,17 +48,15 @@ class Kernel
      */
     public function bootstrap()
     {
-        $this->addRouting();
+        $this->matchRoutes();
     }
 
     /**
-     * Adding routing config file
+     * Handle current request
      */
-    public function addRouting()
+    private function matchRoutes()
     {
         try {
-            Router::setBasePath($this->basePath);
-            Router::loadConfigFile('routes.php');
             Router::matchRoutes();
         } catch (MiniException $e) {
             response()->json([

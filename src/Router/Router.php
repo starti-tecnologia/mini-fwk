@@ -201,4 +201,23 @@ class Router
             $obj->{$method}();
     }
 
+    public static function listRoutes()
+    {
+        $routes = [];
+
+        if (self::$parsedFile != null) {
+            if (count(self::$parsedFile) > 0) {
+                foreach (self::$parsedFile as $routeName => $route) {
+                    $routes[] = [
+                        'uri' => $route['route'],
+                        'controller' => $route['uses'],
+                        'method' => $route['method'],
+                        'middlewares' => isset($route['middleware']) ? $route['middleware'] : []
+                    ];
+                }
+            }
+        }
+
+        return $routes;
+    }
 }
