@@ -108,4 +108,14 @@ class Kernel
 
         return $this->config[$section];
     }
+
+    public function getControllersPath()
+    {
+        return $this->basePath . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'Controllers';
+    }
+
+    public function getRouterPath()
+    {
+        return $this->basePath . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'routers';
+    }
 }

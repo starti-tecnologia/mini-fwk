@@ -69,7 +69,11 @@ class Router
      * @throws \Exception
      */
     public static function loadConfigFile($config) {
-        $routeFile = self::$basePath . '/src/routers/' . $config;
+        $basePathRouter = self::$basePath . '/src/routers/';
+        $routeFile = $basePathRouter . $config;
+
+        if (file_exists($basePathRouter . 'routes.scanned.php'))
+            $routeFile = $basePathRouter . 'routes.scanned.php';
 
         if (!file_exists($routeFile)) {
             throw new \Exception("Route config file not found.");
