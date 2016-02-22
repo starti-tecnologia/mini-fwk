@@ -2,6 +2,7 @@
 
 namespace Mini\Console\Command;
 
+use Mini\Entity\Migration\AbstractMigration;
 use Mini\Entity\Connection;
 use Commando\Command as Commando;
 use Mini\Container;
@@ -9,11 +10,6 @@ use Exception;
 
 class MigrateCommand extends AbstractCommand
 {
-    /**
-     * \Mini\Entity\Connection
-     */
-    private $connection;
-
     public function getName()
     {
         return 'migrate';
@@ -44,19 +40,12 @@ class MigrateCommand extends AbstractCommand
         $commando->option('cleanup')
             ->describedAs('Rollback all migrations then migrate again')
             ->boolean();
-
-        $commando->option('connection')
-            ->describedAs('Connection used on migration')
-            ->defaultsTo('default');
     }
 
     public function run(Commando $commando)
     {
         $c = new \Colors\Color();
         $startTime = microtime();
-
-        $this->connection = app()->get('Mini\Entity\ConnectionManager')->getConnection($commando['connection']);
-        $this->ensureVersionsTableIsCreated();
 
         if ($commando['rollback']) {
             $count = $this->rollbackLastMigration();
@@ -70,7 +59,7 @@ class MigrateCommand extends AbstractCommand
         } elseif (! $commando['version']) {
             $count = $this->runMigrations('up');
         } else {
-            $count = $this->runMigrationByVersion($commando['version'], 'up');
+            $count = $this->runMigration($this->getMigrationByVersion($commando['version']), 'up', $commando['version']);
         }
 
         if ($count > 0) {
@@ -82,41 +71,20 @@ class MigrateCommand extends AbstractCommand
         }
     }
 
+    /**
+     * Rull all pending migrations
+     */
     public function runMigrations($direction = 'up')
     {
         $count = 0;
 
-        $previousVersions = array_map(
-            function ($row) {
-                return $row['version'];
-            },
-            $this->connection->select(
-                'SELECT version FROM migrations ORDER BY version ' . ($direction == 'down' ? 'DESC' : 'ASC')
-            )
-        );
+        $migrations = $this->loadMigrations($direction);
 
-        if ($direction == 'up') {
-            $pattern = $this->kernel->getMigrationsPath() . DIRECTORY_SEPARATOR . 'Migration*.php';
-            $files = glob($pattern);
-            sort($files);
+        foreach ($migrations as $version => $migration) {
+            $isApplied = $this->checkIfMigrationIsApplied($migration, $version);
 
-            foreach ($files as $file) {
-                $matches = null;
-
-                if (! preg_match('/.+Migration([0-9]+).+$/', $file, $matches)) {
-                    continue;
-                }
-
-                $version = $matches[1];
-
-                if (! in_array($version, $previousVersions)) {
-                    $this->runMigrationByVersion($version, $direction);
-                    ++$count;
-                }
-            }
-        } elseif ($direction == 'down') {
-            foreach ($previousVersions as $version) {
-                $this->runMigrationByVersion($version, $direction);
+            if ($direction == 'up' && !$isApplied || $direction == 'down' && $isApplied) {
+                $this->runMigration($migration, $direction, $version);
                 ++$count;
             }
         }
@@ -124,37 +92,22 @@ class MigrateCommand extends AbstractCommand
         return $count;
     }
 
-    public function rollbackLastMigration()
+    /**
+     * Run one specific migration
+     * 
+     * @var AbstractMigration $migration
+     * @return integer
+     */
+    public function runMigration(AbstractMigration $migration, $direction, $version)
     {
-        $migration = $this->connection->selectOne('select version from migrations order by version desc limit 1');
-
-        if (! $migration) {
-            throw new Exception('No migration to rollback.');
-        }
-
-        $this->runMigrationByVersion($migration['version'], 'down');
-
-        return 1;
-    }
-
-    public function runMigrationByVersion($version, $direction = 'up')
-    {
-        $className = 'Migration' . $version;
-
-        $file = $this->kernel->getMigrationsPath() . DIRECTORY_SEPARATOR . $className . '.php';
-
-        include_once $file;
-
         echo ($direction == 'up' ? 'Migrating ' : 'Rollback version ') . $version . PHP_EOL;
 
-        $instance = new $className;
-        $instance->setConnection($this->connection);
-        $instance->run($direction);
+        $migration->run($direction);
 
         if ($direction == 'up') {
-            $stm = $this->connection->prepare('INSERT INTO migrations(version) VALUES (?)');
+            $stm = $migration->getConnectionInstance()->prepare('INSERT INTO migrations(version) VALUES (?)');
         } elseif ($direction = 'down') {
-            $stm = $this->connection->prepare('DELETE FROM migrations WHERE version LIKE ?');
+            $stm = $migration->getConnectionInstance()->prepare('DELETE FROM migrations WHERE version LIKE ?');
         }
 
         $stm->execute([$version]);
@@ -162,30 +115,76 @@ class MigrateCommand extends AbstractCommand
         return 1;
     }
 
-    private function ensureVersionsTableIsCreated()
+    /**
+     * Rollback last executed migration
+     */
+    public function rollbackLastMigration()
     {
-        if (! $this->isMigrationTableCreated()) {
-            $this->createMigrationTable();
+        $c = new \Colors\Color();
+        $migrations = $this->loadMigrations('down');
+        $success = false;
+
+        foreach ($migrations as $version => $migration) {
+            if ($this->checkIfMigrationIsApplied($migration, $version) === true) {
+                $this->runMigration($migration, 'down', $version);
+                $success = true;
+                break;
+            }
+        }
+
+        if (! $success) {
+            echo $c('No migration to rollback.')->white()->bold() . PHP_EOL;
+            return 0;
+        } else {
+            return 1;
         }
     }
 
-    private function isMigrationTableCreated()
+
+    private function checkIfMigrationIsApplied(AbstractMigration $migration, $version)
     {
-        $sql = <<<SQL
-SELECT
-    TABLE_NAME
-FROM
-    information_schema.TABLES
-WHERE
-    TABLE_NAME = 'migrations'
-SQL;
-        $result = $this->connection->select('SELECT TABLE_NAME FROM information_schema.TABLES');
-        return count($result) == 1;
+        $row = $migration->getConnectionInstance()->selectOne(
+            'SELECT COUNT(1) as total FROM migrations WHERE version = :version',
+            [
+                'version' => $version
+            ]
+        );
+
+        return $row['total'] == 1;
     }
 
-    public function createMigrationTable()
+    private function loadMigrations($order = 'up')
     {
-        $sql = 'CREATE TABLE migrations (version VARCHAR(255) PRIMARY KEY)';
-        $this->connection->exec($sql);
+        $migrationMap = [];
+
+        $pattern = $this->kernel->getMigrationsPath() . DIRECTORY_SEPARATOR . 'Migration*.php';
+        $files = glob($pattern);
+        sort($files);
+
+        if ($order == 'down') {
+            $files = array_reverse($files);
+        }
+
+        foreach ($files as $file) {
+            $matches = null;
+
+            if (! preg_match('/.+Migration([0-9]+).+$/', $file, $matches)) {
+                continue;
+            }
+
+            $version = $matches[1];
+
+            $migrationMap[$version] = $this->getMigrationByVersion($version);
+        }
+
+        return $migrationMap;
+    }
+
+    private function getMigrationByVersion($version)
+    {
+        $className = 'Migration' . $version;
+        $file = $this->kernel->getMigrationsPath() . DIRECTORY_SEPARATOR . $className . '.php';
+        include_once $file;
+        return new $className;
     }
 }

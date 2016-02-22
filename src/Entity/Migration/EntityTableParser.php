@@ -32,6 +32,7 @@ class EntityTableParser
         'date',
         'datetime',
         'time',
+        'timestamp'
     ];
 
     private $modifiers = [
@@ -49,6 +50,7 @@ class EntityTableParser
     public function __construct()
     {
         $this->definitionParser = new DefinitionParser;
+        $this->tableSorter = new TableSorter;
         $this->tagOrder = array_merge($this->types, $this->modifiers, $this->constraints);
     }
 
@@ -83,7 +85,7 @@ class EntityTableParser
             }
         }
 
-        return $result;
+        return $this->tableSorter->sort($result);
     }
 
     public function parseEntity(Entity $entity)
@@ -228,6 +230,11 @@ class EntityTableParser
     public function processTimeType(Table $table, TableItem $column, array $tagParameters)
     {
         $column->sql = $column->name . ' time';
+    }
+
+    public function processTimestampType(Table $table, TableItem $column, array $tagParameters)
+    {
+        $column->sql = $column->name . ' timestamp';
     }
 
     public function processBinaryType(Table $table, TableItem $column, array $tagParameters)

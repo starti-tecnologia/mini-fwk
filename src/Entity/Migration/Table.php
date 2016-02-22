@@ -120,6 +120,14 @@ class Table
         }
     }
 
+    public function validateColumns()
+    {
+        foreach ($this->items as $item) {
+            if ($item->type == TableItem::TYPE_COLUMN && ! $item->sql) {
+                throw new \Exception("Column {$item->name} on table {$this->name} dont have type");
+            }
+        }
+    }
 
     public function makeDropOperations(Table $other)
     {
@@ -146,5 +154,34 @@ class Table
         }
 
         return $sql;
+    }
+
+    /**
+     * Check if a table references other
+     */
+    public function hasReference(Table $other)
+    {
+        $needle = 'REFERENCES ' .  $other->name;
+        $result = false;
+
+        foreach ($this->items as $item) {
+            if ($item->type == TableItem::TYPE_CONSTRAINT && stristr($item->sql, $needle)) {
+                $result = true;
+                break;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Use this method to sort tables by migration order. Return -1, 0 or 1
+     */
+    public function compare(Table $other)
+    {
+        $result = $this->hasReference($other) ? 1 : ($other->hasReference($this) ? -1 : 0);
+
+        var_dump("{$this->name} <=> {$other->name} = {$result}");
+
+        return $result;
     }
 }

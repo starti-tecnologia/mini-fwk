@@ -15,6 +15,11 @@ class DatabaseTableParser
      */
     private $connection;
 
+    public function __construct()
+    {
+        $this->tableSorter = new TableSorter;
+    }
+
     public function parse()
     {
         $result = [];
@@ -23,7 +28,7 @@ class DatabaseTableParser
             $result[$row['TABLE_NAME']] = $this->parseTable($row['TABLE_NAME']);
         }
 
-        return $result;
+        return $this->tableSorter->sort($result);
     }
 
     public function parseTable($tableName)

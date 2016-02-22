@@ -60,7 +60,8 @@ class MakeMigrationCommand extends AbstractCommand
         }
 
         $replaces = [
-            'ClassNamePlaceholder' => $name
+            'ClassNamePlaceholder' => $name,
+            'ConnectionPlaceholder' => $commando['connection']
         ];
 
         if ($commando['diff']) {
@@ -100,8 +101,8 @@ class MakeMigrationCommand extends AbstractCommand
         $entityTables = $entityTableParser->parse($this->connection->name);
         $databaseTables = $databaseTableParser->parse();
 
-        $upDiff = $this->processTablesDiff($entityTables, $databaseTables);
-        $downDiff = $this->processTablesDiff($databaseTables, $entityTables);
+        $upDiff = $this->processTablesDiff($entityTables, $databaseTables, 'up');
+        $downDiff = $this->processTablesDiff($databaseTables, $entityTables, 'down');
 
         if (! $upDiff) {
             return null;
@@ -113,13 +114,24 @@ class MakeMigrationCommand extends AbstractCommand
         ];
     }
 
-    public function processTablesDiff(array $sourceTables, array $destTables)
+    public function processTablesDiff(array $sourceTables, array $destTables, $direction)
     {
         $operations = [];
+
+        if ($direction == 'down') {
+            $sourceTables = array_reverse($sourceTables, true);
+            $destTables = array_reverse($destTables, true);
+        }
 
         $createTables = array_diff(array_keys($sourceTables), array_keys($destTables));
         $dropTables = array_diff(array_keys($destTables), array_keys($sourceTables));
         $modifyTables = array_intersect(array_keys($sourceTables), array_keys($destTables));
+
+        if (! $this->force) {
+            foreach ($sourceTables as $table) {
+                $table->validateColumns();
+            }
+        }
 
         foreach ($createTables as $name) {
             $table = $sourceTables[$name];
