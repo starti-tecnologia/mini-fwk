@@ -57,7 +57,12 @@ class RouteScanCommand extends AbstractCommand
         $path = $kernel->getControllersPath();
         $pathRouter = $kernel->getRouterPath();
 
-        $controllers = scandir($path);
+        //$controllers = scandir($path);
+        $controllers = array_map("trim", explode("\n", shell_exec("find " . $path . " -iname '*.php'")));
+        $controllers = array_map(function ($file) use($path) {
+            return str_replace($path, '', $file);
+        }, $controllers);
+
 
         $controllers = array_filter($controllers, function ($file) {
             if (strstr($file, ".php")) return $file;
