@@ -23,6 +23,11 @@ class ConnectionManager
         $this->connections = [];
     }
 
+    /**
+     * @param $name
+     * @return Connection
+     * @throws MiniException
+     */
     public function getConnection($name)
     {
         if (! isset($this->connections[$name])) {

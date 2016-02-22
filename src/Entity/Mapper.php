@@ -21,6 +21,15 @@ class Mapper extends ConnectionManager
     private $entity;
 
     /**
+     * @return Connection
+     * @throws MiniException
+     */
+    private function getConn() {
+        return $this->getConnection($this->entity->connection);
+    }
+
+    /**
+     * @param Entity $entity
      * @param $fields
      */
     protected function fill(Entity $entity, $fields)
@@ -94,10 +103,10 @@ class Mapper extends ConnectionManager
      */
     protected function save() {
         $query = $this->generateQuery();
-        $stmt = $this->prepare($query);
+        $stmt = $this->getConn()->prepare($query);
         $stmt->execute();
 
-        $this->fields['id'] = $this->lastInsertId();
+        $this->fields['id'] = $this->getConn()->lastInsertId();
         return $this->fields;
     }
 }
