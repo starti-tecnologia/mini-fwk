@@ -33,7 +33,7 @@ trait QueryAware
     private static $instanceConnection;
 
     /**
-     * @param mixed $instanceTable
+     *
      */
     public static function instance()
     {

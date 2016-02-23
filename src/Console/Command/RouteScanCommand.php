@@ -71,6 +71,7 @@ class RouteScanCommand extends AbstractCommand
         });
 
         $routesScanned = [];
+        $routesScannedFns = [];
 
         foreach ($controllers as $controller) {
             $parser = new File($path . DIRECTORY_SEPARATOR . $controller);
@@ -84,10 +85,14 @@ class RouteScanCommand extends AbstractCommand
                 if ($match == 'method') {
                     $route = $annotation->getArg();
                     $length = '';
-                    if (isset($routesScanned[$fn]))
-                        $length = count($routesScanned[$fn]);
+                    if (isset($routesScannedFns[$fn])) {
+                        $length = '-' . $routesScannedFns[$fn];
+                        $routesScannedFns[$fn]++;
+                    } else {
+                        $routesScannedFns[$fn] = 1;
+                    }
 
-                    $routesScanned[$fn . '-' . $length] = [
+                    $routesScanned[$fn . $length] = [
                         'route' => $route,
                         'uses' => sprintf(
                             '%s@%s',
@@ -98,7 +103,7 @@ class RouteScanCommand extends AbstractCommand
                     ];
                 } else if ($match == 'middleware') {
                     $middleware = $annotation->getArg();
-                    $routesScanned[$fn]['middleware'][] = $middleware;
+                    $routesScanned[$fn . $length]['middleware'][] = $middleware;
                 }
             }
         }
