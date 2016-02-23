@@ -90,7 +90,7 @@ class EntityTableParser
 
     public function parseEntity(Entity $entity)
     {
-        $definition = $this->definitionParser->parse($entity);
+        $definition = $this->definitionParser->parse($entity->definition);
 
         if ($entity->useSoftDeletes) {
             $definition['deleted_at'] = ['datetime' => []];
