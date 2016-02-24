@@ -5,6 +5,7 @@ namespace Mini;
 use Mini\Exceptions\MiniException;
 use Mini\Router\Router;
 use Mini\Entity\ConnectionManager;
+use Mini\Validation\Validator;
 use ErrorException;
 
 class Kernel
@@ -37,6 +38,9 @@ class Kernel
         $container->register('Mini\Kernel', $this);
         $container->register('Mini\Entity\ConnectionManager', function () {
             return new ConnectionManager();
+        });
+        $container->register('Mini\Validation\Validator', function () {
+            return new Validator();
         });
 
         Router::setBasePath($this->basePath);

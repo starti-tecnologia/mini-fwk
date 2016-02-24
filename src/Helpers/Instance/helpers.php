@@ -56,7 +56,7 @@ if ( ! function_exists('array_get'))
         {
             if ( ! is_array($array) || ! array_key_exists($segment, $array))
             {
-                return value($default);
+                return $default;
             }
             $array = $array[$segment];
         }
