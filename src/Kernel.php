@@ -38,9 +38,18 @@ class Kernel
         $container->register('Mini\Entity\ConnectionManager', function () {
             return new ConnectionManager();
         });
+        $this->setUpCache();
 
         Router::setBasePath($this->basePath);
         Router::loadConfigFile('routes.php');
+    }
+
+    private function setUpCache() {
+        if (env('MEMCACHED_HOST') !== null && env('MEMCACHED_PORT')) {
+            $cacheInstance = new \Memcached();
+            $cacheInstance->addServer(env('MEMCACHED_HOST'), env('MEMCACHED_PORT'));
+            app()->register('Memcached', $cacheInstance);
+        }
     }
 
     /**
