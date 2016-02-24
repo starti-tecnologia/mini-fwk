@@ -92,6 +92,15 @@ class EntityTableParser
     {
         $definition = $this->definitionParser->parse($entity);
 
+        if ($entity->useSoftDeletes) {
+            $definition['deleted_at'] = ['datetime' => []];
+        }
+
+        if ($entity->useTimeStamps) {
+            $definition['created_at'] = ['datetime' => [], 'required' => []];
+            $definition['updated_at'] = ['datetime' => []];
+        }
+
         $table = new Table;
         $table->name = $entity->table;
 
@@ -294,7 +303,7 @@ class EntityTableParser
 
     public function processBelongsToConstraint(Table $table, TableItem $column, array $tagParameters)
     {
-        $this->processUnsignedModifier($table, $column, $tagParameters);
+        $column->sql = preg_replace('@((int|tinyint|smallint|bigint)\([0-9]+\))@', '$1 unsigned', $column->sql);
 
         $otherTableName = $tagParameters[0];
         $keyName = $table->name . '_' . $column->name . '_fk';
