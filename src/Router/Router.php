@@ -176,7 +176,11 @@ class Router
 
         if (count($route_middlewares) > 0) {
             foreach ($route_middlewares as $string) {
-                list($middleware, $value) = explode(":", $string);
+                if (strstr($string, ":")) list($middleware, $value) = explode(":", $string);
+                else {
+                    $middleware = $string;
+                    $value = null;
+                }
 
                 if (isset(self::$middleware[$middleware])) {
                     $midClass = self::$middleware[$middleware];

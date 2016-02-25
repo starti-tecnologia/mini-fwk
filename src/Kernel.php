@@ -45,7 +45,7 @@ class Kernel
     }
 
     private function setUpCache() {
-        if (env('MEMCACHED_HOST') !== null && env('MEMCACHED_PORT')) {
+        if (env('MEMCACHED_HOST') !== null && env('MEMCACHED_PORT') !== null) {
             $cacheInstance = new \Memcached();
             $cacheInstance->addServer(env('MEMCACHED_HOST'), env('MEMCACHED_PORT'));
             app()->register('Memcached', $cacheInstance);
