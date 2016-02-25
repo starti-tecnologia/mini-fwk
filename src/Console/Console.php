@@ -17,6 +17,7 @@ class Console
 
     public function __construct (Kernel $kernel)
     {
+        define('IS_CONSOLE', true);
         $this->kernel = $kernel;
     }
 

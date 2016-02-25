@@ -21,15 +21,25 @@ class Kernel
     private $config;
 
     /**
+     * @var Application
+     */
+    private $application;
+
+    /**
      * Kernel constructor.
      */
     public function __construct($config)
     {
-        $this->config = empty($config) ? [] : $config;
-        $this->basePath = isset($this->config['basePath']) ? $this->config['basePath'] : realpath(dirname($_SERVER['DOCUMENT_ROOT']));
         include_once dirname(__FILE__) . '/Helpers/Instance/helpers.php';
         set_error_handler([$this, 'handleError']);
+        set_exception_handler([$this, 'handleException']);
+
+        $this->config = empty($config) ? [] : $config;
+        $this->basePath = isset($this->config['basePath']) ? $this->config['basePath'] : realpath(dirname($_SERVER['DOCUMENT_ROOT']));
+        $this->application = isset($this->config['application']) ? $this->config['application'] : new Application;
+
         $this->setUpContainer();
+        $this->setUpConfiguration();
     }
 
     public function setUpContainer()
@@ -43,8 +53,24 @@ class Kernel
             return new Validator();
         });
 
+        $this->application->afterContainerSetup();
+    }
+
+    public function setUpConfiguration()
+    {
         Router::setBasePath($this->basePath);
         Router::loadConfigFile('routes.php');
+        $this->setUpCache();
+
+        $this->application->afterConfigurationSetup();
+    }
+
+    private function setUpCache() {
+        if (env('MEMCACHED_HOST') !== null && env('MEMCACHED_PORT') !== null) {
+            $cacheInstance = new \Memcached();
+            $cacheInstance->addServer(env('MEMCACHED_HOST'), env('MEMCACHED_PORT'));
+            app()->register('Memcached', $cacheInstance);
+        }
     }
 
     /**
@@ -52,23 +78,7 @@ class Kernel
      */
     public function bootstrap()
     {
-        $this->matchRoutes();
-    }
-
-    /**
-     * Handle current request
-     */
-    private function matchRoutes()
-    {
-        try {
-            Router::matchRoutes();
-        } catch (MiniException $e) {
-            response()->json([
-                'data' => [
-                    'message' => $e->getMessage()
-                ]
-            ], 500);
-        }
+        Router::matchRoutes();
     }
 
     /**
@@ -88,6 +98,19 @@ class Kernel
         if (error_reporting() & $level) {
             throw new ErrorException($message, 0, $level, $file, $line);
         }
+    }
+
+    /**
+     * Handle a Exception
+     *
+     * @param  Exception $exception
+     * @return void
+     */
+    public function handleException(\Throwable $exception)
+    {
+        if (defined('IS_CONSOLE')) throw $exception;
+
+        $this->application->onException($exception);
     }
 
     public function getBasePath()
