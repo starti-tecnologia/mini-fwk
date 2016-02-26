@@ -1,6 +1,7 @@
 <?php
 
 use Mini\Entity\Migration\EntityTableParser;
+use Mini\Validation\Validator;
 
 class EntityTableParserTest extends PHPUnit_Framework_TestCase
 {
@@ -10,6 +11,10 @@ class EntityTableParserTest extends PHPUnit_Framework_TestCase
     public function testIsParsingEntity()
     {
         require_once __TEST_DIRECTORY__ . '/stubs/EntityStub.php';
+
+        app()->register('Mini\Validation\Validator', function () {
+            return new Validator;
+        });
 
         $entity = new EntityStub;
         $parser = new EntityTableParser;

@@ -3,8 +3,9 @@
 namespace Mini\Entity;
 
 use Mini\Container;
+use PDO;
 
-class Connection extends \PDO
+class Connection extends PDO
 {
     public $name;
 
@@ -23,6 +24,7 @@ class Connection extends \PDO
         $dns = $driver.':dbname='.$database.";host=".$host;
 
         parent::__construct( $dns, $user, $pass );
+        $this->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         if (isset($data['exec'])) {
             foreach ($data['exec'] as $sql) {

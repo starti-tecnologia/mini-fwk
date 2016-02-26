@@ -78,6 +78,9 @@ class DatabaseSeeder
         foreach ($this->data as $tableName => $spec) {
             $connection = $this->connectionManager->getConnection($spec['connection']);
 
+            $stm = $connection->prepare('SET foreign_key_checks = 0;');
+            $stm->execute();
+
             $ids = [];
 
             foreach ($spec['rows'] as $row) {
@@ -118,6 +121,9 @@ class DatabaseSeeder
                     ) . PHP_EOL;
                 }
             }
+
+            $stm = $connection->prepare('SET foreign_key_checks = 1;');
+            $stm->execute();
         }
     }
 }

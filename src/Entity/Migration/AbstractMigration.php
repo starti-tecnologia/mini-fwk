@@ -82,7 +82,7 @@ SQL;
 
     public function createMigrationTable()
     {
-        $sql = 'CREATE TABLE migrations (version VARCHAR(255) PRIMARY KEY)';
+        $sql = 'CREATE TABLE IF NOT EXISTS migrations (version VARCHAR(255) PRIMARY KEY)';
         $this->getConnectionInstance()->exec($sql);
     }
 }

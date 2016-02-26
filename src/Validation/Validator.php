@@ -235,4 +235,17 @@ class Validator
     {
         return $this->data;
     }
+
+    /**
+     * Return a list of valid tags names
+     *
+     * @return array
+     */
+    public function getValidTags()
+    {
+        return array_merge(
+            array_keys($this->rules),
+            array_keys($this->customRules)
+        );
+    }
 }

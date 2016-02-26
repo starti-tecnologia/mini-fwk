@@ -42,12 +42,22 @@ class DatabaseSeederTest extends PHPUnit_Framework_TestCase
             [
                 [
                     'default',
+                    'SET foreign_key_checks = 0;',
+                    []
+                ],
+                [
+                    'default',
                     'REPLACE INTO users (id, guid, first_name, last_name) VALUES (?, ?, ?, ?)',
                     [1, '92e84436-62e1-4b04-9df4-9485cbe59a8d', 'Jonh', 'Doe']
                 ],
                 [
                     'default',
                     'DELETE FROM users WHERE id NOT IN (1)',
+                    []
+                ],
+                [
+                    'default',
+                    'SET foreign_key_checks = 1;',
                     []
                 ],
             ],
