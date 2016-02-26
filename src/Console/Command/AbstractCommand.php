@@ -25,7 +25,7 @@ abstract class AbstractCommand
     public function confirm($message = 'Are you sure you want to do this', $yes = 'fwk-yes', $no = 'n')
     {
         $c = new \Colors\Color();
-        $message = 'Are you sure you want to do this ['. $yes .'/' . $no . '] ';
+        $message = $message . ' ['. $yes .'/' . $no . '] ';
 
         print $c($message)->bold();
 

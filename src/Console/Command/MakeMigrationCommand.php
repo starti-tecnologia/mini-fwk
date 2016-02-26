@@ -5,7 +5,6 @@ namespace Mini\Console\Command;
 use Mini\Entity\Migration\DatabaseTableParser;
 use Mini\Entity\Migration\EntityTableParser;
 use Commando\Command as Commando;
-use Mini\Container;
 
 class MakeMigrationCommand extends AbstractCommand
 {
@@ -80,7 +79,7 @@ class MakeMigrationCommand extends AbstractCommand
 
             echo $c('Migration file created at ' . $file)->green() . PHP_EOL;
         } else {
-            echo $c('No changes detected')->yellow() . PHP_EOL;
+            echo $c('No changes detected.')->yellow() . PHP_EOL;
         }
     }
 
