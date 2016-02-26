@@ -3,6 +3,7 @@
 namespace Mini\Controllers;
 
 use Mini\Entity\Entity;
+use Mini\Helpers\Request;
 
 class BaseController
 {
@@ -21,6 +22,7 @@ class BaseController
      */
     public function validate(array $data)
     {
+        $this->onBeforeValidate();
         $this->getValidator()->validate($data);
     }
 
