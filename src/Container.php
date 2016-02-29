@@ -53,7 +53,7 @@ class Container
         $instanceOrFunction = isset($this->registry[$name]) ? $this->registry[$name] : null;
 
         if (! $instanceOrFunction) {
-            throw new MiniException('Instance of ' . $name . ' not found');
+            throw new \Exception('Instance of ' . $name . ' not found');
         }
 
         if (! is_callable($instanceOrFunction)) {

@@ -10,7 +10,7 @@ class DefinitionParserTest extends PHPUnit_Framework_TestCase
 
         $entity = new EntityStub;
         $parser = new DefinitionParser;
-        $definition = $parser->parse($entity);
+        $definition = $parser->parse($entity->definition);
 
         $this->assertEquals(
             [

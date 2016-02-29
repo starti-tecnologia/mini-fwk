@@ -2,8 +2,6 @@
 
 namespace Mini\Entity\Definition;
 
-use Mini\Entity\Entity;
-
 class DefinitionParser
 {
     /**
@@ -16,14 +14,14 @@ class DefinitionParser
      *     ]
      * ]
      *
-     * @param Entity $entity
+     * @param array $input
      * @return array
      */
-    public function parse(Entity $entity)
+    public function parse(array $input)
     {
         $definition = [];
 
-        foreach ($entity->definition as $key => $params) {
+        foreach ($input as $key => $params) {
             $definition[$key] = [];
 
             foreach (explode('|', $params) as $rawTag) {

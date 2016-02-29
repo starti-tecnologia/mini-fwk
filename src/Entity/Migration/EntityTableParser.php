@@ -6,6 +6,7 @@ use Mini\Entity\Entity;
 use Mini\Entity\Definition\DefinitionParser;
 use Mini\Entity\Migration\Table;
 use Mini\Entity\Migration\TableItem;
+use Exception;
 
 class EntityTableParser
 {
@@ -47,11 +48,14 @@ class EntityTableParser
         'unique'
     ];
 
+    private $validTags;
+
     public function __construct()
     {
         $this->definitionParser = new DefinitionParser;
         $this->tableSorter = new TableSorter;
         $this->tagOrder = array_merge($this->types, $this->modifiers, $this->constraints);
+        $this->validTags = [];
     }
 
     public function parse($connectionName)
@@ -90,7 +94,9 @@ class EntityTableParser
 
     public function parseEntity(Entity $entity)
     {
-        $definition = $this->definitionParser->parse($entity);
+        $definition = $this->definitionParser->parse($entity->definition);
+
+        $this->validateDefinition($definition);
 
         if ($entity->useSoftDeletes) {
             $definition['deleted_at'] = ['datetime' => []];
@@ -313,5 +319,46 @@ class EntityTableParser
             $keyName,
             'ALTER TABLE ' . $table->name . ' ADD CONSTRAINT ' . $keyName . ' FOREIGN KEY (' . $column->name . ') REFERENCES ' . $otherTableName . ' (id)'
         );
+    }
+
+    public function validateDefinition($definition)
+    {
+        foreach ($definition as $column => $tagMap) {
+            $tags = array_keys($tagMap);
+
+            foreach ($tags as $tag) {
+                if (! in_array($tag, $this->getValidTags())) {
+                    throw new Exception('Invalid tag: ' . $tag);
+                }
+            }
+
+            $hasType = 0;
+
+            foreach ($this->types as $type) {
+                if (in_array($type, $tags)) {
+                    $hasType++;
+                }
+            }
+
+            if ($hasType != 1) {
+                throw new Exception('Each column must have exactly one type');
+            }
+        }
+    }
+
+    public function getValidTags()
+    {
+        if (! $this->validTags) {
+            $validator = app()->get('Mini\Validation\Validator');
+
+            $this->validTags = array_merge(
+                $this->types,
+                $this->modifiers,
+                $this->constraints,
+                $validator->getValidTags()
+            );
+        }
+
+        return $this->validTags;
     }
 }
