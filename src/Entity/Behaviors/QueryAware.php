@@ -37,8 +37,7 @@ trait QueryAware
      */
     public static function instance()
     {
-        $class = self::class;
-        $obj = new $class;
+        $obj = new self;
         self::$instanceTable = $obj->table;
         if (isset($obj->idAttribute)) self::$instanceIdAttribute = $obj->idAttribute;
         self::$instanceUseSoftDeletes = $obj->useSoftDeletes;
