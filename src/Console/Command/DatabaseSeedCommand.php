@@ -49,7 +49,7 @@ class DatabaseSeedCommand extends AbstractCommand
             $this->populateData('initial');
         }
 
-        if ($initial) {
+        if ($test) {
             $this->populateData('test');
         }
     }

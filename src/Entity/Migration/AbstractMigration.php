@@ -35,8 +35,6 @@ abstract class AbstractMigration
     {
         $pdo = $this->getConnectionInstance();
 
-        $this->ensureVersionsTableIsCreated();
-
         $this->{$direction}();
 
         foreach ($this->sqls as $sql) {
@@ -54,6 +52,7 @@ abstract class AbstractMigration
     {
         if (! $this->connectionInstance) {
             $this->connectionInstance = app()->get('Mini\Entity\ConnectionManager')->getConnection($this->connection);
+            $this->ensureVersionsTableIsCreated();
         }
 
         return $this->connectionInstance;
