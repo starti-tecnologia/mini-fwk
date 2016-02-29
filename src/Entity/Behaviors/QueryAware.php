@@ -192,4 +192,9 @@ trait QueryAware
         return self::$instanceConnection->select($sql);
     }
 
+    public static function select($sql, $params = [])
+    {
+        self::instance();
+        return self::$instanceConnection->select($sql, $params);
+    }
 }
