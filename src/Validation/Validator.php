@@ -93,6 +93,8 @@ class Validator
                 }
 
                 unset($rules['required']);
+            } else if ($this->isAttributeEmpty($attribute)) {
+                continue;
             }
 
             foreach ($rules as $rule => $parameters) {
@@ -122,6 +124,11 @@ class Validator
         $message = isset($this->rules[$rule]) ? $this->rules[$rule] : $this->customRules[$rule]->message;
 
         $this->errors[$attribute][] = vsprintf($message, array_merge([$attribute], $parameters));
+    }
+
+    public function isAttributeEmpty($attribute)
+    {
+        return array_get($this->data, $attribute) === null;
     }
 
     private function validateAttribute($attribute, $rule, $parameters)

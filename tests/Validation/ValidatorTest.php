@@ -16,7 +16,8 @@ class ValidationTest extends PHPUnit_Framework_TestCase
                 'last_name' => 'Daniel',
                 'email' => 'jeferson.daniel',
                 'password' => '23456',
-                'user_type' => 'c451f95-91eb-4624-9a31-495c656e3ab6'
+                'user_type' => 'c451f95-91eb-4624-9a31-495c656e3ab6',
+                'date' => ''
             ]
         );
 
@@ -71,6 +72,37 @@ class ValidationTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals([
             'ip' => ['The ip field is ip.'],
+        ], $exception->errors);
+    }
+
+    public function testIsNotValidatingEmptyAndNotRequiredFields()
+    {
+        $exception = null;
+
+        $this->validator = new Validator;
+        $this->validator->setData(
+            [
+                'email' => 'jeferson.daniel',
+                'first_name' => 'Jeferson',
+                'last_name' => null
+            ]
+        );
+
+        try {
+            $this->validator->validate(
+                [
+                    'email' => 'email',
+                    'first_name' => 'string|required',
+                    'last_name' => 'string',
+                    'date' => 'datetime'
+                ]
+            );
+        } catch (ValidationException $e) {
+            $exception = $e;
+        }
+
+        $this->assertEquals([
+            'email' => ['The email field is email.']
         ], $exception->errors);
     }
 }
