@@ -23,7 +23,7 @@ class Application
         // Is exected before router initialize
     }
 
-    public function onException(Throwable $exception)
+    public function onException($exception)
     {
         if ($exception instanceof \Mini\Validation\ValidationException) {
             response()->json([

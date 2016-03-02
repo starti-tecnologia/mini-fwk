@@ -106,7 +106,7 @@ class Kernel
      * @param  Exception $exception
      * @return void
      */
-    public function handleException(\Throwable $exception)
+    public function handleException($exception)
     {
         if (defined('IS_CONSOLE')) throw $exception;
 
