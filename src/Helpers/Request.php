@@ -28,11 +28,12 @@ class Request extends RequestBase
     }
 
     public function get($string) {
-        if (! isset($this->data[$string]))
+        $value = array_get($this->data, $string);
+        if ($value === null)
             return $this->getValueDefaultMethods($string);
             //throw new MiniException(sprintf("The field '%s' not found", $string));
 
-        return $this->data[$string];
+        return $value;
     }
 
     private function getValueDefaultMethods($string) {
