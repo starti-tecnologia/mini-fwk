@@ -31,7 +31,6 @@ class Request extends RequestBase
         $value = array_get($this->data, $string);
         if ($value === null)
             return $this->getValueDefaultMethods($string);
-            //throw new MiniException(sprintf("The field '%s' not found", $string));
 
         return $value;
     }

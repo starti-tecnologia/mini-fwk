@@ -52,13 +52,15 @@ if ( ! function_exists('array_get'))
     {
         if (is_null($key)) return $array;
         if (isset($array[$key])) return $array[$key];
-        foreach (explode('.', $key) as $segment)
-        {
-            if ( ! is_array($array) || ! array_key_exists($segment, $array))
-            {
-                return $default;
+        if (strstr($key, ".")) {
+            foreach (explode('.', $key) as $segment) {
+                if (!is_array($array) || !array_key_exists($segment, $array)) {
+                    return $default;
+                }
+                $array = $array[$segment];
             }
-            $array = $array[$segment];
+        } else {
+            $array = null;
         }
         return $array;
     }
