@@ -2,7 +2,6 @@
 
 namespace Mini;
 
-use Mini\Exceptions\MiniException;
 use Mini\Router\Router;
 use Mini\Entity\ConnectionManager;
 use Mini\Validation\Validator;

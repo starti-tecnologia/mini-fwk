@@ -3,12 +3,22 @@
 namespace Mini\Entity;
 
 use Mini\Container;
+use Mini\Entity\RawValue;
+use Mini\Entity\Behaviors\SqlBuilderAware;
 use PDO;
 
 class Connection extends PDO
 {
+    use SqlBuilderAware;
+
+    /**
+     * @var string
+     */
     public $name;
 
+    /**
+     * @var string
+     */
     public $database;
 
     public function __construct($data, $name)
@@ -31,19 +41,5 @@ class Connection extends PDO
                 parent::exec($sql);
             }
         }
-    }
-
-    public function select($query, $params = []) {
-        $sth = $this->prepare($query);
-        $sth->execute($params);
-
-        return $sth->fetchAll(\PDO::FETCH_ASSOC);
-    }
-
-    public function selectOne($query, $params = []) {
-        $sth = $this->prepare($query);
-        $sth->execute($params);
-
-        return $sth->fetch(\PDO::FETCH_ASSOC);
     }
 }

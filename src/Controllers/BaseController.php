@@ -28,10 +28,14 @@ class BaseController
 
     /**
      * @throws \Mini\Validation\ValidationException
+     * 
+     * @param Entity $entity Entity to be used with validation
+     * @param array $extraDefinition
      */
-    public function validateEntity(Entity $entity)
+    public function validateEntity(Entity $entity, $extraDefinition = [])
     {
-        $this->getValidator()->validateEntity($data);
+        $this->onBeforeValidate();
+        $this->getValidator()->validateEntity($entity, $extraDefinition);
     }
 
     public function getValidator()

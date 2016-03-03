@@ -2,7 +2,7 @@
 
 namespace Mini\Validation;
 
-use Mini\Entity;
+use Mini\Entity\Entity;
 use Mini\Helpers\Request;
 use Mini\Entity\Definition\DefinitionParser;
 
@@ -66,9 +66,17 @@ class Validator
      * @param \Mini\Entity\Entity Entity
      * @throws \Mini\Validation\ValidationException
      */
-    public function validateEntity(Entity $entity)
+    public function validateEntity(Entity $entity, $extraDefinition = [])
     {
-        $this->validate($entity->definition);
+        $definition = $entity->fillable ?
+            array_only($entity->definition, $entity->fillable) :
+            $entity->definition;
+
+        if ($extraDefinition) {
+            $definition = array_merge($definition, $extraDefinition);
+        }
+
+        $this->validate($definition);
     }
 
     /**
@@ -93,7 +101,7 @@ class Validator
                 }
 
                 unset($rules['required']);
-            } else if ($this->isAttributeEmpty($attribute)) {
+            } elseif ($this->isAttributeEmpty($attribute)) {
                 continue;
             }
 

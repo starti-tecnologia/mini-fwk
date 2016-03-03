@@ -2,7 +2,7 @@
 
 namespace Mini\Entity;
 
-abstract class Entity
+abstract class Entity implements \JsonSerializable
 {
     /**
      * @var string
@@ -23,4 +23,60 @@ abstract class Entity
      * @var boolean
      */
     public $useTimeStamps = false;
+
+    /**
+     * @var array
+     */
+    public $fillable = [];
+
+    /**
+     * @var array
+     */
+    public $fields = [];
+
+    /**
+     * @var array
+     */
+    public $definition = [];
+
+    /**
+     * @var string
+     */
+    public $idAttribute = 'id';
+
+    /**
+     * @var array $data
+     */
+    public function fill($data)
+    {
+        foreach ($data as $key => $value) {
+            if ($this->fillable === null || in_array($key, $this->fillable)) {
+                $this->fields[$key] = $value;
+            }
+        }
+    }
+
+    /**
+     * Sets a entity attribute
+     */
+    public function __set($key, $value)
+    {
+        $this->fields[$key] = $value;
+    }
+
+    /**
+     * Gets a entity attribute
+     */
+    public function __get($key)
+    {
+        return $this->fields[$key];
+    }
+
+    /**
+     * Serialize to json
+     */
+    public function jsonSerialize()
+    {
+        return $this->fields;
+    }
 }

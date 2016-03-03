@@ -1,6 +1,7 @@
 <?php
 
 use Mini\Entity\ConnectionManager;
+use Mini\Entity\Behaviors\SqlBuilderAware;
 
 class FakeStatement
 {
@@ -23,6 +24,8 @@ class FakeStatement
 
 class FakeConnection
 {
+    use SqlBuilderAware;
+
     private $context;
 
     public function __construct(array $context)
@@ -33,6 +36,11 @@ class FakeConnection
     public function prepare($sql)
     {
         return new FakeStatement(array_merge($this->context, ['sql' => $sql]));
+    }
+
+    public function lastInsertId()
+    {
+        return 1;
     }
 }
 

@@ -6,11 +6,9 @@ use Mini\Container;
 use Dotenv\Dotenv;
 
 if (!function_exists('response')) {
-
     function response() {
         return new Response();
     }
-
 }
 
 if (!function_exists('app')) {
@@ -63,5 +61,35 @@ if ( ! function_exists('array_get'))
             $array = null;
         }
         return $array;
+    }
+}
+
+if ( ! function_exists('array_only'))
+{
+    /**
+     * Get a subset of the items from the given array.
+     *
+     * @param  array  $array
+     * @param  array|string  $keys
+     * @return array
+     */
+    function array_only($array, $keys)
+    {
+        return array_intersect_key($array, array_flip((array) $keys));
+    }
+}
+
+if ( ! function_exists('array_except'))
+{
+    /**
+     * Get all of the given array except for a specified array of items.
+     *
+     * @param  array  $array
+     * @param  array|string  $keys
+     * @return array
+     */
+    function array_except($array, $keys)
+    {
+        return array_diff_key($array, array_flip((array) $keys));
     }
 }
