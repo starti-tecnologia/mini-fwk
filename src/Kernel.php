@@ -102,7 +102,7 @@ class Kernel
     /**
      * Handle a Exception
      *
-     * @param  Exception $exception
+     * @param Exception $exception
      * @return void
      */
     public function handleException($exception)
