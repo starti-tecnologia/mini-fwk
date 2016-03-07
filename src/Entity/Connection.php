@@ -31,7 +31,7 @@ class Connection extends PDO
         $pass = $data['pass'];
 
         $this->database = $database;
-        $dns = $driver.':dbname='.$database.";host=".$host;
+        $dns = $driver.':dbname='.$database.';host='.$host;
 
         parent::__construct( $dns, $user, $pass );
         $this->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

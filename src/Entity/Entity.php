@@ -45,6 +45,13 @@ abstract class Entity implements \JsonSerializable
     public $idAttribute = 'id';
 
     /**
+     * Shared instance used in protected function instance
+     * 
+     * @var self
+     */
+    private static $instance = null;
+
+    /**
      * @var array $data
      */
     public function fill($data)
@@ -78,5 +85,30 @@ abstract class Entity implements \JsonSerializable
     public function jsonSerialize()
     {
         return $this->fields;
+    }
+
+    protected static function getInstance()
+    {
+        if (! self::$instance) {
+            self::$instance = new static;
+        }
+
+        return self::$instance;
+    }
+
+    public static function query()
+    {
+        $instance = self::getInstance();
+
+        $query = (new Query)
+            ->table($instance->table)
+            ->connection($instance->connection)
+            ->className(static::class);
+
+        if ($instance->useSoftDeletes) {
+            $query->whereIsNull($instance->table . '.deleted_at');
+        }
+
+        return $query;
     }
 }

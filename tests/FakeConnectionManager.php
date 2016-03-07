@@ -20,6 +20,43 @@ class FakeStatement
             $parameters
         ];
     }
+
+    public function fetch()
+    {
+        return ['lala' => 'hi'];
+    }
+
+    public function fetchObject($className)
+    {
+        $instance = new $className;
+        $instance->lala = 'hi';
+
+        return $instance;
+    }
+
+    public function fetchAll($fethStyle=null, $className=null)
+    {
+        $rows = [
+            ['lala' => 'hi'],
+            ['lala' => 'good day']
+        ];
+
+        $results = [];
+
+        foreach ($rows as $row) {
+            if ($fethStyle === \PDO::FETCH_ASSOC) {
+                $results[] = $row;
+            } else if ($fethStyle == \PDO::FETCH_CLASS) {
+                $instance = new $className;
+                foreach ($row as $key => $value) {
+                    $instance->$key = $value;
+                }
+                $results[] = $instance;
+            }
+        }
+
+        return $results;
+    }
 }
 
 class FakeConnection
