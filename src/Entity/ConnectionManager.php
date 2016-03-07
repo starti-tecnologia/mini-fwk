@@ -4,6 +4,7 @@ namespace Mini\Entity;
 
 use Dotenv\Dotenv;
 use Mini\Exceptions\MiniException;
+use Mini\Entity\Mongo\Connection as MongoConnection;
 
 class ConnectionManager
 {
@@ -37,7 +38,11 @@ class ConnectionManager
                 throw new MiniException('Database ' . $name . ' is not configured');
             }
 
-            $this->connections[$name] = new Connection($databases[$name], $name);
+            if ($databases[$name]['driver'] == "mongodb") {
+                $this->connections[$name] = new MongoConnection($databases[$name], $name);
+            } else {
+                $this->connections[$name] = new Connection($databases[$name], $name);
+            }
         }
 
         return $this->connections[$name];
