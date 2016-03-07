@@ -4,6 +4,7 @@ namespace Mini\Entity\Behaviors;
 
 use Mini\Exceptions\MiniException;
 use Mini\Container;
+use Mini\Entity\Query;
 
 /**
  * Trait QueryAware
@@ -196,5 +197,26 @@ trait QueryAware
     {
         self::instance();
         return self::$instanceConnection->select($sql, $params);
+    }
+
+    public static function query()
+    {
+        self::instance();
+
+        $query = (new Query)
+            ->table(self::$instanceTable)
+            ->connection(self::$instanceConnection)
+            ->className(self::class);
+
+        if (self::$instanceUseSoftDeletes) {
+            $query->whereIsNull(self::$instanceTable . '.deleted_at');
+        }
+
+        return $query;
+    }
+
+    public static function q()
+    {
+        return self::query();
     }
 }

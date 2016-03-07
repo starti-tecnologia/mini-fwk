@@ -7,7 +7,6 @@ class Query
     public $spec = [
         'alias' => 't',
         'class' => null,
-        'connection' => null,
         'table' => null,
         'joins' => [],
         'wheres' => [],
@@ -18,6 +17,11 @@ class Query
     ];
 
     private $counter = -1;
+
+    /**
+     * @var \Mini\Entity\Connection
+     */
+    private $connectionInstance = null;
 
     /**
      * Preparation functions
@@ -31,7 +35,11 @@ class Query
 
     public function connection($connection)
     {
-        $this->spec['connection'] = $connection;
+        if (is_string($connection)) {
+            $connection = app()->get('Mini\Entity\ConnectionManager')->getConnection($connection);
+        }
+
+        $this->connectionInstance = $connection;
 
         return $this;
     }
@@ -183,8 +191,7 @@ class Query
 
     private function execute()
     {
-        $connection = app()->get('Mini\Entity\ConnectionManager')->getConnection($this->spec['connection']);
-        $stm = $connection->prepare($this->makeSql());
+        $stm = $this->connectionInstance->prepare($this->makeSql());
         $stm->execute($this->spec['bindings']);
 
         return $stm;
@@ -199,7 +206,8 @@ class Query
             $this->limit(0, 1);
         }
         $stm = $this->execute();
-        return $stm->fetchObject($this->spec['class']);
+        $result = $stm->fetchObject($this->spec['class']);
+        return $result ? $result : null;
     }
 
     public function getArray()
@@ -208,7 +216,8 @@ class Query
             $this->limit(0, 1);
         }
         $stm = $this->execute();
-        return $stm->fetch(\PDO::FETCH_ASSOC);
+        $result = $stm->fetch(\PDO::FETCH_ASSOC);
+        return $result ? $result : null;
     }
 
     public function getColumn()

@@ -60,7 +60,7 @@ class DataMapper
         unset($updates[$entity->idAttribute]);
         $where = [ $entity->idAttribute => $entity->{$entity->idAttribute} ];
         if ($entity->useTimeStamps) {
-            $wheres['updated_at'] = new RawValue('NOW()');
+            $updates['updated_at'] = new RawValue('NOW()');
         }
         $this->getConnection($entity->connection)->update($entity->table, $updates, $where);
     }
@@ -73,6 +73,16 @@ class DataMapper
         $connection = $this->getConnection($entity->connection);
         $updates = $entity->fields;
         $where = [ $entity->idAttribute => $entity->{$entity->idAttribute} ];
+        $this->deleteByFilters($entity, $where);
+    }
+
+    /**
+     * Delete entity from database
+     */
+    public function deleteByFilters(Entity $entity, array $where)
+    {
+        $connection = $this->getConnection($entity->connection);
+        $updates = $entity->fields;
 
         if ($entity->useSoftDeletes) {
             $connection->update($entity->table, [
