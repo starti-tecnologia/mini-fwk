@@ -213,7 +213,7 @@ trait QueryAware
         $query = (new Query)
             ->table(self::$instanceTable)
             ->connection(self::$instanceConnection)
-            ->className(self::class);
+            ->className(static::class);
 
         if (self::$instanceUseSoftDeletes) {
             $query->whereIsNull(self::$instanceTable . '.deleted_at');
