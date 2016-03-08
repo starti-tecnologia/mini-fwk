@@ -2,6 +2,7 @@
 
 namespace Mini\Entity\Behaviors;
 
+use Mini\Entity\Connection;
 use Mini\Exceptions\MiniException;
 use Mini\Container;
 use Mini\Entity\Query;
@@ -29,7 +30,7 @@ trait QueryAware
     private static $instanceUseSoftDeletes = false;
 
     /**
-     * @var
+     * @var Connection
      */
     private static $instanceConnection;
 
@@ -197,6 +198,12 @@ trait QueryAware
     {
         self::instance();
         return self::$instanceConnection->select($sql, $params);
+    }
+
+    public static function exec($sql)
+    {
+        self::instance();
+        return self::$instanceConnection->exec($sql);
     }
 
     public static function query()
