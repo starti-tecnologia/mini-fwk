@@ -215,6 +215,9 @@ trait QueryAware
         return $query;
     }
 
+    /**
+     * @return Query
+     */
     public static function q()
     {
         return self::query();
