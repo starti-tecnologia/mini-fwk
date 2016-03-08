@@ -1,0 +1,24 @@
+<?php
+
+use Mini\Entity\Entity;
+use Mini\Entity\Behaviors\QueryAware;
+
+class RelationEntityStub extends Entity
+{
+    use QueryAware;
+
+    public $table = 'posts';
+
+    public $definition = [
+        'id' => 'pk',
+        'name' => 'string',
+        'owner_id' => 'integer|belongsTo:customers'
+    ];
+
+    public $relations = [
+        'owner' => [
+            'class' => SimpleEntityStub::class,
+            'field' => 'owner_id'
+        ]
+    ];
+}

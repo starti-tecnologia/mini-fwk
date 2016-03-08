@@ -11,6 +11,8 @@ class QueryTest extends PHPUnit_Framework_TestCase
     {
         require_once __TEST_DIRECTORY__ . '/FakeConnectionManager.php';
         require_once __TEST_DIRECTORY__ . '/stubs/EntityStub.php';
+        require_once __TEST_DIRECTORY__ . '/stubs/SimpleEntityStub.php';
+        require_once __TEST_DIRECTORY__ . '/stubs/RelationEntityStub.php';
 
         $this->connectionManager = new FakeConnectionManager;
 
@@ -110,6 +112,26 @@ class QueryTest extends PHPUnit_Framework_TestCase
             (new Query)
                 ->table('users')
                 ->limit(0, 1000)
+                ->makeSql()
+        );
+    }
+
+    public function testIsMakingRequiredIncludeRelationSql()
+    {
+        $this->assertEquals(
+            'SELECT posts.id, posts.name, posts.owner_id, owner.name as owner_name FROM posts INNER JOIN users owner ON (posts.owner_id = owner.id)',
+            RelationEntityStub::query()
+                ->include('owner')
+                ->makeSql()
+        );
+    }
+
+    public function testIsMakingNotRequiredIncludeRelationSql()
+    {
+        $this->assertEquals(
+            'SELECT posts.id, posts.name, posts.owner_id, owner.name as owner_name FROM posts LEFT JOIN users owner ON (posts.owner_id = owner.id)',
+            RelationEntityStub::query()
+                ->include('owner', false)
                 ->makeSql()
         );
     }

@@ -40,6 +40,11 @@ abstract class Entity implements \JsonSerializable
     public $definition = [];
 
     /**
+     * @var array
+     */
+    public $relations = [];
+
+    /**
      * @var string
      */
     public $idAttribute = 'id';

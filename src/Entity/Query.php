@@ -24,6 +24,11 @@ class Query
     private $connectionInstance = null;
 
     /**
+     * @var \Mini\Entity\Entity
+     */
+    private $instance = null;
+
+    /**
      * Preparation functions
      */
     public function table($table)
@@ -123,6 +128,61 @@ class Query
     public function setParameter($key, $value)
     {
         $this->spec['bindings'][$key] = $value;
+
+        return $this;
+    }
+
+    /**
+     * Entity aware functions
+     */
+    public function getInstance()
+    {
+        if (! $this->instance) {
+            $this->instance = new $this->spec['class'];
+        }
+
+        return $this->instance;
+    }
+
+    /**
+     * Perform the left join and the select of a related entity
+     *
+     * @return self
+     */
+    public function include($relation, $required = true)
+    {
+        $method = $required ? 'innerJoin' : 'leftJoin';
+        $instance = $this->getInstance();
+        $relationArray = $instance->relations[$relation];
+        $relationInstance = new $relationArray['class'];
+        $relationField = $relationArray['field'];
+
+        $this->$method(
+            $relationInstance->table . ' ' . $relation,
+            $instance->table . '.' . $relationField,
+            '=',
+            $relation . '.' . $relationInstance->idAttribute
+        );
+
+        if ($this->spec['select'] === ['*']) {
+            $select = [];
+            foreach (array_keys($instance->definition) as $key) {
+                $select[] = $instance->table . '.' . $key;
+            }
+            $this->select($select);
+        }
+
+        $addSelect = [];
+
+        foreach (array_keys($relationInstance->definition) as $key) {
+            if ($key === $relationInstance->idAttribute) {
+                continue;
+            }
+
+            $addSelect[] = $relation . '.' . $key . ' as ' . $relation . '_' . $key;
+        }
+
+        $this->addSelect($addSelect);
 
         return $this;
     }

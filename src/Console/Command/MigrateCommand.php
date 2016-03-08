@@ -45,7 +45,7 @@ class MigrateCommand extends AbstractCommand
     public function run(Commando $commando)
     {
         $c = new \Colors\Color();
-        $startTime = microtime();
+        $startTime = microtime(true);
 
         if ($commando['rollback']) {
             $count = $this->rollbackLastMigration();
@@ -64,7 +64,7 @@ class MigrateCommand extends AbstractCommand
 
         if ($count > 0) {
             echo $c(
-                'Migration completed in ' . number_format((microtime() - $startTime) / 1000, 5) . ' seconds.'
+                'Migration completed in ' . number_format((microtime(true) - $startTime) / 1000, 5) . ' seconds.'
             )->green() . PHP_EOL;
         } else {
             echo $c('Nothing to migrate.')->yellow() . PHP_EOL;
