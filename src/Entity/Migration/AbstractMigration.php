@@ -13,6 +13,11 @@ abstract class AbstractMigration
     public $connection = 'default';
 
     /**
+     * @var string
+     */
+    public $useTransaction = false;
+
+    /**
      * @var Mini\Entity\Connection
      */
     private $connectionInstance;
@@ -35,13 +40,30 @@ abstract class AbstractMigration
     {
         $pdo = $this->getConnectionInstance();
 
-        $this->{$direction}();
+        if ($this->useTransaction) {
+            $pdo->beginTransaction();
+        }
 
-        foreach ($this->sqls as $sql) {
-            $stm = $pdo->prepare($sql[0]);
-            $stm->execute($sql[1]);
+        try {
+            $this->{$direction}();
 
-            echo 'Executing: ' . $sql[0] . ' ' . json_encode($sql[1]) . PHP_EOL;
+            foreach ($this->sqls as $sql) {
+                echo 'Executing: ' . $sql[0] . ' ' . json_encode($sql[1]) . PHP_EOL;
+
+                $stm = $pdo->prepare($sql[0]);
+                $stm->execute($sql[1]);
+            }
+
+            if ($this->useTransaction) {
+                $pdo->commit();
+            }
+        } catch (\Exception $e) {
+            if ($this->useTransaction) {
+                echo 'Doing rollback.' . PHP_EOL;
+                $pdo->rollback();
+            }
+
+            throw $e;
         }
     }
 

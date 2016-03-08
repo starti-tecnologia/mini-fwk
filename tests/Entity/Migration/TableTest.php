@@ -101,7 +101,7 @@ class TableTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             [
-                'DROP INDEX users_guid_unique;CREATE UNIQUE INDEX users_guid_unique ON users (guid)'
+                'ALTER TABLE users DROP INDEX users_guid_unique;CREATE UNIQUE INDEX users_guid_unique ON users (guid)'
             ],
             $operations
         );
