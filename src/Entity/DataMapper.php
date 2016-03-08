@@ -35,6 +35,7 @@ class DataMapper
         } else {
             $this->create($entity);
         }
+        return $entity;
     }
 
     /**
