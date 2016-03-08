@@ -2,6 +2,8 @@
 
 namespace Mini\Entity\DatabaseSeed;
 
+use Mini\Console\ConnectionWrapper;
+
 class DatabaseSeeder
 {
     /**
@@ -77,6 +79,8 @@ class DatabaseSeeder
 
         foreach ($this->data as $tableName => $spec) {
             $connection = $this->connectionManager->getConnection($spec['connection']);
+            $connection = new ConnectionWrapper($connection);
+            $connection->isVerbose = $verbose;
 
             $stm = $connection->prepare('SET foreign_key_checks = 0;');
             $stm->execute();
@@ -86,23 +90,7 @@ class DatabaseSeeder
             foreach ($spec['rows'] as $row) {
                 $ids[] = $row['id'];
 
-                $sql = sprintf(
-                    'REPLACE INTO %s (%s) VALUES (%s)',
-                    $tableName,
-                    implode(', ', array_keys($row)),
-                    implode(', ', array_pad([], count($row), '?'))
-                );
-
-                $stm = $connection->prepare($sql);
-                $stm = $stm->execute(array_values($row));
-
-                if ($verbose) {
-                    echo sprintf(
-                        'Executing on connection %s: %s',
-                        $spec['connection'],
-                        $sql
-                    ) . PHP_EOL;
-                }
+                $connection->replace($tableName, $row);
             }
 
             if (count($ids)) {
@@ -112,14 +100,6 @@ class DatabaseSeeder
                 );
                 $stm = $connection->prepare($sql);
                 $stm->execute();
-
-                if ($verbose) {
-                    echo sprintf(
-                        'Executing on connection %s: %s',
-                        $spec['connection'],
-                        $sql
-                    ) . PHP_EOL;
-                }
             }
 
             $stm = $connection->prepare('SET foreign_key_checks = 1;');

@@ -20,9 +20,9 @@ trait SqlBuilderAware
         return $sth->fetch(\PDO::FETCH_ASSOC);
     }
 
-    public function insert($table, $fields)
+    private function handleCreate($operator, $table, $fields)
     {
-        $template = 'INSERT INTO %s (%s) VALUES (%s)';
+        $template = $operator . ' INTO %s (%s) VALUES (%s)';
         $columns = array_keys($fields);
         $values = [];
         $bindings = [];
@@ -38,6 +38,16 @@ trait SqlBuilderAware
 
         $stm = $this->prepare(sprintf($template, $table, implode(', ', $columns), implode(', ', $values)));
         $stm->execute($bindings);
+    }
+
+    public function insert($table, $fields)
+    {
+        $this->handleCreate('INSERT', $table, $fields);
+    }
+
+    public function replace($table, $fields)
+    {
+        $this->handleCreate('REPLACE', $table, $fields);
     }
 
     public function update($table, array $fields, array $filter)
