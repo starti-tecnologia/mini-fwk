@@ -165,11 +165,7 @@ class Query
         );
 
         if ($this->spec['select'] === ['*']) {
-            $select = [];
-            foreach (array_keys($instance->definition) as $key) {
-                $select[] = $instance->table . '.' . $key;
-            }
-            $this->select($select);
+            $this->select([$instance->table . '.*']);
         }
 
         $addSelect = [];
