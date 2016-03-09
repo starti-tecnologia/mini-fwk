@@ -149,7 +149,7 @@ class Query
      *
      * @return self
      */
-    public function include($relation, $required = true)
+    public function includeRelation($relation, $required = true)
     {
         $method = $required ? 'innerJoin' : 'leftJoin';
         $instance = $this->getInstance();

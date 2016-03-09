@@ -121,7 +121,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(
             'SELECT posts.id, posts.name, posts.owner_id, owner.name as owner_name FROM posts INNER JOIN users owner ON (posts.owner_id = owner.id)',
             RelationEntityStub::query()
-                ->include('owner')
+                ->includeRelation('owner')
                 ->makeSql()
         );
     }
@@ -131,7 +131,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(
             'SELECT posts.id, posts.name, posts.owner_id, owner.name as owner_name FROM posts LEFT JOIN users owner ON (posts.owner_id = owner.id)',
             RelationEntityStub::query()
-                ->include('owner', false)
+                ->includeRelation('owner', false)
                 ->makeSql()
         );
     }
