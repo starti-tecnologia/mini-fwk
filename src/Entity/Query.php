@@ -23,7 +23,7 @@ class Query
     /**
      * @var \Mini\Entity\Connection
      */
-    private $connectionInstance = null;
+    public $connectionInstance = null;
 
     /**
      * @var \Mini\Entity\Entity
@@ -113,7 +113,7 @@ class Query
         return $this;
     }
 
-    public function orderBy($column, $direction='ASC')
+    public function orderBy($column, $direction = 'ASC')
     {
         $this->spec['orderBy'][] = [$column, $direction];
 

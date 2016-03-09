@@ -51,7 +51,6 @@ class Kernel
         $container->register('Mini\Validation\Validator', function () {
             return new Validator();
         });
-
         $this->application->afterContainerSetup();
     }
 
