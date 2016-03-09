@@ -5,17 +5,21 @@ use Mini\Validation\Validator;
 
 class EntityTableParserTest extends PHPUnit_Framework_TestCase
 {
+    public function setUp()
+    {
+        require_once __TEST_DIRECTORY__ . '/stubs/EntityStub.php';
+        require_once __TEST_DIRECTORY__ . '/stubs/FieldOrderEntityStub.php';
+
+        app()->register('Mini\Validation\Validator', function () {
+            return new Validator;
+        });
+    }
+
     /**
      * TODO: Test if a column can't have more than one type
      */
     public function testIsParsingEntity()
     {
-        require_once __TEST_DIRECTORY__ . '/stubs/EntityStub.php';
-
-        app()->register('Mini\Validation\Validator', function () {
-            return new Validator;
-        });
-
         $entity = new EntityStub;
         $parser = new EntityTableParser;
         $table = $parser->parseEntity($entity);
@@ -35,6 +39,39 @@ class EntityTableParserTest extends PHPUnit_Framework_TestCase
                 'CREATE UNIQUE INDEX users_email_unique ON users (email);',
                 'CREATE UNIQUE INDEX users_password_unique ON users (password);',
                 'ALTER TABLE users ADD CONSTRAINT users_customer_id_fk FOREIGN KEY (customer_id) REFERENCES customers (id)',
+            ]
+        );
+
+        $this->assertEquals($sql, $table->makeCreateSql());
+    }
+
+    public function testIsKeepingTheOrderOfTheFields()
+    {
+        $entity = new FieldOrderEntityStub;
+        $parser = new EntityTableParser;
+        $table = $parser->parseEntity($entity);
+
+        $sql = implode(
+            '',
+            [
+                'CREATE TABLE users ( ',
+                    'id int(11) unsigned not null primary key auto_increment,',
+                    'field0 int(11) unsigned,',
+                    'field1 varchar(255),',
+                    'field2 int(11) unsigned,',
+                    'field3 varchar(255),',
+                    'field4 int(11) unsigned,',
+                    'field5 varchar(255),',
+                    'field6 int(11) unsigned,',
+                    'field7 varchar(255),',
+                    'field8 int(11) unsigned,',
+                    'field9 varchar(255)',
+                ' ) COMMENT \'MINI_FWK_ENTITY\';',
+                'ALTER TABLE users ADD CONSTRAINT users_field0_fk FOREIGN KEY (field0) REFERENCES table (id);',
+                'ALTER TABLE users ADD CONSTRAINT users_field2_fk FOREIGN KEY (field2) REFERENCES table (id);',
+                'ALTER TABLE users ADD CONSTRAINT users_field4_fk FOREIGN KEY (field4) REFERENCES table (id);',
+                'ALTER TABLE users ADD CONSTRAINT users_field6_fk FOREIGN KEY (field6) REFERENCES table (id);',
+                'ALTER TABLE users ADD CONSTRAINT users_field8_fk FOREIGN KEY (field8) REFERENCES table (id)',
             ]
         );
 

@@ -129,9 +129,16 @@ class EntityTableParser
             }
         }
 
-        uasort($table->items, function ($a, $b) {
-            return $a->type == $b->type ? 0 : ($a->type > $b->type ? 1 : -1);
-        });
+        $byType = [
+            TableItem::TYPE_COLUMN => [],
+            TableItem::TYPE_CONSTRAINT => []
+        ];
+
+        foreach ($table->items as $item) {
+            $byType[$item->type][] = $item;
+        }
+
+        $table->items = array_merge($byType[TableItem::TYPE_COLUMN], $byType[TableItem::TYPE_CONSTRAINT]);
 
         return $table;
     }
