@@ -1,7 +1,7 @@
 <?php
 
 use Mini\Validation\Validator;
-use Mini\Validation\ValidationException;
+use Mini\Exceptions\ValidationException;
 
 class ValidationTest extends PHPUnit_Framework_TestCase
 {

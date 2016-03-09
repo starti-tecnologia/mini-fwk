@@ -2,6 +2,8 @@
 
 namespace Mini\Entity;
 
+use Mini\Exceptions\QueryException;
+
 class Query
 {
     public $spec = [

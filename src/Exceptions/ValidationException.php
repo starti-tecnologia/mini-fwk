@@ -1,6 +1,6 @@
 <?php
 
-namespace Mini\Validation;
+namespace Mini\Exceptions;
 
 use Exception;
 

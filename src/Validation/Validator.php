@@ -5,6 +5,7 @@ namespace Mini\Validation;
 use Mini\Entity\Entity;
 use Mini\Helpers\Request;
 use Mini\Entity\Definition\DefinitionParser;
+use Mini\Exceptions\ValidationException;
 
 class Validator
 {
@@ -64,7 +65,7 @@ class Validator
      * Parse entity definition rules against current data
      *
      * @param \Mini\Entity\Entity Entity
-     * @throws \Mini\Validation\ValidationException
+     * @throws \Mini\Exceptions\ValidationException
      */
     public function validateEntity(Entity $entity, $extraDefinition = [])
     {
@@ -83,7 +84,7 @@ class Validator
      * Parse validation rules against current data
      *
      * @param $rules Rules definition
-     * @throws \Mini\Validation\ValidationException
+     * @throws \Mini\Exceptions\ValidationException
      */
     public function validate($rules)
     {

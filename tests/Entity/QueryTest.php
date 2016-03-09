@@ -2,6 +2,7 @@
 
 use Mini\Entity\Query;
 use Mini\Entity\RawValue;
+use Mini\Exceptions\QueryException;
 
 class QueryTest extends PHPUnit_Framework_TestCase
 {

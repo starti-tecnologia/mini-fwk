@@ -1,6 +1,6 @@
 <?php
 
-namespace Mini\Entity;
+namespace Mini\Exceptions;
 
 class QueryException extends \Exception
 {
