@@ -23,11 +23,19 @@ class FakeStatement
 
     public function fetch()
     {
+        if (stristr($this->context['sql'], 'FAKE_CONNECTION_EMPTY_TABLE')) {
+            return null;
+        }
+
         return ['lala' => 'hi'];
     }
 
     public function fetchObject($className)
     {
+        if (stristr($this->context['sql'], 'FAKE_CONNECTION_EMPTY_TABLE')) {
+            return null;
+        }
+
         $instance = new $className;
         $instance->lala = 'hi';
 
@@ -36,6 +44,10 @@ class FakeStatement
 
     public function fetchAll($fethStyle=null, $className=null)
     {
+        if (stristr($this->context['sql'], 'FAKE_CONNECTION_EMPTY_TABLE')) {
+            return [];
+        }
+
         $rows = [
             ['lala' => 'hi'],
             ['lala' => 'good day']

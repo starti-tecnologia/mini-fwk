@@ -168,6 +168,23 @@ class QueryTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($result instanceof EntityStub);
     }
 
+    public function testIsGettingObjectOrFailing()
+    {
+        $exception = null;
+
+        try {
+            $result = (new Query)
+                ->connection('default')
+                ->className(EntityStub::class)
+                ->table('FAKE_CONNECTION_EMPTY_TABLE')
+                ->getObjectOrFail();
+        } catch (\Exception $e) {
+            $exception = $e;
+        }
+
+        $this->assertEquals('No query results for entity EntityStub', $exception->getMessage());
+    }
+
     public function testIsGettingArray()
     {
         $result = (new Query)
@@ -177,6 +194,26 @@ class QueryTest extends PHPUnit_Framework_TestCase
             ->getArray();
 
         $this->assertEquals(['lala' => 'hi'], $result);
+    }
+
+    public function testIsGettingArrayOrFailing()
+    {
+        $exception = null;
+
+        try {
+            $result = (new Query)
+                ->connection('default')
+                ->className(EntityStub::class)
+                ->table('FAKE_CONNECTION_EMPTY_TABLE')
+                ->getArrayOrFail();
+        } catch (\Exception $e) {
+            $exception = $e;
+        }
+
+        $this->assertEquals(
+            'No query results for table FAKE_CONNECTION_EMPTY_TABLE',
+            $exception->getMessage()
+        );
     }
 
     public function testIsListingObject()

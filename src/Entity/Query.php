@@ -256,6 +256,12 @@ class Query
     /**
      * Database fetch functions
      */
+
+    /**
+     * Get one row from database and perform object hydration
+     *
+     * @return Entity|null
+     */
     public function getObject()
     {
         if (! $this->spec['limit']) {
@@ -266,6 +272,32 @@ class Query
         return $result ? $result : null;
     }
 
+    /**
+     * Get one row from database and perform object hydration
+     *
+     * @throws QueryException
+     *
+     * @return Entity
+     */
+    public function getObjectOrFail()
+    {
+        $result = $this->getObject();
+
+        if ($result === null) {
+            $entityName = explode('/', $this->spec['class']);
+            $entityName = end($entityName);
+
+            throw new QueryException('No query results for entity ' . $entityName);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get one row from database
+     *
+     * @return array|null
+     */
     public function getArray()
     {
         if (! $this->spec['limit']) {
@@ -276,24 +308,62 @@ class Query
         return $result ? $result : null;
     }
 
+    /**
+     * Get one row from database
+     *
+     * @throws QueryException
+     *
+     * @return Entity
+     */
+    public function getArrayOrFail()
+    {
+        $result = $this->getArray();
+
+        if ($result === null) {
+            throw new QueryException('No query results for table ' . $this->spec['table']);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get the value of the first column on results
+     *
+     * @return array
+     */
     public function getColumn()
     {
         $stm = $this->execute();
         return $stm->fetchColumn();
     }
 
+    /**
+     * List rows using object serialization
+     *
+     * @return array|Entity
+     */
     public function listObject()
     {
         $stm = $this->execute();
         return $stm->fetchAll(\PDO::FETCH_CLASS, $this->spec['class']);
     }
 
+    /**
+     * List rows from database
+     *
+     * @return array|Entity
+     */
     public function listArray()
     {
         $stm = $this->execute();
         return $stm->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    /**
+     * List values from the first column on result
+     *
+     * @return array
+     */
     public function listColumn()
     {
         $stm = $this->execute();
