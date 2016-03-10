@@ -78,12 +78,17 @@ class DataMapper
     }
 
     /**
-     * Delete entity from database
+     * Delete multiple entities from database
+     *
+     * Example:
+     *     $mapper->deleteByFilters(new Entity, ['guid' => 'something']);
+     *
+     * @param Entity $entity A entity example, there is no need for a entity loaded from the database
+     * @param array $where Filter updated rows
      */
     public function deleteByFilters(Entity $entity, array $where)
     {
         $connection = $this->getConnection($entity->connection);
-        $updates = $entity->fields;
 
         if ($entity->useSoftDeletes) {
             $connection->update($entity->table, [
@@ -92,5 +97,26 @@ class DataMapper
         } else {
             $connection->delete($entity->table, $where);
         }
+    }
+
+    /**
+     * Update multiple entities from database
+     *
+     * Example:
+     *     $mapper->updateByFilters(new Entity, ['is_draft' => 0], ['guid' => 'something']);
+     *
+     * @param Entity $entity A entity example, there is no need for a entity loaded from the database
+     * @param array $updates Values to be updated
+     * @param array $where Filter updated rows
+     */
+    public function updateByFilters(Entity $entity, array $updates, array $where)
+    {
+        $connection = $this->getConnection($entity->connection);
+
+        if ($entity->useTimeStamps) {
+            $updates['updated_at'] = new RawValue('NOW()');
+        }
+
+        $connection->update($entity->table, $updates, $where);
     }
 }
