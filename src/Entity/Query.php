@@ -171,9 +171,10 @@ class Query
         }
 
         $addSelect = [];
+        $mustIgnoreId = strstr($this->spec['select'][0], '*');
 
         foreach (array_keys($relationInstance->definition) as $key) {
-            if ($key === $relationInstance->idAttribute) {
+            if ($mustIgnoreId && $key === $relationInstance->idAttribute) {
                 continue;
             }
 

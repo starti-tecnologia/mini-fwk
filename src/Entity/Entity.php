@@ -25,21 +25,36 @@ abstract class Entity implements \JsonSerializable
     public $useTimeStamps = false;
 
     /**
+     * Fields that are filled and validated
+     *
      * @var array
      */
     public $fillable = [];
 
     /**
+     * Fields that are serialized with json_encode
+     *
+     * @var array
+     */
+    public $visible = [];
+
+    /**
+     * All current entity fields and values
+     *
      * @var array
      */
     public $fields = [];
 
     /**
+     * Definition used to database storage and validation
+     *
      * @var array
      */
     public $definition = [];
 
     /**
+     * Define relations to be used with setRelation and getRelation
+     *
      * @var array
      */
     public $relations = [];
@@ -64,6 +79,8 @@ abstract class Entity implements \JsonSerializable
     private static $instance = null;
 
     /**
+     * Update fields with user input. See fillable attribute
+     *
      * @var array $data
      */
     public function fill($data)
@@ -141,10 +158,16 @@ abstract class Entity implements \JsonSerializable
     }
 
     /**
-     * Serialize to json
+     * Return fields that will be serialized with json
+     *
+     * @return array
      */
     public function jsonSerialize()
     {
-        return $this->fields;
+        if (isset($this->visible[0])) {
+            return array_only($this->fields, $this->visible);
+        } else {
+            return $this->fields;
+        }
     }
 }

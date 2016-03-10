@@ -6,12 +6,12 @@ class OutputSerializerTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        $this->searchOutputSerializer = new OutputSerializer;
+        $this->outputSerializer = new OutputSerializer;
     }
 
     public function testGetTagsIsReturningTags()
     {
-        $tags = $this->searchOutputSerializer->getTags('photos|array|explode:$');
+        $tags = $this->outputSerializer->getTags('photos|array|explode:$');
 
         $this->assertEquals(
             ['array' => '', 'explode' => '$'],
@@ -21,7 +21,7 @@ class OutputSerializerTest extends \PHPUnit_Framework_TestCase
 
     public function testSerializeIsWorkingWithSimpleObjects()
     {
-        $result = $this->searchOutputSerializer->serialize(
+        $result = $this->outputSerializer->serialize(
             [
                 'rows' => [
                     [
@@ -50,16 +50,16 @@ class OutputSerializerTest extends \PHPUnit_Framework_TestCase
                 'meta' => [
                     'pagination' => [
                         'count' => 1,
-                        'currentPage' => 1,
-                        'perPage' => 10,
+                        'current_page' => 1,
+                        'per_page' => 10,
                         'total' => 1,
-                        'totalPages' => 1
+                        'total_pages' => 1
                     ]
                 ],
                 'data' => [
                     [
                         'name' => 'Jonh Doe',
-                        'isMale' => 1,
+                        'is_male' => 1,
                         'user' => [
                             'name' => 'Jonh Done Goldenberg'
                         ]
