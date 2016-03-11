@@ -102,7 +102,7 @@ class Paginator
             foreach ($relations as $relationName => $relationOptions) {
                 $prefix = $relationName . '_';
 
-                if (strpos($rawField, $prefix) === false) {
+                if (strpos($field, $prefix) !== 0) {
                     continue;
                 }
 
