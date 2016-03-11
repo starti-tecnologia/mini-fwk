@@ -72,7 +72,7 @@ class Query
         return $this;
     }
 
-    public function where ($column, $comparator, $value, $operator='AND')
+    private function handleDefaultWhere($column, $comparator, $value, $operator='AND')
     {
         $rawValue = null;
 
@@ -84,7 +84,66 @@ class Query
             $rawValue = ':' . $paramName;
         }
 
-        $this->spec['wheres'][] = [$column, $comparator, $rawValue, $operator];
+        return [$column, $comparator, $rawValue, $operator];
+    }
+
+    private function handleSubQueryWhere($query, $operator)
+    {
+        if ($operator === null) {
+            $operator = 'AND';
+        }
+
+        $wheres = $query->spec['wheres'];
+        $bindings = $query->spec['bindings'];
+        $count = count($wheres);
+
+        $mergedWheres = [];
+        $mergedCounter = 0;
+        $ignoredBindings = [];
+
+        foreach ($wheres as $index => $where) {
+            if ($where[2] === ':p' . $mergedCounter) {
+                $oldParamName = 'p' . $mergedCounter;
+                $newParamName = 'p' . ++$this->counter;
+                $this->spec['bindings'][$newParamName] = $bindings[$oldParamName];
+                $ignoredBindings[] = $oldParamName;
+
+                $where[2] = ':' . $newParamName;
+                ++$mergedCounter;
+            }
+
+            if ($index === 0) {
+                $where[0] = '(' . $where[0];
+                $where[3] = $operator;
+            }
+
+            if ($index === $count - 1) {
+                $where[2] = $where[2] . ')';
+            }
+
+            $mergedWheres[] = $where;
+        }
+
+        $this->spec['bindings'] = array_merge(
+            $this->spec['bindings'],
+            array_except($bindings, $ignoredBindings)
+        );
+
+        return $mergedWheres;
+    }
+
+    public function where ($column, $comparator=null, $value=null, $operator='AND')
+    {
+        if (is_string($column)) {
+            $this->spec['wheres'][] = $this->handleDefaultWhere($column, $comparator, $value, $operator);
+        } elseif ($column instanceof Query) {
+            $operator = $comparator;
+
+            $this->spec['wheres'] = array_merge(
+                $this->spec['wheres'],
+                $this->handleSubQueryWhere($column, $operator)
+            );
+        }
 
         return $this;
     }

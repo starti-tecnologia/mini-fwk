@@ -121,4 +121,90 @@ class PaginatorTest extends PHPUnit_Framework_TestCase
             $options['format']
         );
     }
+
+    public function testIsGeneratingDefaultFieldFilters()
+    {
+        require_once __TEST_DIRECTORY__ . '/stubs/SimpleEntityStub.php';
+        require_once __TEST_DIRECTORY__ . '/stubs/RelationEntityStub.php';
+
+        $paginator = new Paginator;
+
+        $query = (new Query)
+            ->select([
+                'posts.id',
+                'posts.name'
+            ])
+            ->className(RelationEntityStub::class)
+            ->table('posts')
+            ->where('context', '=', 'test')
+            ->includeRelation('owner');
+
+        $options = $paginator->processQueryHandlers([
+            'query' => $query,
+            'filter' => [
+                'search' => 'Hi'
+            ]
+        ]);
+
+        $this->assertEquals(
+            [
+                ['context', '=', ':p0', 'AND'],
+                ['(posts.id', 'LIKE', ':p1', 'AND'],
+                ['posts.name', 'LIKE', ':p2', 'OR'],
+                ['owner.id', 'LIKE', ':p3', 'OR'],
+                ['owner.name', 'LIKE', ':p4)', 'OR'],
+            ],
+            $query->spec['wheres']
+        );
+    }
+
+    public function testIsUsingReplaces()
+    {
+        require_once __TEST_DIRECTORY__ . '/stubs/SimpleEntityStub.php';
+        require_once __TEST_DIRECTORY__ . '/stubs/RelationEntityStub.php';
+
+        $paginator = new Paginator;
+
+        $query = (new Query)
+            ->select([
+                'context',
+                'posts.id',
+                'posts.name'
+            ])
+            ->className(RelationEntityStub::class)
+            ->table('posts')
+            ->includeRelation('owner');
+
+        $options = $paginator->processQueryHandlers([
+            'query' => $query,
+            'filter' => [
+                'context' => '1',
+                'search' => 'hi'
+            ],
+            'sort' => ['-context'],
+            'replaces' => [
+                'posts.name' => 'CONCAT(posts.name, owner.name)',
+                'context' => ['DATE_FORMAT(context)', '>=']
+            ]
+        ]);
+
+        $this->assertEquals(
+            [
+                ['DATE_FORMAT(context)', '>=', ':p0', 'AND'],
+                ['(DATE_FORMAT(context)', 'LIKE', ':p1', 'AND'],
+                ['posts.id', 'LIKE', ':p2', 'OR'],
+                ['CONCAT(posts.name, owner.name)', 'LIKE', ':p3', 'OR'],
+                ['owner.id', 'LIKE', ':p4', 'OR'],
+                ['owner.name', 'LIKE', ':p5)', 'OR']
+            ],
+            $query->spec['wheres']
+        );
+
+        $this->assertEquals(
+            [
+                ['DATE_FORMAT(context)', 'DESC'],
+            ],
+            $query->spec['orderBy']
+        );
+    }
 }

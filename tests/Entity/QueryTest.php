@@ -95,6 +95,35 @@ class QueryTest extends PHPUnit_Framework_TestCase
         );
     }
 
+    public function testIsMakingWhereWithSubQuerySql()
+    {
+        $this->assertEquals(
+            'SELECT * FROM users WHERE name = :p0 OR (name = :p1 OR deleted_at < NOW())',
+            (new Query)
+                ->table('users')
+                ->where('name', '=', 'Lala')
+                ->where(
+                    (new Query())
+                        ->where('name', '=', 'Lala')
+                        ->where('deleted_at', '<', new RawValue('NOW()'), 'OR'),
+                    'OR'
+                )
+                ->makeSql()
+        );
+
+        $this->assertEquals(
+            'SELECT * FROM users WHERE name = :p0 AND (name = :p1)',
+            (new Query)
+                ->table('users')
+                ->where('name', '=', 'Lala')
+                ->where(
+                    (new Query())
+                        ->where('name', '=', 'Lala')
+                )
+                ->makeSql()
+        );
+    }
+
     public function testIsMakingOrderBySql()
     {
         $this->assertEquals(

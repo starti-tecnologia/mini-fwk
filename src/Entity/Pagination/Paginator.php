@@ -17,7 +17,58 @@ class Paginator
     }
 
     private function filterInputColumn ($value) {
-        return '`'. preg_replace('/[^A-Za-z0-9_]/', '', $value) . '`';
+        if (strpos($value, '.') !== false) {
+            return implode(
+                '.',
+                array_map(
+                    function ($innerValue) {
+                        return '`' . preg_replace('/[^A-Za-z0-9_.]/', '', $innerValue) . '`';
+                    },
+                    explode('.', $value)
+                )
+            );
+        } else {
+            return '`' . preg_replace('/[^A-Za-z0-9_.]/', '', $value) . '`';
+        }
+    }
+
+    private function generateDefaultFilterHandlers(array $options)
+    {
+        $baseQuery = $options['query'];
+        $replaces = isset($options['replaces']) ? $options['replaces'] : [];
+
+        $isReplacedMap = [];
+
+        $result = [
+            'search' => function ($query, $rawValue) use ($baseQuery, $replaces) {
+                if (trim($rawValue) === '') {
+                    return;
+                }
+
+                $subQuery = new Query;
+
+                foreach ($baseQuery->spec['select'] as $index => $rawColumn) {
+                    $column = explode(' as ', strtolower($rawColumn), 2)[0];
+                    $comparator = 'LIKE';
+                    $value = '%' . $rawValue . '%';
+
+                    if (isset($replaces[$column])) {
+                        $replace = $replaces[$column];
+                        $column = is_string($replace) ? $replace : $replace[0];
+                        if (isset($isReplacedMap[$column])) {
+                            continue;
+                        }
+                        $isReplacedMap[$column] = true;
+                    }
+
+                    $subQuery->where($column, 'LIKE', $value, 'OR');
+                }
+
+                $query->where($subQuery);
+            }
+        ];
+
+        return $result;
     }
 
     public function processQueryHandlers(array $options)
@@ -25,14 +76,43 @@ class Paginator
         $query = $options['query'];
         $filter = empty($options['filter']) ? [] : $options['filter'];
         $sort = empty($options['sort']) ? [] : $options['sort'];
-        $filterHandlers = isset($options['filterHandlers']) ? $options['filterHandlers'] : null;
-        $sortHandlers = isset($options['sortHandlers']) ? $options['sortHandlers'] : null;
+        $filterHandlers = isset($options['filterHandlers']) ? $options['filterHandlers'] : [];
+        $sortHandlers = isset($options['sortHandlers']) ? $options['sortHandlers'] : [];
+
+        if (isset($options['replaces'])) {
+            $replaces = [];
+
+            foreach ($options['replaces'] as $key => $value) {
+                if (strpos($key, '|') !== false) {
+                    foreach (explode('|', $key) as $newKey) {
+                        $replaces[$newKey] = $value;
+                    }
+                } else {
+                    $replaces[$key] = $value;
+                }
+            }
+
+            $options['replaces'] = $replaces;
+        }
+
+        $filterHandlers = array_merge(
+            $this->generateDefaultFilterHandlers($options),
+            $filterHandlers
+        );
 
         foreach ($filter as $column => $value) {
             if (isset($filterHandlers[$column])) {
                 $filterHandlers[$column]($query, $value);
             } else {
-                $query->where($this->filterInputColumn($column), '=', $value);
+                if (isset($replaces[$column])) {
+                    $replace = $replaces[$column];
+                    $column = is_string($replace) ? $replace : $replace[0];
+                    $comparator = is_string($replace) ? '=' : $replace[1];
+
+                    $query->where($column, $comparator, $value);
+                } else {
+                    $query->where($this->filterInputColumn($column), '=', $value);
+                }
             }
         }
 
@@ -47,7 +127,13 @@ class Paginator
             if (isset($sortHandlers[$column])) {
                 $sortHandlers[$column]($query, $direction);
             } else {
-                $query->orderBy($this->filterInputColumn($column), $direction);
+                if (isset($replaces[$column])) {
+                    $replace = $replaces[$column];
+                    $column = is_string($replace) ? $replace : $replace[0];
+                    $query->orderBy($column, $direction);
+                } else {
+                    $query->orderBy($this->filterInputColumn($column), $direction);
+                }
             }
         }
     }
