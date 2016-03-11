@@ -138,7 +138,12 @@ class EntityTableParser
             $byType[$item->type][] = $item;
         }
 
-        $table->items = array_merge($byType[TableItem::TYPE_COLUMN], $byType[TableItem::TYPE_CONSTRAINT]);
+        $rows = array_merge($byType[TableItem::TYPE_COLUMN], $byType[TableItem::TYPE_CONSTRAINT]);
+        $table->items = [];
+
+        foreach ($rows as $row) {
+            $table->items[$row->name] = $row;
+        }
 
         return $table;
     }
