@@ -116,11 +116,15 @@ abstract class Entity implements \JsonSerializable
      * @param Entity $relationInstance
      * @return void
      */
-    public function setRelation($relationName, Entity $relationInstance)
+    public function setRelation($relationName, Entity $relationInstance = null)
     {
-        $id = $relationInstance->{$relationInstance->idAttribute};
-        $this->relationCache[$relationName] = $relationInstance;
-        $this->fields[$this->relations[$relationName]['field']] = $id;
+        if ($relationInstance) {
+            $id = $relationInstance->{$relationInstance->idAttribute};
+            $this->relationCache[$relationName] = $relationInstance;
+            $this->fields[$this->relations[$relationName]['field']] = $id;
+        } else {
+            $this->fields[$this->relations[$relationName]['field']] = null;
+        }
     }
 
     /**
