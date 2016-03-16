@@ -79,9 +79,20 @@ class Query
         if ($value instanceof RawValue) {
             $rawValue = $value->value;
         } else {
-            $paramName = 'p' . ++$this->counter;
-            $this->spec['bindings'][$paramName] = $value;
-            $rawValue = ':' . $paramName;
+            if (is_array($value) && ($comparator === 'IN' || $comparator === 'NOT IN')) {
+                $params = [];
+                foreach ($value as $item) {
+                    $paramName = 'p' . ++$this->counter;
+                    $this->spec['bindings'][$paramName] = $item;
+                    $params[] = ':' . $paramName;
+                }
+
+                $rawValue = '(' . implode(', ', $params) . ')';
+            } else {
+                $paramName = 'p' . ++$this->counter;
+                $this->spec['bindings'][$paramName] = $value;
+                $rawValue = ':' . $paramName;
+            }
         }
 
         return [$column, $comparator, $rawValue, $operator];

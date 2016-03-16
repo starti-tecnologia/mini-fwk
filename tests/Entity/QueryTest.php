@@ -124,6 +124,17 @@ class QueryTest extends PHPUnit_Framework_TestCase
         );
     }
 
+    public function testIsMakingWhereInSql()
+    {
+        $this->assertEquals(
+            'SELECT * FROM users WHERE name IN (:p0, :p1)',
+            (new Query)
+                ->table('users')
+                ->where('name', 'IN', ['Jonh', 'James'])
+                ->makeSql()
+        );
+    }
+
     public function testIsMakingOrderBySql()
     {
         $this->assertEquals(
