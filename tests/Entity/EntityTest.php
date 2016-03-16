@@ -11,6 +11,7 @@ class EntityTest extends PHPUnit_Framework_TestCase
         require_once __TEST_DIRECTORY__ . '/FakeConnectionManager.php';
         require_once __TEST_DIRECTORY__ . '/stubs/SimpleEntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/RelationEntityStub.php';
+        require_once __TEST_DIRECTORY__ . '/stubs/PrefixObjectEntityStub.php';
 
         $this->connectionManager = new FakeConnectionManager;
 
@@ -40,5 +41,45 @@ class EntityTest extends PHPUnit_Framework_TestCase
         $proxy = $entity->getRelation('owner');
         $this->assertEquals(1, $proxy->id);
         $this->assertEquals('Lala', $proxy->name);
+    }
+
+    private function getFilledPrefixObjectEntity()
+    {
+        $entity = new PrefixObjectEntityStub;
+
+        $entity->fill([
+            'name' => 'Lala',
+            'max_users_quantity' => 10,
+            'address' => [
+                'street_name' => 'Some street',
+                'number' => '1C'
+            ]
+        ]);
+
+        return $entity;
+    }
+
+    public function testIsFillingPrefixedObjects()
+    {
+        $entity = $this->getFilledPrefixObjectEntity();
+        $this->assertEquals('Lala', $entity->name);
+        $this->assertEquals('Some street', $entity->address_street_name);
+        $this->assertEquals('1C', $entity->address_number);
+    }
+
+    public function testIsSerializingPrefixedObjects()
+    {
+        $entity = $this->getFilledPrefixObjectEntity();
+        $this->assertEquals(
+            [
+                'name' => 'Lala',
+                'max_users_quantity' => 10,
+                'address' => [
+                    'street_name' => 'Some street',
+                    'number' => '1C'
+                ]
+            ],
+            $entity->jsonSerialize()
+        );
     }
 }

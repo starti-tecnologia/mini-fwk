@@ -46,6 +46,22 @@ abstract class Entity implements \JsonSerializable
     public $fields = [];
 
     /**
+     * Fields that get prefixed as object on fill and jsonSerialize;
+     *
+     * Example: Turn {address_name:'', address_number:''} into {address: {name:'', number:''}}
+     *
+     * @var array
+     */
+    public $prefixAsObject = null;
+
+    /**
+     * Enable customization on serialization format
+     *
+     * @var array
+     */
+    public $format = null;
+
+    /**
      * Definition used to database storage and validation
      *
      * @var array
@@ -73,7 +89,7 @@ abstract class Entity implements \JsonSerializable
 
     /**
      * Shared instance used in protected function instance
-     * 
+     *
      * @var self
      */
     private static $instance = null;
@@ -85,6 +101,20 @@ abstract class Entity implements \JsonSerializable
      */
     public function fill($data)
     {
+        if ($this->prefixAsObject) {
+            foreach ($this->prefixAsObject as $prefix) {
+                if (! isset($data[$prefix])) {
+                    continue;
+                }
+
+                foreach ($data[$prefix] as $key => $value) {
+                    $data[$prefix . '_' . $key] = $value;
+                }
+
+                unset($data[$prefix]);
+            }
+        }
+
         foreach ($data as $key => $value) {
             if ($this->fillable === null || in_array($key, $this->fillable)) {
                 $this->fields[$key] = $value;
@@ -168,10 +198,6 @@ abstract class Entity implements \JsonSerializable
      */
     public function jsonSerialize()
     {
-        if (isset($this->visible[0])) {
-            return array_only($this->fields, $this->visible);
-        } else {
-            return $this->fields;
-        }
+        return EntitySerializer::instance()->serialize($this);
     }
 }
