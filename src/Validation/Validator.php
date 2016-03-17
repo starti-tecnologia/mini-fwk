@@ -81,6 +81,42 @@ class Validator
     }
 
     /**
+     * Merge and validate entities rules by keys, example:
+     *
+     * $validator->validateEntities([
+     *    '*' => new Retailer,
+     *    'owner' => new User
+     * ]);
+     *
+     * @param array $entities
+     * @throws \Mini\Exceptions\ValidationException
+     */
+    public function validateEntities(array $entities, $extraDefinition = [])
+    {
+        $parentDefinition = [];
+
+        foreach ($entities as $key => $entity) {
+            $childDefinition = $entity->fillable ?
+                array_only($entity->definition, $entity->fillable) :
+                $entity->definition;
+
+            if ($key === '*') {
+                $parentDefinition = array_merge($parentDefinition, $childDefinition);
+            } else {
+                foreach ($childDefinition as $innerKey => $value) {
+                    $parentDefinition[$key . '.' . $innerKey] = $value;
+                }
+            }
+        }
+
+        if ($extraDefinition) {
+            $parentDefinition = array_merge($parentDefinition, $extraDefinition);
+        }
+
+        $this->validate($parentDefinition);
+    }
+
+    /**
      * Parse validation rules against current data
      *
      * @param $rules Rules definition

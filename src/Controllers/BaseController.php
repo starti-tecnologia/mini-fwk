@@ -38,6 +38,23 @@ class BaseController
         $this->getValidator()->validateEntity($entity, $extraDefinition);
     }
 
+    /**
+     * Merge and validate entities rules by keys, example:
+     *
+     * $validator->validateEntities([
+     *    '*' => new Retailer,
+     *    'owner' => new User
+     * ]);
+     *
+     * @param array $entities
+     * @throws \Mini\Exceptions\ValidationException
+     */
+    public function validateEntities(array $entities, $extraDefinition = [])
+    {
+        $this->onBeforeValidate();
+        $this->getValidator()->validateEntities($entities, $extraDefinition);
+    }
+
     public function getValidator()
     {
         if (! $this->validator) {

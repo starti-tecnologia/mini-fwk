@@ -5,6 +5,11 @@ use Mini\Exceptions\ValidationException;
 
 class ValidationTest extends PHPUnit_Framework_TestCase
 {
+    public function setUp()
+    {
+        require_once __TEST_DIRECTORY__ . '/stubs/ValidationEntityStub.php';
+    }
+
     public function testIsValidatingStaticRules()
     {
         $exception = null;
@@ -103,6 +108,68 @@ class ValidationTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals([
             'email' => ['The email field is email.']
+        ], $exception->errors);
+    }
+
+    public function testIsValidatingInnerFields()
+    {
+        $exception = null;
+
+        $this->validator = new Validator;
+        $this->validator->setData(
+            [
+                'contents' => 'Jonh',
+                'author' => [
+                    'guid' => 'dsada',
+                    'name' => null
+                ]
+            ]
+        );
+
+        try {
+            $this->validator->validate(
+                [
+                    'contents' => 'string|required',
+                    'author.guid' => 'string|required',
+                    'author.name' => 'string|required',
+                ]
+            );
+        } catch (ValidationException $e) {
+            $exception = $e;
+        }
+
+        $this->assertEquals([
+            'author.name' => ['The author.name field is required.']
+        ], $exception->errors);
+    }
+
+    public function testIsValidatingEntities()
+    {
+        $exception = null;
+
+        $this->validator = new Validator;
+        $this->validator->setData([
+            'name' => 'Hi',
+            'child1' => [
+                'name' => 'Name 2'
+            ],
+            'child2' => []
+        ]);
+
+        try {
+            $this->validator->validateEntities(
+                [
+                    '*' => new ValidationEntityStub,
+                    'child1'  => new ValidationEntityStub,
+                    'child2'  => new ValidationEntityStub
+                ]
+            );
+        } catch (ValidationException $e) {
+            $exception = $e;
+        }
+
+        $this->assertEquals([
+            'child2.name' => ['The child2.name field is required.']
         ], $exception->errors);
     }
 }
