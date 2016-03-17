@@ -135,7 +135,13 @@ abstract class Entity implements \JsonSerializable
      */
     public function __get($key)
     {
-        return $this->fields[$key];
+        if (isset($this->fields[$key])) {
+            return $this->fields[$key];
+        } else if (isset($this->definition[$key])) {
+            return null;
+        } else {
+            throw new \Exception('Unknown field ' .  $key);
+        }
     }
 
     /**
@@ -149,7 +155,7 @@ abstract class Entity implements \JsonSerializable
     public function setRelation($relationName, Entity $relationInstance = null)
     {
         if ($relationInstance) {
-            $id = $relationInstance->{$relationInstance->idAttribute};
+            $id = $relationInstance->fields[$relationInstance->idAttribute];
             $this->relationCache[$relationName] = $relationInstance;
             $this->fields[$this->relations[$relationName]['field']] = $id;
         } else {
