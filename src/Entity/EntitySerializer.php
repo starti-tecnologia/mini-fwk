@@ -111,6 +111,10 @@ class EntitySerializer
             break;
         }
 
+        if (isset($entity->visible[0]) && ! in_array($field, $entity->visible)) {
+            return null;
+        }
+
         if (! $isRelation) {
             $prefix = null;
 
