@@ -4,8 +4,6 @@ use Mini\Entity\Entity;
 use Mini\Entity\EntitySerializer;
 
 /**
- * @todo Test relation serializing
- * @todo Test performance
  * @todo Remove duplicate code from OutputSerializer
  */
 class EntitySerializerTest extends PHPUnit_Framework_TestCase
@@ -15,9 +13,10 @@ class EntitySerializerTest extends PHPUnit_Framework_TestCase
     public function setUp()
     {
         require_once __TEST_DIRECTORY__ . '/stubs/SerializableEntityStub.php';
+        require_once __TEST_DIRECTORY__ . '/stubs/SimpleEntityStub.php';
     }
 
-    public function testIsSerializing()
+    public function testIsSerializingEntities()
     {
         $entity = new SerializableEntityStub;
 
@@ -28,6 +27,8 @@ class EntitySerializerTest extends PHPUnit_Framework_TestCase
             'max_users_quantity' => '10',
             'address_street_name' => 'Lala Street',
             'address_number' => '1C',
+            'owner_id' => '1',
+            'owner_name' => 'John'
         ];
 
         $this->assertEquals(
@@ -39,6 +40,10 @@ class EntitySerializerTest extends PHPUnit_Framework_TestCase
                 'address' => [
                     'street_name' => 'Lala Street',
                     'number' => '1C'
+                ],
+                'owner' => [
+                    'id' => 1,
+                    'name' => 'John'
                 ]
             ],
             EntitySerializer::instance()->serialize($entity)

@@ -19,5 +19,12 @@ class SerializableEntityStub extends Entity
         'address_number' => 'string:50'
     ];
 
+    public $relations = [
+        'owner' => [
+            'class' => SimpleEntityStub::class,
+            'field' => 'owner_id'
+        ]
+    ];
+
     public $prefixAsObject = ['address'];
 }

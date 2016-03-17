@@ -61,67 +61,57 @@ class EntitySerializer
         return $format;
     }
 
-    private function makeDefaultFormat(Entity $entity)
+    private function getParentFormatContext(Entity $entity, array &$root, $field)
     {
+        $isRelation = false;
+        $format = &$root['format'];
+        $formatByKey = &$root['formatByKey'];
         $relations = $entity->relations;
+        $context = null;
 
-        $format = [];
-        $formatByKey = [];
+        foreach ($entity->relations as $relationName => $relationOptions) {
+            $prefix = $relationName . '_';
 
-        foreach (array_keys($entity->fields) as $field) {
-            if ($entity->visible && ! in_array($field, $entity->visible)) {
+            if (strpos($field, $prefix) !== 0) {
                 continue;
             }
 
-            $isRelation = false;
-
-            foreach ($relations as $relationName => $relationOptions) {
-                $prefix = $relationName . '_';
-
-                if (strpos($field, $prefix) !== 0) {
-                    continue;
-                }
-
-                $isRelation = true;
-                $fieldWithoutPrefix = substr($field, strlen($prefix));
-
-                if (! isset($formatByKey[$relationName])) {
-                    $currentFormat = [
-                        'key' => $relationName,
-                        'object' => true,
-                        'prefix' => $relationName . '_',
-                        'child' => []
-                    ];
-                    $formatByKey[$relationName] = &$currentFormat;
-                    $format[] = &$currentFormat;
-                } else {
-                    $currentFormat = &$formatByKey[$formatKey];
-                }
-
-                if (! isset($relations[$relationName]['instance'])) {
-                    $relations[$relationName]['instance'] = new $relations[$relationName]['class'];
-                }
-
-                $relationInstance = $relations[$relationName]['instance'];
-                $visible = $relationInstance->visible;
-
-                if (isset($visible[0]) && ! in_array($fieldWithoutPrefix, $visible)) {
-                    continue;
-                }
-
-                $currentFormat['child'][] = $this->processFormatDefinition(
-                    $relationInstance,
-                    $fieldWithoutPrefix,
-                    [
-                        'key' => $fieldWithoutPrefix
-                    ]
-                );
+            if (! isset($formatByKey[$relationName])) {
+                $currentFormat = [
+                    'key' => $relationName,
+                    'object' => true,
+                    'prefix' => $relationName . '_',
+                    'child' => []
+                ];
+                $formatByKey[$relationName] = &$currentFormat;
+                $format[] = &$currentFormat;
+            } else {
+                $currentFormat = &$formatByKey[$relationName];
             }
 
-            if ($isRelation) {
-                continue;
+            if (! isset($relations[$relationName]['instance'])) {
+                $relations[$relationName]['instance'] = new $relations[$relationName]['class'];
             }
 
+            $key = substr($field, strlen($prefix));
+            $visible = $relations[$relationName]['instance']->visible;
+            $isRelation = true;
+
+            if (isset($visible[0]) && ! in_array($key, $visible)) {
+                return null;
+            }
+
+            $context = [
+                'entity' => $relations[$relationName]['instance'],
+                'format' => &$currentFormat['child'],
+                'field' => $key,
+                'key' => $key
+            ];
+
+            break;
+        }
+
+        if (! $isRelation) {
             $prefix = null;
 
             if ($entity->prefixAsObject) {
@@ -146,28 +136,54 @@ class EntitySerializer
                     $currentFormat = &$formatByKey[$prefix];
                 }
 
-                $fieldWithoutPrefix = substr($field, strlen($prefix) + 1);
-
-                $currentFormat['child'][] = $this->processFormatDefinition(
-                    $entity,
-                    $field,
-                    [
-                        'key' => $fieldWithoutPrefix
-                    ]
-                );
-
+                $context = [
+                    'entity' => $entity,
+                    'format' => &$currentFormat['child'],
+                    'key' => substr($field, strlen($prefix) + 1),
+                    'field' => $field
+                ];
             } else {
-                $format[] = $this->processFormatDefinition(
-                    $entity,
-                    $field,
-                    [
-                        'key' => $field
-                    ]
-                );
+                $context = [
+                    'entity' => $entity,
+                    'format' => &$root['format'],
+                    'key' => $field,
+                    'field' => $field
+                ];
             }
         }
 
-        return $format;
+        //if (stristr($field, 'address')) {
+        //    var_dump($context['format']);
+        //}
+
+        return $context;
+    }
+
+    private function makeDefaultFormat(Entity $entity)
+    {
+        $root = [
+            'format' => [],
+            'formatByKey' => []
+        ];
+
+        foreach ($entity->fields as $field => $value) {
+            $context = $this->getParentFormatContext($entity, $root, $field);
+
+            if (! $context) {
+                continue;
+            }
+
+            $format = &$context['format'];
+            $format[] = $this->processFormatDefinition(
+                $context['entity'],
+                $context['field'],
+                [
+                    'key' => $context['key']
+                ]
+            );
+        }
+
+        return $root['format'];
     }
 
     private function makeTransformFunctions($format)
@@ -198,7 +214,6 @@ class EntitySerializer
                     $object[$key] = $value;
                 };
             } elseif ($isObject && isset($field['child'])) {
-                //var_dump($field);die;
                 $innerFunctions = $this->makeTransformFunctions(array_map(
                     function (&$innerField) use ($prefix) {
                         if ($prefix) {
