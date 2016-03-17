@@ -25,17 +25,42 @@ class DataMapper
         return self::$connectionMap[$connectionName];
     }
 
+    protected function onBeforeSave(Entity $entity)
+    {
+        // Hook for inherited classes
+    }
+
+    protected function onAfterSave(Entity $entity)
+    {
+        // Hook for inherited classes
+    }
+
     /**
      * Saves an entity
      */
     public function save(Entity $entity)
     {
+        $this->onBeforeSave($entity);
+
         if (isset($entity->fields[$entity->idAttribute])) {
             $this->update($entity);
         } else {
             $this->create($entity);
         }
+
+        $this->onAfterSave($entity);
+
         return $entity;
+    }
+
+    protected function onBeforeCreate(Entity $entity)
+    {
+        // Hook for inherited classes
+    }
+
+    protected function onAfterCreate(Entity $entity)
+    {
+        // Hook for inherited classes
     }
 
     /**
@@ -43,6 +68,7 @@ class DataMapper
      */
     protected function create(Entity $entity)
     {
+        $this->onBeforeCreate($entity);
         $connection = $this->getConnection($entity->connection);
         $fields = $entity->fields;
         if ($entity->useTimeStamps) {
@@ -50,6 +76,17 @@ class DataMapper
         }
         $connection->insert($entity->table, $fields);
         $entity->fields[$entity->idAttribute] = $connection->lastInsertId();
+        $this->onAfterCreate($entity);
+    }
+
+    protected function onBeforeUpdate(Entity $entity)
+    {
+        // Hook for inherited classes
+    }
+
+    protected function onAfterUpdate(Entity $entity)
+    {
+        // Hook for inherited classes
     }
 
     /**
@@ -57,6 +94,7 @@ class DataMapper
      */
     protected function update(Entity $entity)
     {
+        $this->onBeforeUpdate($entity);
         $updates = $entity->fields;
         unset($updates[$entity->idAttribute]);
         $where = [ $entity->idAttribute => $entity->{$entity->idAttribute} ];
@@ -64,6 +102,7 @@ class DataMapper
             $updates['updated_at'] = new RawValue('NOW()');
         }
         $this->getConnection($entity->connection)->update($entity->table, $updates, $where);
+        $this->onAfterUpdate($entity);
     }
 
     /**
