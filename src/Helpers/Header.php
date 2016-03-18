@@ -31,4 +31,11 @@ class Header
         return isset($headers[$key]) ? $headers[$key] : null;
     }
 
+    /**
+     * @return array
+     */
+    public static function all() {
+        return self::headers();
+    }
+
 }
