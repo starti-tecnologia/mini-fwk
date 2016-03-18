@@ -31,6 +31,11 @@ class Router
     private static $onloadControllers = false;
 
     /**
+     * @var null
+     */
+    private static $proxyInstance = null;
+
+    /**
      * @param mixed $basePath
      */
     public static function setBasePath($basePath)
@@ -60,6 +65,16 @@ class Router
     public static function setMiddleware($middleware)
     {
         self::$middleware = $middleware;
+    }
+
+    /**
+     * @return \Mini\Proxy\RestProxy
+     */
+    private static function proxy() {
+        if (self::$proxyInstance === null) {
+            self::$proxyInstance = app()->get('Kernel')->proxy;
+        }
+        return self::$proxyInstance;
     }
 
 
@@ -158,9 +173,11 @@ class Router
                         $routeFound = true;
                     }
                 }
+                self::proxy()->onAfterRequest();
 
                 if (!$routeFound)
-                    throw new MiniException("Route not found.");
+                    self::proxy()->onRouterError();
+                    //throw new MiniException("Route not found.");
             }
         }
     }
@@ -172,6 +189,9 @@ class Router
      * @throws MiniException
      */
     private static function loadClass($route_controller, $route_middlewares, $params) {
+        self::proxy()->onBeforeRequest();
+
+
         list($controller, $method) = explode("@", $route_controller);
 
         if (count($route_middlewares) > 0) {
@@ -206,6 +226,9 @@ class Router
             $obj->{$method}();
     }
 
+    /**
+     * @return array
+     */
     public static function listRoutes()
     {
         $routes = [];

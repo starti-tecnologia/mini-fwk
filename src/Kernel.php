@@ -2,6 +2,7 @@
 
 namespace Mini;
 
+use Mini\Proxy\RestProxy;
 use Mini\Router\Router;
 use Mini\Entity\ConnectionManager;
 use Mini\Validation\Validator;
@@ -36,6 +37,7 @@ class Kernel
         $this->config = empty($config) ? [] : $config;
         $this->basePath = isset($this->config['basePath']) ? $this->config['basePath'] : realpath(dirname($_SERVER['DOCUMENT_ROOT']));
         $this->application = isset($this->config['application']) ? $this->config['application'] : new Application;
+        $this->proxy = isset($this->config['proxy']) ? $this->config['proxy'] : new RestProxy;
 
         $this->setUpContainer();
         $this->setUpConfiguration();

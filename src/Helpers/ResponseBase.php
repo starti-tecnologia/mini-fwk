@@ -58,7 +58,16 @@ class ResponseBase
         }
     }
 
+    /**
+     * @return \Mini\Proxy\RestProxy
+     */
+    private function proxy() {
+        return app()->get('Kernel')->proxy;
+    }
+
     protected function make() {
+        $this->proxy()->onAfterRequest();
+
         http_response_code($this->statusCode);
         $this->makeHeaders();
 
