@@ -62,7 +62,7 @@ class ResponseBase
      * @return \Mini\Proxy\RestProxy
      */
     private function proxy() {
-        return app()->get('Kernel')->proxy;
+        return app()->get('Mini\Kernel')->proxy;
     }
 
     protected function make() {

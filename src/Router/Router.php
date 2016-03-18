@@ -72,7 +72,7 @@ class Router
      */
     private static function proxy() {
         if (self::$proxyInstance === null) {
-            self::$proxyInstance = app()->get('Kernel')->proxy;
+            self::$proxyInstance = app()->get('Mini\Kernel')->proxy;
         }
         return self::$proxyInstance;
     }
