@@ -135,6 +135,28 @@ class QueryTest extends PHPUnit_Framework_TestCase
         );
     }
 
+    public function testIsMakingWhereIsNullSql()
+    {
+        $this->assertEquals(
+            'SELECT * FROM users WHERE name IS NULL',
+            (new Query)
+                ->table('users')
+                ->whereIsNull('name')
+                ->makeSql()
+        );
+    }
+
+    public function testIsMakingWhereIsNotNullSql()
+    {
+        $this->assertEquals(
+            'SELECT * FROM users WHERE name IS NOT NULL',
+            (new Query)
+                ->table('users')
+                ->whereIsNotNull('name')
+                ->makeSql()
+        );
+    }
+
     public function testIsMakingOrderBySql()
     {
         $this->assertEquals(

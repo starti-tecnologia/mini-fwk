@@ -162,11 +162,15 @@ class Query
     public function whereIsNull ($column, $operator='AND')
     {
         $this->spec['wheres'][] = [$column, 'IS', 'NULL', $operator];
+
+        return $this;
     }
 
     public function whereIsNotNull ($column, $operator='AND')
     {
-        $this->spec['wheres'][] = [$column, 'IS', 'NULL', $operator];
+        $this->spec['wheres'][] = [$column, 'IS', 'NOT NULL', $operator];
+
+        return $this;
     }
 
     public function select($columns)
