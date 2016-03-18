@@ -25,8 +25,7 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
     public function testIsCreating()
     {
         $entity = new EntityStub;
-        $entity->lala = 'Hi';
-        $entity->requested_at = new RawValue('NOW()');
+        $entity->name = 'Hi';
 
         $mapper = new DataMapperStub;
         $mapper->save($entity);
@@ -35,7 +34,7 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
             [
                 [
                     'default',
-                    'INSERT INTO users (lala, requested_at) VALUES (?, NOW())',
+                    'INSERT INTO users (name) VALUES (?)',
                     ['Hi']
                 ],
             ],
@@ -49,7 +48,6 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
         $entity = new EntityStub;
         $entity->id = 2;
         $entity->name = 'Test';
-        $entity->requested_at = new RawValue('NOW()');
 
         $mapper = new DataMapperStub;
         $mapper->save($entity);
@@ -58,7 +56,7 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
             [
                 [
                     'default',
-                    'UPDATE users SET name = ?, requested_at = NOW() WHERE id = ?',
+                    'UPDATE users SET name = ? WHERE id = ?',
                     ['Test', 2]
                 ],
             ],
