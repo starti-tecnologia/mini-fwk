@@ -36,6 +36,11 @@ trait MongoQueryAware
     private static $instanceNamespace;
 
     /**
+     * @var array
+     */
+    private static $bulkWriteInsert = null;
+
+    /**
      *
      */
     public static function instance()
@@ -121,6 +126,19 @@ trait MongoQueryAware
 
         return self::$instanceConnection
             ->executeBulkWrite(self::$instanceNamespace, $bulk);
+    }
+
+    public static function prepareBulkWrite(array $data) {
+        if (self::$bulkWriteInsert === null) self::$bulkWriteInsert = new BulkWrite;
+
+        self::$bulkWriteInsert->insert($data);
+    }
+
+    public static function execBulkWrite() {
+        if (self::$bulkWriteInsert !== null) {
+            return self::$instanceConnection
+                ->executeBulkWrite(self::$instanceNamespace, self::$bulkWriteInsert);
+        }else return null;
     }
 
     /**
