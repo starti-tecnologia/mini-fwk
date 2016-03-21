@@ -11,6 +11,10 @@ class DataMapper
      */
     public static $connectionMap = [];
 
+    public static $generatedFields = [
+        'created_at', 'updated_at', 'deleted_at'
+    ];
+
     /**
      * @return Mini\Entity\Connection
      */
@@ -70,7 +74,7 @@ class DataMapper
     {
         $this->onBeforeCreate($entity);
         $connection = $this->getConnection($entity->connection);
-        $fields = $entity->fields;
+        $fields = array_only($entity->fields, array_merge(array_keys($entity->definition), self::$generatedFields));
         if ($entity->useTimeStamps) {
             $fields['created_at'] = new RawValue('NOW()');
         }
@@ -95,7 +99,7 @@ class DataMapper
     protected function update(Entity $entity)
     {
         $this->onBeforeUpdate($entity);
-        $updates = $entity->fields;
+        $updates = array_only($entity->fields, array_merge(array_keys($entity->definition), self::$generatedFields));
         unset($updates[$entity->idAttribute]);
         $where = [ $entity->idAttribute => $entity->{$entity->idAttribute} ];
         if ($entity->useTimeStamps) {
@@ -111,7 +115,6 @@ class DataMapper
     public function delete(Entity $entity)
     {
         $connection = $this->getConnection($entity->connection);
-        $updates = $entity->fields;
         $where = [ $entity->idAttribute => $entity->{$entity->idAttribute} ];
         $this->deleteByFilters($entity, $where);
     }
