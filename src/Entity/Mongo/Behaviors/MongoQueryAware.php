@@ -144,8 +144,12 @@ trait MongoQueryAware
         self::instance();
 
         if (self::$bulkWriteInsert !== null) {
-            return self::$instanceConnection
+            $exec = self::$instanceConnection
                 ->executeBulkWrite(self::$instanceNamespace, self::$bulkWriteInsert);
+
+            self::$bulkWriteInsert = null;
+
+            return $exec;
         } else return null;
     }
 
