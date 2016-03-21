@@ -128,17 +128,25 @@ trait MongoQueryAware
             ->executeBulkWrite(self::$instanceNamespace, $bulk);
     }
 
+    /**
+     * @param array $data
+     */
     public static function prepareBulkWrite(array $data) {
         if (self::$bulkWriteInsert === null) self::$bulkWriteInsert = new BulkWrite;
 
         self::$bulkWriteInsert->insert($data);
     }
 
+    /**
+     * @return \MongoDB\Driver\WriteResult|null
+     */
     public static function execBulkWrite() {
+        self::instance();
+
         if (self::$bulkWriteInsert !== null) {
             return self::$instanceConnection
                 ->executeBulkWrite(self::$instanceNamespace, self::$bulkWriteInsert);
-        }else return null;
+        } else return null;
     }
 
     /**
