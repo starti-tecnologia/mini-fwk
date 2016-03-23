@@ -64,7 +64,7 @@ class MigrateCommand extends AbstractCommand
 
         if ($count > 0) {
             echo $c(
-                'Migration completed in ' . number_format((microtime(true) - $startTime) / 1000, 5) . ' seconds.'
+                'Migration completed in ' . number_format((microtime(true) - $startTime), 5) . ' seconds.'
             )->green() . PHP_EOL;
         } else {
             echo $c('Nothing to migrate.')->yellow() . PHP_EOL;

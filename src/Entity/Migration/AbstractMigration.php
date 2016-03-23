@@ -63,6 +63,12 @@ abstract class AbstractMigration
                 $pdo->rollback();
             }
 
+            if ($direction == 'up') {
+                echo 'Doing migration down.' . PHP_EOL;
+                $this->sqls = [];
+                $this->run('down');
+            }
+
             throw $e;
         }
     }
