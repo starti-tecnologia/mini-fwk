@@ -20,6 +20,11 @@ trait SqlBuilderAware
         return $sth->fetch(\PDO::FETCH_ASSOC);
     }
 
+    public function filterBinding($value)
+    {
+        return $value === false ? 0 : ($value === true ? 1 : $value);
+    }
+
     private function handleCreate($operator, $table, $fields)
     {
         $template = $operator . ' INTO %s (%s) VALUES (%s)';
@@ -32,7 +37,7 @@ trait SqlBuilderAware
                 $values[] = $value->value;
             } else {
                 $values[] = '?';
-                $bindings[] = $value;
+                $bindings[] = $this->filterBinding($value);
             }
         }
 
@@ -63,7 +68,7 @@ trait SqlBuilderAware
                 $updates[] = $key . ' = ' . $value->value;
             } else {
                 $updates[] = $key . ' = ?';
-                $bindings[] = $value;
+                $bindings[] = $this->filterBinding($value);
             }
         }
 
@@ -72,7 +77,7 @@ trait SqlBuilderAware
                 $wheres[] = $key . ' = ' . $value->value;
             } else {
                 $wheres[] = $key . ' = ?';
-                $bindings[] = $value;
+                $bindings[] = $this->filterBinding($value);
             }
         }
 
@@ -91,7 +96,7 @@ trait SqlBuilderAware
                 $wheres[] = $key . ' = ' . $value->value;
             } else {
                 $wheres[] = $key . ' = ?';
-                $bindings[] = $value;
+                $bindings[] = $this->filterBinding($value);
             }
         }
 

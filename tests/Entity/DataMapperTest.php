@@ -103,4 +103,30 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
             $this->connectionManager->log
         );
     }
+
+    public function testIsConvertingBooleanToInteger()
+    {
+        $mapper = new DataMapperStub;
+        $mapper->updateByFilters(
+            new EntityStub,
+            [
+                'is_draft' => true,
+                'is_active' => false
+            ],
+            [
+                'id' => 311,
+            ]
+        );
+
+        $this->assertEquals(
+            [
+                [
+                    'default',
+                    'UPDATE users SET is_draft = ?, is_active = ? WHERE id = ?',
+                    [1, 0, 311]
+                ],
+            ],
+            $this->connectionManager->log
+        );
+    }
 }
