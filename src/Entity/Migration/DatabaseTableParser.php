@@ -151,12 +151,12 @@ class DatabaseTableParser
      */
     public function parseColumn(array $row)
     {
-        $columnDefault = null;
+        $columnDefault = $row['COLUMN_DEFAULT'];
 
-        if ($row['COLUMN_DEFAULT'] !== null) {
-            $columnDefault = is_numeric($row['COLUMN_DEFAULT'])
-                ? $row['COLUMN_DEFAULT']
-                : '\'' . $row['COLUMN_DEFAULT'] . '\'';
+        if ($columnDefault !== null) {
+            $columnDefault = is_numeric($columnDefault)
+                ? (strpos($columnDefault, '.') ? rtrim(rtrim($columnDefault, '0'), '.') : $columnDefault)
+                : '\'' . $columnDefault . '\'';
         }
 
         $sql = $row['COLUMN_NAME'] . ' ' . $row['COLUMN_TYPE'] .
