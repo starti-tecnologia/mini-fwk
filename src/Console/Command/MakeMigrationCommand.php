@@ -109,7 +109,14 @@ class MakeMigrationCommand extends AbstractCommand
 
         return [
             '/* UpMethodPlaceholder */' => $upDiff,
-            '/* DownMethodPlaceholder */' => $downDiff,
+            '/* DownMethodPlaceholder */' => implode(
+                PHP_EOL . str_repeat(' ', 8),
+                [
+                    '$this->addSql(\'SET foreign_key_checks = 0;\');',
+                    $downDiff,
+                    '$this->addSql(\'SET foreign_key_checks = 1;\');',
+                ]
+            ),
         ];
     }
 
@@ -156,7 +163,7 @@ class MakeMigrationCommand extends AbstractCommand
             $dropOperations = $sourceTable->makeDropOperations($destTable);
             $modifyOperations = $sourceTable->makeModifyOperations($destTable);
 
-            if (! $this->force) {
+            if ($direction == 'up' && ! $this->force) {
                 foreach ($modifyOperations as $modifyOperation) {
                     $sourceTable->validateModifyOperation($modifyOperation);
                 }
