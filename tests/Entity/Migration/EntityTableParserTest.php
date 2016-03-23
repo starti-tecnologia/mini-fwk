@@ -9,6 +9,7 @@ class EntityTableParserTest extends PHPUnit_Framework_TestCase
     {
         require_once __TEST_DIRECTORY__ . '/stubs/EntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/FieldOrderEntityStub.php';
+        require_once __TEST_DIRECTORY__ . '/stubs/EmptyDefaultEntityStub.php';
 
         app()->register('Mini\Validation\Validator', function () {
             return new Validator;
@@ -72,6 +73,25 @@ class EntityTableParserTest extends PHPUnit_Framework_TestCase
                 'ALTER TABLE users ADD CONSTRAINT users_field4_fk FOREIGN KEY (field4) REFERENCES table (id);',
                 'ALTER TABLE users ADD CONSTRAINT users_field6_fk FOREIGN KEY (field6) REFERENCES table (id);',
                 'ALTER TABLE users ADD CONSTRAINT users_field8_fk FOREIGN KEY (field8) REFERENCES table (id)',
+            ]
+        );
+
+        $this->assertEquals($sql, $table->makeCreateSql());
+    }
+
+    public function testIsAllowingEmptyDefaults()
+    {
+        $entity = new EmptyDefaultEntityStub;
+        $parser = new EntityTableParser;
+        $table = $parser->parseEntity($entity);
+
+        $sql = implode(
+            '',
+            [
+                'CREATE TABLE users ( ',
+                    'id int(11) unsigned not null primary key auto_increment,',
+                    'field varchar(20) default \'\'',
+                ' ) COMMENT \'MINI_FWK_ENTITY\''
             ]
         );
 

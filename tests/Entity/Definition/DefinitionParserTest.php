@@ -20,4 +20,21 @@ class DefinitionParserTest extends PHPUnit_Framework_TestCase
             $definition['password']
         );
     }
+
+    public function testIsEmptyValues()
+    {
+        $entity = new EntityStub;
+        $parser = new DefinitionParser;
+        $definition = $parser->parse([
+            'field' => 'string:20|default:'
+        ]);
+
+        $this->assertEquals(
+            [
+                'string' => [20],
+                'default' => ['']
+            ],
+            $definition['field']
+        );
+    }
 }

@@ -151,9 +151,17 @@ class DatabaseTableParser
      */
     public function parseColumn(array $row)
     {
+        $columnDefault = null;
+
+        if ($row['COLUMN_DEFAULT'] !== null) {
+            $columnDefault = is_numeric($row['COLUMN_DEFAULT'])
+                ? $row['COLUMN_DEFAULT']
+                : '\'' . $row['COLUMN_DEFAULT'] . '\'';
+        }
+
         $sql = $row['COLUMN_NAME'] . ' ' . $row['COLUMN_TYPE'] .
             ($row['IS_NULLABLE'] == 'NO' ? ' not null' : '') .
-            ($row['COLUMN_DEFAULT'] !== null ? ' default ' . $row['COLUMN_DEFAULT'] : '') .
+            ($columnDefault !== null ? ' default ' . $columnDefault : '') .
             (stristr($row['COLUMN_KEY'], 'PRI') ? ' primary key' : '') .
             (stristr($row['EXTRA'], 'auto_increment') ? ' auto_increment' : '');
 
