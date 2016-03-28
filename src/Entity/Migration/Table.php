@@ -148,10 +148,12 @@ class Table
         if ($item->type == TableItem::TYPE_COLUMN) {
             $sql = sprintf('ALTER TABLE %s DROP COLUMN %s', $this->name, $item->name);
         } else if ($item->type == TableItem::TYPE_CONSTRAINT) {
+            $sql = 'ALTER TABLE ' . $this->name;
+
             if (strstr($item->sql, 'INDEX')) {
-                $sql = 'DROP INDEX ' . $item->name;
+                $sql .= 'DROP INDEX ' . $item->name;
             } elseif (strstr($item->sql, 'FOREIGN KEY')) {
-                $sql = 'DROP FOREIGN KEY ' . $item->name;
+                $sql .= 'DROP FOREIGN KEY ' . $item->name;
             }
         }
 
