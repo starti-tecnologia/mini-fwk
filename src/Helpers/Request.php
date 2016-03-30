@@ -56,4 +56,13 @@ class Request extends RequestBase
         return $obj;
     }
 
+    /**
+     * Return json object
+     *
+     * @return mixed
+     */
+    public function getJSON() {
+        return $this->data;
+    }
+
 }
