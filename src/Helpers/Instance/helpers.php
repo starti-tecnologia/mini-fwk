@@ -114,7 +114,7 @@ if ( ! function_exists('camel_case'))
                 '',
                 ucwords(
                     str_replace(
-                        array('-', '_'),
+                        '_',
                         ' ',
                         $value
                     )
