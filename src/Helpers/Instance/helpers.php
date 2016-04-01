@@ -26,9 +26,13 @@ if (!function_exists('env')) {
         global $env;
 
         if (! $env) {
-            $kernel = app()->get('Mini\Kernel');
-            $env = new Dotenv($kernel->getBasePath());
-            $env->load();
+            try {
+                $kernel = app()->get('Mini\Kernel');
+                $env = new Dotenv($kernel->getBasePath());
+                $env->load();
+            } catch (\Exception $e) {
+                $env = null;
+            }
         }
 
         $result = getenv($name);
@@ -91,5 +95,31 @@ if ( ! function_exists('array_except'))
     function array_except($array, $keys)
     {
         return array_diff_key($array, array_flip((array) $keys));
+    }
+}
+
+if ( ! function_exists('camel_case'))
+{
+    /**
+     * Convert a value to camel case.
+     *
+     * @param  string  $value
+     * @return string
+     */
+    function camel_case($value)
+    {
+        return lcfirst(
+            str_replace(
+                ' ',
+                '',
+                ucwords(
+                    str_replace(
+                        '_',
+                        ' ',
+                        $value
+                    )
+                )
+            )
+        );
     }
 }

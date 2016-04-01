@@ -91,6 +91,10 @@ class OutputSerializer
                         $value = $value ? DateTime::createFromFormat('Y-m-d H:i:s', $value)->format('c') : null;
                     }
 
+                    if (env('CONVERT_CAMEL_CASE')) {
+                        $key = camel_case($key);
+                    }
+
                     $object[$key] = $value;
                 };
             } elseif ($isObject) {
