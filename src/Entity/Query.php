@@ -72,6 +72,13 @@ class Query
         return $this;
     }
 
+    public function rawJoin($sql)
+    {
+        $this->spec['joins'][] = new RawValue($sql);
+
+        return $this;
+    }
+
     private function handleDefaultWhere($column, $comparator, $value, $operator='AND')
     {
         $rawValue = null;
@@ -296,10 +303,14 @@ class Query
     public function makeJoinSql()
     {
         return implode(' ', array_map(function ($join) {
-            $join[1] = quote_sql($join[1]);
-            $join[2] = quote_sql($join[2]);
-            $join[4] = quote_sql($join[4]);
-            return vsprintf('%s %s ON (%s %s %s)', $join);
+            if ($join instanceof RawValue) {
+                return $join->value;
+            } else {
+                $join[1] = quote_sql($join[1]);
+                $join[2] = quote_sql($join[2]);
+                $join[4] = quote_sql($join[4]);
+                return vsprintf('%s %s ON (%s %s %s)', $join);
+            }
         }, $this->spec['joins']));
     }
 
