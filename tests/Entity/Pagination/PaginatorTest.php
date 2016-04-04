@@ -2,6 +2,7 @@
 
 use Mini\Entity\Query;
 use Mini\Entity\Pagination\Paginator;
+use Mini\Entity\RawValue;
 
 class PaginatorTest extends PHPUnit_Framework_TestCase
 {
@@ -19,7 +20,7 @@ class PaginatorTest extends PHPUnit_Framework_TestCase
         ]);
 
         $this->assertEquals(
-            'SELECT * FROM users WHERE `name` = :p0 ORDER BY `name` DESC',
+            'SELECT * FROM `users` WHERE `name` = :p0 ORDER BY `name` DESC',
             $query->makeSql()
         );
     }
@@ -48,7 +49,7 @@ class PaginatorTest extends PHPUnit_Framework_TestCase
         ]);
 
         $this->assertEquals(
-            'SELECT * FROM users WHERE CONCAT(fist_name, last_name) LIKE :p0 ORDER BY CONCAT(fist_name, last_name) DESC',
+            'SELECT * FROM `users` WHERE CONCAT(fist_name, last_name) LIKE :p0 ORDER BY CONCAT(fist_name, last_name) DESC',
             $query->makeSql()
         );
     }

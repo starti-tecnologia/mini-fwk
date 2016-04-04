@@ -25,7 +25,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testIsMakingSimpleSql()
     {
         $this->assertEquals(
-            'SELECT * FROM users',
+            'SELECT * FROM `users`',
             (new Query)
                 ->table('users')
                 ->makeSql()
@@ -35,7 +35,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testIsMakingSelectSql()
     {
         $this->assertEquals(
-            'SELECT name, age, deleted_at FROM users',
+            'SELECT `name`, `age`, `deleted_at` FROM `users`',
             (new Query)
                 ->table('users')
                 ->select(
@@ -51,7 +51,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testIsMakingLeftJoinSql()
     {
         $this->assertEquals(
-            'SELECT name FROM users LEFT JOIN user_types ON (user_types.id = users.id)',
+            'SELECT `name` FROM `users` LEFT JOIN `user_types` ON (`user_types`.`id` = `users`.`id`)',
             (new Query)
                 ->table('users')
                 ->select(['name'])
@@ -63,7 +63,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testIsMakingInnerJoinSql()
     {
         $this->assertEquals(
-            'SELECT name FROM users INNER JOIN user_types ON (user_types.id = users.id)',
+            'SELECT `name` FROM `users` INNER JOIN `user_types` ON (`user_types`.`id` = `users`.`id`)',
             (new Query)
                 ->table('users')
                 ->select(['name'])
@@ -75,7 +75,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testIsMakingWhereSql()
     {
         $this->assertEquals(
-            'SELECT * FROM users WHERE name = :p0',
+            'SELECT * FROM `users` WHERE `name` = :p0',
             (new Query)
                 ->table('users')
                 ->where('name', '=', 'Lala')
@@ -86,7 +86,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testIsMakingWhereWithOperatorSql()
     {
         $this->assertEquals(
-            'SELECT * FROM users WHERE name = :p0 OR deleted_at < NOW()',
+            'SELECT * FROM `users` WHERE `name` = :p0 OR `deleted_at` < NOW()',
             (new Query)
                 ->table('users')
                 ->where('name', '=', 'Lala')
@@ -98,7 +98,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testIsMakingWhereWithSubQuerySql()
     {
         $this->assertEquals(
-            'SELECT * FROM users WHERE name = :p0 OR (name = :p1 OR deleted_at < NOW())',
+            'SELECT * FROM `users` WHERE `name` = :p0 OR (`name` = :p1 OR `deleted_at` < NOW())',
             (new Query)
                 ->table('users')
                 ->where('name', '=', 'Lala')
@@ -112,7 +112,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
         );
 
         $this->assertEquals(
-            'SELECT * FROM users WHERE name = :p0 AND (name = :p1)',
+            'SELECT * FROM `users` WHERE `name` = :p0 AND (`name` = :p1)',
             (new Query)
                 ->table('users')
                 ->where('name', '=', 'Lala')
@@ -127,7 +127,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testIsMakingWhereInSql()
     {
         $this->assertEquals(
-            'SELECT * FROM users WHERE name IN (:p0, :p1)',
+            'SELECT * FROM `users` WHERE `name` IN (:p0, :p1)',
             (new Query)
                 ->table('users')
                 ->where('name', 'IN', ['Jonh', 'James'])
@@ -138,7 +138,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testIsMakingWhereIsNullSql()
     {
         $this->assertEquals(
-            'SELECT * FROM users WHERE name IS NULL',
+            'SELECT * FROM `users` WHERE `name` IS NULL',
             (new Query)
                 ->table('users')
                 ->whereIsNull('name')
@@ -149,7 +149,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testIsMakingWhereIsNotNullSql()
     {
         $this->assertEquals(
-            'SELECT * FROM users WHERE name IS NOT NULL',
+            'SELECT * FROM `users` WHERE `name` IS NOT NULL',
             (new Query)
                 ->table('users')
                 ->whereIsNotNull('name')
@@ -160,7 +160,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testIsMakingOrderBySql()
     {
         $this->assertEquals(
-            'SELECT * FROM users ORDER BY name ASC',
+            'SELECT * FROM `users` ORDER BY `name` ASC',
             (new Query)
                 ->table('users')
                 ->orderBy('name', 'ASC')
@@ -171,7 +171,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testIsMakingLimitSql()
     {
         $this->assertEquals(
-            'SELECT * FROM users LIMIT 0, 1000',
+            'SELECT * FROM `users` LIMIT 0, 1000',
             (new Query)
                 ->table('users')
                 ->limit(0, 1000)
@@ -182,7 +182,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testIsMakingRequiredIncludeRelationSql()
     {
         $this->assertEquals(
-            'SELECT posts.*, owner.name as owner_name FROM posts INNER JOIN users owner ON (posts.owner_id = owner.id)',
+            'SELECT `posts`.*, `owner`.`name` as `owner_name` FROM `posts` INNER JOIN `users` `owner` ON (`posts`.`owner_id` = `owner`.`id`)',
             RelationEntityStub::query()
                 ->includeRelation('owner')
                 ->makeSql()
@@ -192,7 +192,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testIsMakingNotRequiredIncludeRelationSql()
     {
         $this->assertEquals(
-            'SELECT posts.*, owner.name as owner_name FROM posts LEFT JOIN users owner ON (posts.owner_id = owner.id)',
+            'SELECT `posts`.*, `owner`.`name` as `owner_name` FROM `posts` LEFT JOIN `users` `owner` ON (`posts`.`owner_id` = `owner`.`id`)',
             RelationEntityStub::query()
                 ->includeRelation('owner', false)
                 ->makeSql()
@@ -202,7 +202,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testIsMakingFullSql()
     {
         $this->assertEquals(
-            'SELECT name, age FROM users INNER JOIN a ON (a.id = users.id) LEFT JOIN b ON (b.id = users.id) WHERE x = :p0 AND y = NOW() OR z <= :p1 ORDER BY age ASC, name ASC LIMIT 0, 1000',
+            'SELECT `name`, `age` FROM `users` INNER JOIN `a` ON (`a`.`id` = `users`.`id`) LEFT JOIN `b` ON (`b`.`id` = `users`.`id`) WHERE `x` = :p0 AND `y` = NOW() OR `z` <= :p1 ORDER BY `age` ASC, `name` ASC LIMIT 0, 1000',
             (new Query)
                 ->table('users')
                 ->select(['name'])

@@ -274,7 +274,9 @@ class Query
                 $sql .= ' ' . $where[3] . ' ';
             }
 
-            $sql .= sprintf('%s %s %s', $where[0], $where[1], $where[2]);
+            $sql .= sprintf(
+                '%s %s %s', quote_sql($where[0]), $where[1], $where[2]
+            );
         }
 
         return $sql;
@@ -282,12 +284,21 @@ class Query
 
     public function makeSelectSql()
     {
-        return implode(', ', $this->spec['select']);
+        return implode(
+            ', ',
+            array_map(
+                'quote_sql',
+                $this->spec['select']
+            )
+        );
     }
 
     public function makeJoinSql()
     {
         return implode(' ', array_map(function ($join) {
+            $join[1] = quote_sql($join[1]);
+            $join[2] = quote_sql($join[2]);
+            $join[4] = quote_sql($join[4]);
             return vsprintf('%s %s ON (%s %s %s)', $join);
         }, $this->spec['joins']));
     }
@@ -295,13 +306,14 @@ class Query
     public function makeOrderBySql()
     {
         return implode(', ', array_map(function ($orderBy) {
+            $orderBy[0] = quote_sql($orderBy[0]);
             return vsprintf('%s %s', $orderBy);
         }, $this->spec['orderBy']));
     }
 
     public function makeSql()
     {
-        $sql = 'SELECT ' . $this->makeSelectSql() .  ' FROM ' . $this->spec['table'];
+        $sql = 'SELECT ' . $this->makeSelectSql() .  ' FROM ' . quote_sql($this->spec['table']);
 
         if (count($this->spec['joins'])) {
             $sql .= ' ' . $this->makeJoinSql();
