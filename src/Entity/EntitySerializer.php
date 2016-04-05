@@ -210,9 +210,9 @@ class EntitySerializer
                     } elseif (isset($field['float'])) {
                         $value = floatval($value);
                     } elseif (isset($field['date'])) {
-                        $value = $value ? DateTime::createFromFormat('Y-m-d H:i:s', $value)->format('Y-m-d') : null;
+                        $value = $value ? \DateTime::createFromFormat('Y-m-d H:i:s', $value)->format('Y-m-d') : null;
                     } elseif (isset($field['datetime'])) {
-                        $value = $value ? DateTime::createFromFormat('Y-m-d H:i:s', $value)->format('c') : null;
+                        $value = $value ? \DateTime::createFromFormat('Y-m-d H:i:s', $value)->format('c') : null;
                     }
 
                     if (env('CONVERT_CAMEL_CASE')) {
