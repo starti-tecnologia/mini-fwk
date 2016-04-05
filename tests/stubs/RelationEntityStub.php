@@ -15,6 +15,12 @@ class RelationEntityStub extends Entity
         'owner_id' => 'integer|belongsTo:customers'
     ];
 
+    public $visible = [
+        'id',
+        'name',
+        'owner_id',
+    ];
+
     public $relations = [
         'owner' => [
             'class' => SimpleEntityStub::class,

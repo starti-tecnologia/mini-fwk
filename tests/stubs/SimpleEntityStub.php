@@ -13,4 +13,9 @@ class SimpleEntityStub extends Entity
         'id' => 'pk',
         'name' => 'string',
     ];
+
+    public $visible = [
+        'id',
+        'name',
+    ];
 }

@@ -111,7 +111,7 @@ class EntitySerializer
             break;
         }
 
-        if (isset($entity->visible[0]) && ! in_array($field, $entity->visible)) {
+        if (! $isRelation && isset($entity->visible[0]) && ! in_array($field, $entity->visible)) {
             return null;
         }
 
@@ -155,10 +155,6 @@ class EntitySerializer
                 ];
             }
         }
-
-        //if (stristr($field, 'address')) {
-        //    var_dump($context['format']);
-        //}
 
         return $context;
     }
