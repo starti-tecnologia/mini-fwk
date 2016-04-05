@@ -115,8 +115,10 @@ abstract class Entity implements \JsonSerializable
             }
         }
 
+        $allowEverything = isset($this->fillable[0]) && $this->fillable[0] === '*';
+
         foreach ($data as $key => $value) {
-            if ($this->fillable === null || in_array($key, $this->fillable)) {
+            if ($allowEverything || in_array($key, $this->fillable)) {
                 $this->fields[$key] = $value;
             }
         }

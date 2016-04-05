@@ -14,6 +14,10 @@ class SimpleEntityStub extends Entity
         'name' => 'string',
     ];
 
+    public $fillable = [
+        '*'
+    ];
+
     public $visible = [
         'id',
         'name',
