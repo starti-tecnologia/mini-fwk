@@ -82,4 +82,15 @@ class EntityTest extends PHPUnit_Framework_TestCase
             $entity->jsonSerialize()
         );
     }
+
+    public function testIsFillingEverything()
+    {
+        $simple = new SimpleEntityStub;
+        $simple->fill([
+            'id' => 'lala',
+            'name' => 'lala'
+        ]);
+        $this->assertEquals('lala', $simple->id);
+        $this->assertEquals('lala', $simple->name);
+    }
 }

@@ -14,6 +14,7 @@ class EntitySerializerTest extends PHPUnit_Framework_TestCase
     {
         require_once __TEST_DIRECTORY__ . '/stubs/SerializableEntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/SimpleEntityStub.php';
+        require_once __TEST_DIRECTORY__ . '/stubs/RelationEntityStub.php';
     }
 
     public function testIsSerializingEntities()
@@ -86,5 +87,29 @@ class EntitySerializerTest extends PHPUnit_Framework_TestCase
         );
 
         putenv('CONVERT_CAMEL_CASE=0');
+    }
+
+    public function testIsSerializingRelations()
+    {
+        $entity = new RelationEntityStub;
+
+        $entity->fields = [
+            'id' => '1',
+            'name' => 'Lala',
+            'owner_id' => '1',
+            'owner_name' => 'John'
+        ];
+
+        $this->assertEquals(
+            [
+                'id' => 1,
+                'name' => 'Lala',
+                'owner' => [
+                    'id' => 1,
+                    'name' => 'John'
+                ]
+            ],
+            EntitySerializer::instance()->serialize($entity)
+        );
     }
 }
