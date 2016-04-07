@@ -87,11 +87,11 @@ class WorkerRunner extends WorkerBase
             $this->log("--- RUN ---");
             $last = Cache::get($queueKeyLast);
             if ($last > $this->lastExecution) {
-                $queues = WorkerQueue::getDataForQueue($this->worker);
+                $queues = WorkerQueue::getDataFromQueue($this->worker);
                 foreach ($queues as $queue) {
-                    $obj = Cache::get($this->worker . '-' . $queue);
+                    //$obj = Cache::get($this->worker . '-' . $queue);
                     $this->objWorker->run(unserialize($obj));
-                    Cache::delete($this->worker . '-' . $queue);
+                    WorkerQueue::delete($this->worker . '-' . $queue);
                 }
             }
             sleep($this->workerSleepTime / 1000);

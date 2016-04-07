@@ -5,6 +5,7 @@ namespace Mini\Console\Command;
 use Mini\Console\Common\ConsoleTable;
 use Commando\Command as Commando;
 use Mini\Router\Router;
+use Mini\Workers\WorkerQueue;
 
 
 class RouteListCommand extends AbstractCommand

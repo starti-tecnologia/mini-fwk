@@ -10,37 +10,59 @@ namespace Mini\Workers;
 
 
 use Mini\Behaviors\Cache;
+use Mini\Workers\Drivers\Beanstalkd;
+use Mini\Workers\Drivers\Memcached;
 
 class WorkerQueue
 {
+    /**
+     * @var null
+     */
+    private static $instance = null;
 
-    public static function addQueue($queueName, array $data) {
-        $microtime = microtime(true);
-        $key = $queueName . '-' . $microtime;
-        Cache::set($key, serialize($data));
+    /**
+     * @return Beanstalkd|Memcached|null
+     */
+    private static function instance()
+    {
+        if (self::$instance === null) {
 
-        $keyStatus = $queueName . '-LAST';
-        Cache::set($keyStatus, $microtime);
+            $driver = env('WORKER_DRIVER');
+            if ($driver == 'MEMCACHED')
+                self::$instance = new Memcached;
+            else if ($driver == 'BEANSTALKD')
+                self::$instance = new Beanstalkd;
+        }
 
-        $keyQueueObj = $queueName . '-OBJ';
-        $allObj = Cache::get($keyQueueObj);
-        if (! $allObj) $allObj = [];
-        else $allObj = unserialize($allObj);
-
-        $allObj[] = $microtime;
-        Cache::set($keyQueueObj, serialize($allObj));
+        return self::$instance;
     }
 
-    public static function getDataForQueue($queueName) {
-        $keyLast = $queueName . '-LAST';
-        $keyQueueObj = $queueName . '-OBJ';
-        $allObj = Cache::get($keyQueueObj);
-        Cache::delete($keyQueueObj);
-        Cache::delete($keyLast);
 
-        if ($allObj)
-            return unserialize($allObj);
-        else return [];
+    /**
+     * @param $queueName
+     * @param array $data
+     * @return null
+     */
+    public static function addQueue($queueName, array $data) {
+        if (self::instance() === null) return null;
+
+        self::$instance->addQueue($queueName, $data);
+    }
+
+    /**
+     * @param $queueName
+     * @return null
+     */
+    public static function getDataFromQueue($queueName) {
+        if (self::instance() === null) return null;
+
+        self::$instance->getDataFromQueue($queueName, $data);
+    }
+
+    public static function delete($queueName) {
+        if (self::instance() === null) return null;
+
+        self::$instance->delete($queueName);
     }
 
 }
