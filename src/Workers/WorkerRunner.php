@@ -82,19 +82,36 @@ class WorkerRunner extends WorkerBase
      */
     public function run() {
 
-        $queueKeyLast = $this->worker . '-LAST';
-        while (1) {
-            $this->log("--- RUN ---");
-            $last = Cache::get($queueKeyLast);
-            if ($last > $this->lastExecution) {
+        $driver = env("WORKER_DRIVER");
+        if ($driver == "BEANSTALKD") {
+
+            while (1) {
+                $this->log("--- RUN ---");
                 $queues = WorkerQueue::getDataFromQueue($this->worker);
-                foreach ($queues as $queue) {
-                    //$obj = Cache::get($this->worker . '-' . $queue);
-                    $this->objWorker->run(unserialize($obj));
-                    WorkerQueue::delete($this->worker . '-' . $queue);
+                if (count($queues) > 0) {
+                    foreach ($queues as $queue) {
+                        $this->objWorker->run(unserialize($queue));
+                    }
                 }
+                sleep($this->workerSleepTime / 1000);
             }
-            sleep($this->workerSleepTime / 1000);
+        } else if ($driver == "MEMCACHED"){
+            $queueKeyLast = $this->worker . '-LAST';
+            while (1) {
+                $this->log("--- RUN ---");
+                $last = Cache::get($queueKeyLast);
+                if ($last > $this->lastExecution) {
+                    $queues = WorkerQueue::getDataFromQueue($this->worker);
+                    if (count($queues) > 0) {
+                        foreach ($queues as $queue) {
+                            $obj = Cache::get($this->worker . '-' . $queue);
+                            $this->objWorker->run(unserialize($obj));
+                            WorkerQueue::delete($this->worker . '-' . $queue);
+                        }
+                    }
+                }
+                sleep($this->workerSleepTime / 1000);
+            }
         }
 
     }

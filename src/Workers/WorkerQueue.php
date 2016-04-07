@@ -56,7 +56,7 @@ class WorkerQueue
     public static function getDataFromQueue($queueName) {
         if (self::instance() === null) return null;
 
-        self::$instance->getDataFromQueue($queueName, $data);
+        return self::$instance->getDataFromQueue($queueName);
     }
 
     public static function delete($queueName) {
