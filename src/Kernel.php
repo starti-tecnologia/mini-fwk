@@ -58,8 +58,6 @@ class Kernel
 
     public function setUpConfiguration()
     {
-        Router::setBasePath($this->basePath);
-        Router::loadConfigFile('routes.php');
         $this->setUpCache();
 
         $this->application->afterConfigurationSetup();
@@ -78,6 +76,8 @@ class Kernel
      */
     public function bootstrap()
     {
+        Router::setBasePath($this->basePath);
+        Router::loadConfigFile('routes.php');
         Router::matchRoutes();
     }
 
