@@ -15,7 +15,7 @@ class Console
      */
     private $commands = [];
 
-    public function __construct (Kernel $kernel)
+    public function __construct(Kernel $kernel)
     {
         define('IS_CONSOLE', true);
         $this->kernel = $kernel;
@@ -23,6 +23,7 @@ class Console
 
     public function setUp()
     {
+        $this->kernel->loadConfiguration();
         $this->parseFrameworkCommands();
     }
 

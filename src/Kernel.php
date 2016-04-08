@@ -71,13 +71,18 @@ class Kernel
         }
     }
 
+    public function loadConfiguration()
+    {
+        Router::setBasePath($this->basePath);
+        Router::loadConfigFile('routes.php');
+    }
+
     /**
      * Starts the request routing
      */
     public function bootstrap()
     {
-        Router::setBasePath($this->basePath);
-        Router::loadConfigFile('routes.php');
+        $this->loadConfiguration();
         Router::matchRoutes();
     }
 
