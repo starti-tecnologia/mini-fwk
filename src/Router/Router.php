@@ -99,8 +99,9 @@ class Router
         if (!empty($routes)) {
             self::setParsedFile($routes);
             self::loadMiddlewareFile();
-        } else
+        } elseif (!defined('IS_CONSOLE')) {
             throw new MiniException("Routes variable not found.");
+        }
     }
 
     /**
