@@ -31,6 +31,8 @@ class Validator
         'datetime' => 'The %s field is datetime.',
         'time' => 'The %s field is time.',
         'email' => 'The %s field is email.',
+        'maxLength' => 'The %s field max length is %s.',
+        'minLength' => 'The %s field min length is %s.',
     ];
 
     /**
@@ -142,7 +144,21 @@ class Validator
                 continue;
             }
 
+            $filteredRules = [];
+
             foreach ($rules as $rule => $parameters) {
+                $filteredRules[$rule] = $parameters;
+
+                if ($rule === 'string') {
+                    $filteredRules['maxLength'] = [isset($parameters[0]) ? $parameters[0] : 255];
+                    $filteredRules['minLength'] = [isset($parameters[1]) ? $parameters[1] : 0];
+                } elseif ($rule == 'text') {
+                    $filteredRules['maxLength'] = [isset($parameters[0]) ? $parameters[0] : 65535];
+                    $filteredRules['minLength'] = [isset($parameters[1]) ? $parameters[1] : 0];
+                }
+            }
+
+            foreach ($filteredRules as $rule => $parameters) {
                 if (! isset($this->rules[$rule]) && ! isset($this->customRules[$rule])) {
                     continue;
                 }
@@ -196,9 +212,7 @@ class Validator
 
     private function validateStringRule($value, array $parameters)
     {
-        $length = isset($parameters[0]) ? $parameters[0] : null;
-
-        return is_string($value) && ($length === null || strlen($value) <= $length);
+        return is_string($value);
     }
 
     private function validateCharRule($value, array $parameters)
@@ -266,6 +280,16 @@ class Validator
     public function setCustomRule($name, $message, $callback)
     {
         $this->customRules[$name] = new CustomRule($name, $message, $callback);
+    }
+
+    private function validateMaxLengthRule($value, array $parameters)
+    {
+        return strlen($value) <= $parameters[0];
+    }
+
+    private function validateMinLengthRule($value, array $parameters)
+    {
+        return strlen($value) >= $parameters[0];
     }
 
     /**

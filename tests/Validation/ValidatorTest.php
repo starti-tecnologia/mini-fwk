@@ -22,7 +22,9 @@ class ValidationTest extends PHPUnit_Framework_TestCase
                 'email' => 'jeferson.daniel',
                 'password' => '23456',
                 'user_type' => 'c451f95-91eb-4624-9a31-495c656e3ab6',
-                'date' => ''
+                'date' => '',
+                'city' => 'a',
+                'state' => 'dsadsadsa',
             ]
         );
 
@@ -33,6 +35,8 @@ class ValidationTest extends PHPUnit_Framework_TestCase
                 'email' => 'email|required|unique',
                 'password' => 'string:100|required',
                 'date' => 'datetime',
+                'city' => 'string:255:3',
+                'state' => 'string:2'
             ]);
         } catch (ValidationException $e) {
             $exception = $e;
@@ -41,7 +45,9 @@ class ValidationTest extends PHPUnit_Framework_TestCase
         $this->assertEquals([
             'first_name' => ['The first_name field is required.'],
             'email' => ['The email field is email.'],
-            'date' => ['The date field is datetime.']
+            'date' => ['The date field is datetime.'],
+            'city' => ['The city field min length is 3.'],
+            'state' => ['The state field max length is 2.'],
         ], $exception->errors);
     }
 
