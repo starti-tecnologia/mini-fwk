@@ -57,8 +57,7 @@ class WorkerCommand extends AbstractCommand
     }
 
     private function getPathWorkers() {
-        $path = getcwd();
-        return $path . '/src/Workers';
+        return app()->get('Mini\Kernel')->getSourcePath() . '/Workers';
     }
 
     public function listAllWorkers() {
