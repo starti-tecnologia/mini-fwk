@@ -13,6 +13,7 @@ class Query
         'joins' => [],
         'wheres' => [],
         'orderBy' => [],
+        'groupBy' => null,
         'select' => ['*'],
         'bindings' => [],
         'limit' => null
@@ -201,6 +202,13 @@ class Query
         return $this;
     }
 
+    public function groupBy($column)
+    {
+        $this->spec['groupBy'] = $column;
+
+        return $this;
+    }
+
     public function limit($offset, $rowCount)
     {
         $this->spec['limit'] = [$offset, $rowCount];
@@ -322,6 +330,11 @@ class Query
         }, $this->spec['orderBy']));
     }
 
+    public function makeGroupBySql()
+    {
+        return $this->spec['groupBy'];
+    }
+
     public function makeSql()
     {
         $sql = 'SELECT ' . $this->makeSelectSql() .  ' FROM ' . quote_sql($this->spec['table']);
@@ -332,6 +345,10 @@ class Query
 
         if (count($this->spec['wheres'])) {
             $sql .= ' WHERE ' . $this->makeWhereSql();
+        }
+
+        if (count($this->spec['groupBy'])) {
+            $sql .= ' GROUP BY ' . quote_sql($this->makeGroupBySql());
         }
 
         if (count($this->spec['orderBy'])) {
