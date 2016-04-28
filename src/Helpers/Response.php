@@ -11,10 +11,16 @@ class Response extends ResponseBase
      */
     public function json($object, $statuCode = 200)
     {
-        $this->setBody(json_encode($object));
+        $text = json_encode($object);
+
+        if (env('GZIP')) {
+            $text = gzencode($text, -1);
+            $this->header('Content-Encoding', 'gzip');
+        }
+
         $this->setStatusCode($statuCode);
-        $this->header('Content-type', 'application/json');
+        $this->header('Content-Type', 'application/json');
+        $this->setBody($text);
         $this->make();
     }
-
 }
