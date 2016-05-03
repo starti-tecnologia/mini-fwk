@@ -44,7 +44,7 @@ trait QueryAware
         if (isset($obj->idAttribute)) self::$instanceIdAttribute = $obj->idAttribute;
         self::$instanceUseSoftDeletes = $obj->useSoftDeletes;
 
-        self::$instanceConnectionName = app()->get('Mini\Entity\ConnectionManager')->getConnection($obj->connection);
+        self::$instanceConnectionName = $obj->connection;
     }
 
     private static function getInstanceConnection()
