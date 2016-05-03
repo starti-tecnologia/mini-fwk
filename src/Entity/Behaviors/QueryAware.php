@@ -32,7 +32,7 @@ trait QueryAware
     /**
      * @var Connection
      */
-    private static $instanceConnection;
+    private static $instanceConnectionName;
 
     /**
      *
@@ -44,7 +44,12 @@ trait QueryAware
         if (isset($obj->idAttribute)) self::$instanceIdAttribute = $obj->idAttribute;
         self::$instanceUseSoftDeletes = $obj->useSoftDeletes;
 
-        self::$instanceConnection = app()->get('Mini\Entity\ConnectionManager')->getConnection($obj->connection);
+        self::$instanceConnectionName = app()->get('Mini\Entity\ConnectionManager')->getConnection($obj->connection);
+    }
+
+    private static function getInstanceConnection()
+    {
+        return app()->get('Mini\Entity\ConnectionManager')->getConnection(self::$instanceConnectionName);
     }
 
     /**
@@ -66,7 +71,7 @@ trait QueryAware
             intval($id),
             $where_soft_delete
         );
-        $result = self::$instanceConnection->select($sql);
+        $result = self::getInstanceConnection()->select($sql);
         return $result;
     }
 
@@ -91,7 +96,7 @@ trait QueryAware
             intval($id),
             $where_soft_delete
         );
-        $result = self::$instanceConnection->select($sql);
+        $result = self::getInstanceConnection()->select($sql);
         return $result[0];
     }
 
@@ -113,7 +118,7 @@ trait QueryAware
             self::$instanceTable,
             $where_soft_delete
         );
-        $result = self::$instanceConnection->select($sql);
+        $result = self::getInstanceConnection()->select($sql);
         return $result;
     }
 
@@ -140,7 +145,7 @@ trait QueryAware
             );
         }
 
-        return self::$instanceConnection->exec($sql);
+        return self::getInstanceConnection()->exec($sql);
     }
 
     /**
@@ -191,19 +196,19 @@ trait QueryAware
             $orders
         );
 
-        return self::$instanceConnection->select($sql);
+        return self::getInstanceConnection()->select($sql);
     }
 
     public static function select($sql, $params = [])
     {
         self::instance();
-        return self::$instanceConnection->select($sql, $params);
+        return self::getInstanceConnection()->select($sql, $params);
     }
 
     public static function exec($sql)
     {
         self::instance();
-        return self::$instanceConnection->exec($sql);
+        return self::getInstanceConnection()->exec($sql);
     }
 
     public static function query()
@@ -212,7 +217,7 @@ trait QueryAware
 
         $query = (new Query)
             ->table(self::$instanceTable)
-            ->connection(self::$instanceConnection)
+            ->connection(self::getInstanceConnection())
             ->className(static::class);
 
         if (self::$instanceUseSoftDeletes) {

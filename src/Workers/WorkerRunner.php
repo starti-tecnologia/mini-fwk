@@ -93,6 +93,7 @@ class WorkerRunner extends WorkerBase
                         $this->objWorker->run(unserialize($queue));
                     }
                 }
+                app()->get('Mini\Entity\ConnectionManager')->closeAll();
                 sleep($this->workerSleepTime / 1000);
             }
         } else if ($driver == "MEMCACHED"){

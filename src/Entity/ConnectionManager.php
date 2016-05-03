@@ -47,4 +47,9 @@ class ConnectionManager
 
         return $this->connections[$name];
     }
+
+    public function closeAll()
+    {
+        $this->connections = [];
+    }
 }
