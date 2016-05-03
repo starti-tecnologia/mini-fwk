@@ -111,6 +111,7 @@ class WorkerRunner extends WorkerBase
                         }
                     }
                 }
+                app()->get('Mini\Entity\ConnectionManager')->closeAll();
                 sleep($this->workerSleepTime / 1000);
             }
         }
