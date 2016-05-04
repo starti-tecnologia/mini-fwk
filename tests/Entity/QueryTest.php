@@ -178,6 +178,15 @@ class QueryTest extends PHPUnit_Framework_TestCase
                 ->groupBy('name')
                 ->makeSql()
         );
+
+        $this->assertEquals(
+            'SELECT * FROM `users` GROUP BY `name`, `age` ORDER BY `name` ASC',
+            (new Query)
+                ->table('users')
+                ->orderBy('name', 'ASC')
+                ->groupBy(['name', 'age'])
+                ->makeSql()
+        );
     }
 
     public function testIsMakingLimitSql()

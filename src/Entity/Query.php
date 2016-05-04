@@ -204,7 +204,7 @@ class Query
 
     public function groupBy($column)
     {
-        $this->spec['groupBy'] = $column;
+        $this->spec['groupBy'] = is_array($column) ? $column : [$column];
 
         return $this;
     }
@@ -332,7 +332,9 @@ class Query
 
     public function makeGroupBySql()
     {
-        return $this->spec['groupBy'];
+        return implode(', ', array_map(function ($groupBy) {
+            return quote_sql($groupBy);
+        }, $this->spec['groupBy']));
     }
 
     public function makeSql()
@@ -348,7 +350,7 @@ class Query
         }
 
         if (count($this->spec['groupBy'])) {
-            $sql .= ' GROUP BY ' . quote_sql($this->makeGroupBySql());
+            $sql .= ' GROUP BY ' . $this->makeGroupBySql();
         }
 
         if (count($this->spec['orderBy'])) {
