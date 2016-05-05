@@ -10,6 +10,7 @@ class Query
         'alias' => 't',
         'class' => null,
         'table' => null,
+        'rawTable' => null,
         'joins' => [],
         'wheres' => [],
         'orderBy' => [],
@@ -37,6 +38,13 @@ class Query
     public function table($table)
     {
         $this->spec['table'] = $table;
+
+        return $this;
+    }
+
+    public function rawTable($table)
+    {
+        $this->spec['rawTable'] = $table;
 
         return $this;
     }
@@ -339,7 +347,13 @@ class Query
 
     public function makeSql()
     {
-        $sql = 'SELECT ' . $this->makeSelectSql() .  ' FROM ' . quote_sql($this->spec['table']);
+        $sql = 'SELECT ' . $this->makeSelectSql() .  ' FROM ';
+
+        if ($this->spec['rawTable']) {
+            $sql .= $this->spec['rawTable'];
+        } else {
+            $sql .= quote_sql($this->spec['table']);
+        }
 
         if (count($this->spec['joins'])) {
             $sql .= ' ' . $this->makeJoinSql();

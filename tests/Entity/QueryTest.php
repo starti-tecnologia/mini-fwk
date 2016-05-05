@@ -32,6 +32,16 @@ class QueryTest extends PHPUnit_Framework_TestCase
         );
     }
 
+    public function testIsMakingRawTableSql()
+    {
+        $this->assertEquals(
+            'SELECT * FROM (SELECT * FROM logins) l',
+            (new Query)
+                ->rawTable('(SELECT * FROM logins) l')
+                ->makeSql()
+        );
+    }
+
     public function testIsMakingSelectSql()
     {
         $this->assertEquals(
