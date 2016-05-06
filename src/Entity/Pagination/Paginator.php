@@ -283,6 +283,7 @@ class Paginator
     private function createPaginatorSelect(array $options)
     {
         $initialSql = $options['sql'];
+        $initialSql = preg_replace('@\n@', ' ', trim($initialSql));
         $columnsQuantity = $options['columnsQuantity'];
         $page = $options['page'];
         $perPage = $options['perPage'];
