@@ -47,7 +47,7 @@ trait QueryAware
         self::$instanceConnectionName = $obj->connection;
     }
 
-    private static function getInstanceConnection()
+    public static function getInstanceConnection()
     {
         return app()->get('Mini\Entity\ConnectionManager')->getConnection(self::$instanceConnectionName);
     }
