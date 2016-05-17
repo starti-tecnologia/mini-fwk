@@ -25,6 +25,8 @@ class ValidationTest extends PHPUnit_Framework_TestCase
                 'date' => '',
                 'city' => 'a',
                 'state' => 'dsadsadsa',
+                'age' => 1,
+                'quantity' => 999
             ]
         );
 
@@ -36,7 +38,9 @@ class ValidationTest extends PHPUnit_Framework_TestCase
                 'password' => 'string:100|required',
                 'date' => 'datetime',
                 'city' => 'string:255:3',
-                'state' => 'string:2'
+                'state' => 'string:2',
+                'age' => 'integer|min:18',
+                'quantity' => 'integer|max:18'
             ]);
         } catch (ValidationException $e) {
             $exception = $e;
@@ -48,6 +52,8 @@ class ValidationTest extends PHPUnit_Framework_TestCase
             'date' => ['The date field is datetime.'],
             'city' => ['The city field min length is 3.'],
             'state' => ['The state field max length is 2.'],
+            'age' => ['The age field minimum value is 18.'],
+            'quantity' => ['The quantity field maximum value is 18.'],
         ], $exception->errors);
     }
 

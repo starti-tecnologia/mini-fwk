@@ -54,7 +54,7 @@ trait PaginatorAware
      *     'format' => [
      *       'column1', 'column2'
      *     ],
-     *     'connectionInstance' => Admdns::getInstanceConnection()
+     *     'connection' => Admdns::getInstanceConnection()
      * ];
      *
      * $this->paginateSql($options);

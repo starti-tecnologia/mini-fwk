@@ -33,6 +33,8 @@ class Validator
         'email' => 'The %s field is email.',
         'maxLength' => 'The %s field max length is %s.',
         'minLength' => 'The %s field min length is %s.',
+        'min' => 'The %s field minimum value is %s.',
+        'max' => 'The %s field maximum value is %s.',
     ];
 
     /**
@@ -290,6 +292,17 @@ class Validator
     private function validateMinLengthRule($value, array $parameters)
     {
         return strlen($value) >= $parameters[0];
+    }
+
+
+    private function validateMaxRule($value, array $parameters)
+    {
+        return $value <= $parameters[0];
+    }
+
+    private function validateMinRule($value, array $parameters)
+    {
+        return $value >= $parameters[0];
     }
 
     /**
