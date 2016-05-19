@@ -230,6 +230,23 @@ class QueryTest extends PHPUnit_Framework_TestCase
         );
     }
 
+    public function testIsMakingIncludeRelationWithFieldsSql()
+    {
+        $this->assertEquals(
+            'SELECT `posts`.*, `owner`.`name` as `owner_name` FROM `posts` LEFT JOIN `users` `owner` ON (`posts`.`owner_id` = `owner`.`id`)',
+            RelationEntityStub::query()
+                ->includeRelation('owner', false, ['name'])
+                ->makeSql()
+        );
+
+        $this->assertEquals(
+            'SELECT `posts`.* FROM `posts` LEFT JOIN `users` `owner` ON (`posts`.`owner_id` = `owner`.`id`)',
+            RelationEntityStub::query()
+                ->includeRelation('owner', false, [])
+                ->makeSql()
+        );
+    }
+
     public function testIsMakingFullSql()
     {
         $this->assertEquals(
@@ -246,6 +263,17 @@ class QueryTest extends PHPUnit_Framework_TestCase
                 ->limit(0, 1000)
                 ->orderBy('age')
                 ->orderBy('name', 'ASC')
+                ->makeSql()
+        );
+    }
+
+    public function testIsMakingAliasSql()
+    {
+        $this->assertEquals(
+            'SELECT `p`.*, `owner`.`name` as `owner_name` FROM `posts` `p` INNER JOIN `users` `owner` ON (`p`.`owner_id` = `owner`.`id`)',
+            RelationEntityStub::query()
+                ->alias('p')
+                ->includeRelation('owner')
                 ->makeSql()
         );
     }

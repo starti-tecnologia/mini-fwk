@@ -39,6 +39,15 @@ class Query
     {
         $this->spec['table'] = $table;
 
+        $this->alias($table);
+
+        return $this;
+    }
+
+    public function alias($alias)
+    {
+        $this->spec['alias'] = $alias;
+
         return $this;
     }
 
@@ -248,7 +257,7 @@ class Query
      *
      * @return self
      */
-    public function includeRelation($relation, $required = true)
+    public function includeRelation($relation, $required = true, $fields = null)
     {
         $method = $required ? 'innerJoin' : 'leftJoin';
         $instance = $this->getInstance();
@@ -258,13 +267,13 @@ class Query
 
         $this->$method(
             $relationInstance->table . ' ' . $relation,
-            $instance->table . '.' . $relationField,
+            $this->spec['alias'] . '.' . $relationField,
             '=',
             $relation . '.' . $relationInstance->idAttribute
         );
 
         if ($this->spec['select'] === ['*']) {
-            $this->select([$instance->table . '.*']);
+            $this->select([$this->spec['alias'] . '.*']);
         }
 
         $addSelect = [];
@@ -272,6 +281,10 @@ class Query
 
         foreach (array_keys($relationInstance->definition) as $key) {
             if ($mustIgnoreId && $key === $relationInstance->idAttribute) {
+                continue;
+            }
+
+            if ($fields !== null && in_array($key, $fields) == false) {
                 continue;
             }
 
@@ -352,7 +365,11 @@ class Query
         if ($this->spec['rawTable']) {
             $sql .= $this->spec['rawTable'];
         } else {
-            $sql .= quote_sql($this->spec['table']);
+            $sql .= quote_sql($this->spec['table']) . (
+                $this->spec['table'] == $this->spec['alias']
+                ? ''
+                : ' ' . quote_sql($this->spec['alias'])
+            );
         }
 
         if (count($this->spec['joins'])) {
