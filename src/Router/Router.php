@@ -167,6 +167,7 @@ class Router
                     $matches = Array();
                     // check if the current request matches the expression
                     if(self::matchMethod($route_method) && preg_match($pattern, $request_uri, $matches)) {
+                        app()->get('Mini\Kernel')->setRequestRouting($route_uri);
                         // remove the first match
                         array_shift($matches);
                         // call the callback with the matched positions as params

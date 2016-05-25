@@ -26,6 +26,11 @@ class Kernel
     private $application;
 
     /**
+     * @var
+     */
+    private $requestRouting;
+
+    /**
      * Kernel constructor.
      */
     public function __construct($config)
@@ -43,6 +48,9 @@ class Kernel
         $this->setUpConfiguration();
     }
 
+    /**
+     *
+     */
     public function setUpContainer()
     {
         $container = app();
@@ -56,6 +64,9 @@ class Kernel
         $this->application->afterContainerSetup();
     }
 
+    /**
+     *
+     */
     public function setUpConfiguration()
     {
         $this->setUpCache();
@@ -63,6 +74,9 @@ class Kernel
         $this->application->afterConfigurationSetup();
     }
 
+    /**
+     *
+     */
     private function setUpCache() {
         if (env('MEMCACHED_HOST') !== null && env('MEMCACHED_PORT') !== null) {
             $cacheInstance = new \Memcached();
@@ -71,6 +85,9 @@ class Kernel
         }
     }
 
+    /**
+     *
+     */
     public function loadConfiguration()
     {
         Router::setBasePath($this->basePath);
@@ -105,11 +122,9 @@ class Kernel
         }
     }
 
+
     /**
-     * Handle a Exception
-     *
-     * @param Exception $exception
-     * @return void
+     * @param $exception
      */
     public function handleException($exception)
     {
@@ -118,21 +133,34 @@ class Kernel
         $this->application->onException($exception);
     }
 
+    /**
+     * @return string
+     */
     public function getBasePath()
     {
         return $this->basePath;
     }
 
+    /**
+     * @return string
+     */
     public function getMigrationsPath()
     {
         return $this->basePath . '/migrations';
     }
 
+    /**
+     * @return string
+     */
     public function getEntitiesPath()
     {
         return $this->basePath . '/src/Models';
     }
 
+    /**
+     * @param $section
+     * @return mixed
+     */
     public function getConfigSection($section)
     {
         if (! isset($this->config[$section])) {
@@ -142,23 +170,50 @@ class Kernel
         return $this->config[$section];
     }
 
+    /**
+     * @return string
+     */
     public function getSourcePath()
     {
         return $this->basePath . DIRECTORY_SEPARATOR . 'src';
     }
 
+    /**
+     * @return string
+     */
     public function getControllersPath()
     {
         return $this->getSourcePath() . DIRECTORY_SEPARATOR . 'Controllers';
     }
 
+    /**
+     * @return string
+     */
     public function getRouterPath()
     {
         return $this->getSourcePath() . DIRECTORY_SEPARATOR . 'routers';
     }
 
+    /**
+     * @return string
+     */
     public function getSeedsPath()
     {
         return $this->basePath . DIRECTORY_SEPARATOR . 'seeds';
     }
+
+    /**
+     * @param $route
+     */
+    public function setRequestRouting($route) {
+        $this->requestRouting = $route;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRequestRouting() {
+        return $this->requestRouting;
+    }
+
 }
