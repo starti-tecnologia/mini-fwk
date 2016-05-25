@@ -15,6 +15,11 @@ abstract class Entity implements \JsonSerializable
     public $connection = 'default';
 
     /**
+     * @var string
+     */
+    public $engine = 'InnoDB';
+
+    /**
      * @var boolean
      */
     public $useSoftDeletes = false;
@@ -149,7 +154,7 @@ abstract class Entity implements \JsonSerializable
     /**
      * Attach a related entity to current entity. This will set the foreign
      * and make the attached entity available in the object
-     * 
+     *
      * @param string $relationName
      * @param Entity $relationInstance
      * @return void
@@ -167,7 +172,7 @@ abstract class Entity implements \JsonSerializable
 
     /**
      * Returns a relation entity if available
-     * 
+     *
      * @param string $relationName
      * @return Entity|void
      */

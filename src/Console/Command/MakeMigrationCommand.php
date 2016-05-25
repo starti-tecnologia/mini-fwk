@@ -15,6 +15,8 @@ class MakeMigrationCommand extends AbstractCommand
 
     private $force = false;
 
+    private $filter = '*';
+
     public function getName()
     {
         return 'make:migration';
@@ -32,6 +34,10 @@ class MakeMigrationCommand extends AbstractCommand
             ->describedAs('Make a diff migration from the current entities definition')
             ->boolean();
 
+        $commando->option('filter')
+            ->describedAs('Use a filter to match table names')
+            ->defaultsTo('*');
+
         $commando->option('force')
             ->aka('f')
             ->describedAs('Ignore validations')
@@ -45,6 +51,7 @@ class MakeMigrationCommand extends AbstractCommand
     public function run(Commando $commando)
     {
         $this->force = $commando['force'];
+        $this->filter = $commando['filter'];
         $this->connection = app()->get('Mini\Entity\ConnectionManager')->getConnection($commando['connection']);
 
         $c = new \Colors\Color();
@@ -91,14 +98,28 @@ class MakeMigrationCommand extends AbstractCommand
         ];
     }
 
+    public function filterTables($tables)
+    {
+        $result = [];
+        $regex = '#^' .str_replace('*', '.*', $this->filter) . '$#';
+        foreach ($tables as $key => $value) {
+            if (preg_match($regex, $key)) {
+                $result[$key] = $value;
+            }
+        }
+        return $result;
+    }
+
     public function makeDiffMigration()
     {
         $entityTableParser = new EntityTableParser;
         $databaseTableParser = new DatabaseTableParser;
         $databaseTableParser->setConnection($this->connection);
 
-        $entityTables = $entityTableParser->parse($this->connection->name);
-        $databaseTables = $databaseTableParser->parse();
+        $entityTables = $this->filterTables($entityTableParser->parse($this->connection->name));
+        $databaseTables = $this->filterTables($databaseTableParser->parse());
+
+        $this->validateTables($entityTables, $databaseTables);
 
         $upDiff = $this->processTablesDiff($entityTables, $databaseTables, 'up');
         $downDiff = $this->processTablesDiff($databaseTables, $entityTables, 'down');
@@ -118,6 +139,17 @@ class MakeMigrationCommand extends AbstractCommand
                 ]
             ),
         ];
+    }
+
+    public function validateTables(array $entityTables, array $databaseTables)
+    {
+        foreach ($entityTables as $name => $table) {
+            $databaseTable = isset($databaseTables[$name]) ? $databaseTables[$name] : null;
+
+            if ($databaseTable && $databaseTable->engine != $table->engine) {
+                throw new \Exception("Engine {$table->engine} on table {$name} don't match database engine");
+            }
+        }
     }
 
     public function processTablesDiff(array $sourceTables, array $destTables, $direction)

@@ -15,6 +15,8 @@ class DatabaseTableParser
      */
     private $connection;
 
+    public $tableFilter = 'TABLE_COMMENT = \'MINI_FWK_ENTITY\'';
+
     public function __construct()
     {
         $this->tableSorter = new TableSorter;
@@ -25,13 +27,13 @@ class DatabaseTableParser
         $result = [];
 
         foreach ($this->findTables() as $row) {
-            $result[$row['TABLE_NAME']] = $this->parseTable($row['TABLE_NAME']);
+            $result[$row['TABLE_NAME']] = $this->parseTable($row['TABLE_NAME'], $row['ENGINE']);
         }
 
         return $this->tableSorter->sort($result);
     }
 
-    public function parseTable($tableName)
+    public function parseTable($tableName, $engine)
     {
         $columns = array_map(function ($row) {
             return $this->parseColumn($row);
@@ -42,7 +44,7 @@ class DatabaseTableParser
         }, $this->findTableConstraints($tableName)));
 
         if (count($columns)) {
-            $table = new Table($tableName);
+            $table = new Table($tableName, $engine);
             foreach (array_merge($columns, $constraints) as $item) {
                 $table->items[$item->name] = $item;
             }
@@ -52,15 +54,18 @@ class DatabaseTableParser
 
     public function findTables()
     {
-        return $this->connection->select('
+        $extra = $this->tableFilter ? ' AND ' . $this->tableFilter : '';
+
+        return $this->connection->select("
             SELECT
-                TABLE_NAME
+                TABLE_NAME,
+                ENGINE
             FROM
                 INFORMATION_SCHEMA.TABLES
             WHERE
-                TABLE_SCHEMA = :schemaName AND
-                TABLE_COMMENT = \'MINI_FWK_ENTITY\'
-        ', [
+                TABLE_SCHEMA = :schemaName
+                $extra
+        ", [
             'schemaName' => $this->connection->database
         ]);
     }
@@ -127,7 +132,7 @@ class DatabaseTableParser
 
     /**
      * Row Example:
-     * 
+     *
      * TABLE_CATALOG: def
      * TABLE_SCHEMA: hplus
      * TABLE_NAME: users
@@ -144,8 +149,8 @@ class DatabaseTableParser
      * CHARACTER_SET_NAME: utf8
      * COLLATION_NAME: utf8_unicode_ci
      * COLUMN_TYPE: varchar(255)
-     * COLUMN_KEY: 
-     * EXTRA: 
+     * COLUMN_KEY:
+     * EXTRA:
      * PRIVILEGES: select,insert,update,references
      * COLUMN_COMMENT:
      */
@@ -188,12 +193,18 @@ class DatabaseTableParser
         if ($row['CONSTRAINT_TYPE'] == 'UNIQUE') {
             $sql = sprintf(
                 'CREATE UNIQUE INDEX %s ON %s (%s)',
-                $row['CONSTRAINT_NAME'], $row['TABLE_NAME'], $row['COLUMN_NAME']
+                $row['CONSTRAINT_NAME'],
+                $row['TABLE_NAME'],
+                $row['COLUMN_NAME']
             );
         } elseif ($row['CONSTRAINT_TYPE'] == 'FOREIGN KEY') {
             $sql = sprintf(
                 'ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)',
-                $row['TABLE_NAME'], $row['CONSTRAINT_NAME'], $row['COLUMN_NAME'], $row['REFERENCED_TABLE_NAME'], $row['REFERENCED_COLUMN_NAME']
+                $row['TABLE_NAME'],
+                $row['CONSTRAINT_NAME'],
+                $row['COLUMN_NAME'],
+                $row['REFERENCED_TABLE_NAME'],
+                $row['REFERENCED_COLUMN_NAME']
             );
         }
 

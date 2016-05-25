@@ -10,19 +10,25 @@ class Table
     public $name;
 
     /**
+     * @var string
+     */
+    public $engine;
+
+    /**
      * @var TableItem Item that represents a column or a constraint
      */
     public $items;
 
-    public function __construct($name = null)
+    public function __construct($name = null, $engine = null)
     {
         $this->name = $name;
+        $this->engine = $engine;
         $this->items = [];
     }
 
     public function makeCreateSql()
     {
-        $createTable = 'CREATE TABLE %s ( %s ) COMMENT \'MINI_FWK_ENTITY\';%s';
+        $createTable = 'CREATE TABLE %s ( %s ) ENGINE=%s COMMENT \'MINI_FWK_ENTITY\';%s';
 
         $itemsByType = [
             TableItem::TYPE_COLUMN => [],
@@ -41,7 +47,7 @@ class Table
             return $item->sql . ';';
         }, $itemsByType[TableItem::TYPE_CONSTRAINT]));
 
-        return trim(sprintf($createTable, $this->name, trim($columnSql), trim($constraintSql)), ' ;');
+        return trim(sprintf($createTable, $this->name, trim($columnSql), $this->engine, trim($constraintSql)), ' ;');
     }
 
     public function makeDropSql()
@@ -151,9 +157,9 @@ class Table
             $sql = 'ALTER TABLE ' . $this->name;
 
             if (strstr($item->sql, 'INDEX')) {
-                $sql .= 'DROP INDEX ' . $item->name;
+                $sql .= ' DROP INDEX ' . $item->name;
             } elseif (strstr($item->sql, 'FOREIGN KEY')) {
-                $sql .= 'DROP FOREIGN KEY ' . $item->name;
+                $sql .= ' DROP FOREIGN KEY ' . $item->name;
             }
         }
 
@@ -183,9 +189,6 @@ class Table
     public function compare(Table $other)
     {
         $result = $this->hasReference($other) ? 1 : ($other->hasReference($this) ? -1 : 0);
-
-        var_dump("{$this->name} <=> {$other->name} = {$result}");
-
         return $result;
     }
 }

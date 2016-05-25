@@ -28,12 +28,13 @@ class EntityTableParser
         'decimal',
         'boolean',
         'binary',
+        'point',
 
         // Date
         'date',
         'datetime',
         'time',
-        'timestamp'
+        'timestamp',
     ];
 
     private $modifiers = [
@@ -107,8 +108,7 @@ class EntityTableParser
             $definition['updated_at'] = ['datetime' => []];
         }
 
-        $table = new Table;
-        $table->name = $entity->table;
+        $table = new Table($entity->table, $entity->engine);
 
         foreach ($definition as $key => $tags) {
             uksort($tags, function ($tagA, $tagB) {
@@ -269,6 +269,11 @@ class EntityTableParser
         $column->sql = $column->name . ' blob';
     }
 
+    public function processPointType(Table $table, TableItem $column, array $tagParameters)
+    {
+        $column->sql = $column->name . ' point';
+    }
+
     public function processUuidType(Table $table, TableItem $column, array $tagParameters)
     {
         $this->processStringType($table, $column, [36]);
@@ -310,7 +315,7 @@ class EntityTableParser
 
     public function processUniqueConstraint(Table $table, TableItem $column, array $tagParameters)
     {
-        $keyName = $table->name . '_' . $column->name . '_unique';
+        $keyName = isset($tagParameters[0]) ? $tagParameters[0] : $table->name . '_' . $column->name . '_unique';
 
         $table->items[$keyName] = new TableItem(
             TableItem::TYPE_CONSTRAINT,

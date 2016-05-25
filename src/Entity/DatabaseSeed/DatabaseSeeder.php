@@ -66,7 +66,7 @@ class DatabaseSeeder
         foreach ($this->data as $tableName => $spec) {
             foreach ($spec['rows'] as $row) {
                 if (empty($row['id'])) {
-                    throw new Exception('Id is required');
+                    throw new \Exception('Id is required');
                 }
             }
         }

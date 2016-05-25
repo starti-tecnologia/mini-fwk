@@ -35,7 +35,7 @@ class EntityTableParserTest extends PHPUnit_Framework_TestCase
                     'name varchar(100),',
                     'password varchar(100),',
                     'customer_id int(11) unsigned',
-                ' ) COMMENT \'MINI_FWK_ENTITY\';',
+                ' ) ENGINE=InnoDB COMMENT \'MINI_FWK_ENTITY\';',
                 'CREATE UNIQUE INDEX users_guid_unique ON users (guid);',
                 'CREATE UNIQUE INDEX users_email_unique ON users (email);',
                 'CREATE UNIQUE INDEX users_password_unique ON users (password);',
@@ -67,7 +67,7 @@ class EntityTableParserTest extends PHPUnit_Framework_TestCase
                     'field7 varchar(255),',
                     'field8 int(11) unsigned,',
                     'field9 varchar(255)',
-                ' ) COMMENT \'MINI_FWK_ENTITY\';',
+                ' ) ENGINE=InnoDB COMMENT \'MINI_FWK_ENTITY\';',
                 'ALTER TABLE users ADD CONSTRAINT users_field0_fk FOREIGN KEY (field0) REFERENCES table (id);',
                 'ALTER TABLE users ADD CONSTRAINT users_field2_fk FOREIGN KEY (field2) REFERENCES table (id);',
                 'ALTER TABLE users ADD CONSTRAINT users_field4_fk FOREIGN KEY (field4) REFERENCES table (id);',
@@ -91,7 +91,7 @@ class EntityTableParserTest extends PHPUnit_Framework_TestCase
                 'CREATE TABLE users ( ',
                     'id int(11) unsigned not null primary key auto_increment,',
                     'field varchar(20) default \'\'',
-                ' ) COMMENT \'MINI_FWK_ENTITY\''
+                ' ) ENGINE=InnoDB COMMENT \'MINI_FWK_ENTITY\''
             ]
         );
 
