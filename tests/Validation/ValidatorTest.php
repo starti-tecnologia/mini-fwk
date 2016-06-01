@@ -26,7 +26,8 @@ class ValidationTest extends PHPUnit_Framework_TestCase
                 'city' => 'a',
                 'state' => 'dsadsadsa',
                 'age' => 1,
-                'quantity' => 999
+                'quantity' => 999,
+                'is_male' => false
             ]
         );
 
@@ -40,7 +41,9 @@ class ValidationTest extends PHPUnit_Framework_TestCase
                 'city' => 'string:255:3',
                 'state' => 'string:2',
                 'age' => 'integer|min:18',
-                'quantity' => 'integer|max:18'
+                'quantity' => 'integer|max:18',
+                'is_male' => 'boolean|required',
+                'is_test' => 'boolean|required'
             ]);
         } catch (ValidationException $e) {
             $exception = $e;
@@ -54,6 +57,7 @@ class ValidationTest extends PHPUnit_Framework_TestCase
             'state' => ['The state field max length is 2.'],
             'age' => ['The age field minimum value is 18.'],
             'quantity' => ['The quantity field maximum value is 18.'],
+            'is_test' => ['The is_test field is required.'],
         ], $exception->errors);
     }
 
