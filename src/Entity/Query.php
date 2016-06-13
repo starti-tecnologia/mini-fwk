@@ -42,7 +42,7 @@ class Query
         if ($table instanceof Query) {
             $this->mergeQueryParameters($table);
             $this->spec['rawTable'] = $table->makeSql();
-            $this->alias($table->spec['table']);
+            $this->alias($table->spec['alias']);
         } else {
             $this->spec['table'] = $table;
             $this->alias($table);
