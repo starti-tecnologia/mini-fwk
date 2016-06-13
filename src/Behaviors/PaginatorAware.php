@@ -8,13 +8,8 @@ use Mini\Helpers\Request;
 
 trait PaginatorAware
 {
-    /**
-     * Process and sends pagination result
-     *
-     * @return void
-     */
-    public function paginate(Query $query, array $options=[])
-    {
+
+    public function basePaginate(Query $query, array $options=[]) {
         $paginator = new Paginator;
         $request = Request::instance();
 
@@ -38,6 +33,18 @@ trait PaginatorAware
                 $options
             )
         );
+
+        return $output;
+    }
+
+    /**
+     * Process and sends pagination result
+     *
+     * @return void
+     */
+    public function paginate(Query $query, array $options=[])
+    {
+        $output = $this->basePaginate($query, $options);
 
         response()->json($output);
     }
