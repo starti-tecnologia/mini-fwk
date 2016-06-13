@@ -202,7 +202,7 @@ class EntitySerializer
                     if (isset($field['integer'])) {
                         $value = intval($value);
                     } elseif (isset($field['boolean'])) {
-                        $value = !! $value;
+                        $value = ! is_null($value) ? !! $value : null;
                     } elseif (isset($field['float'])) {
                         $value = floatval($value);
                     } elseif (isset($field['date'])) {

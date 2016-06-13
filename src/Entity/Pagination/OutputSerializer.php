@@ -82,7 +82,7 @@ class OutputSerializer
                     if (array_key_exists('integer', $tags)) {
                         $value = intval($value);
                     } elseif (array_key_exists('boolean', $tags)) {
-                        $value = !! $value;
+                        $value = ! is_null($value) ? !! $value : null;
                     } elseif (array_key_exists('float', $tags)) {
                         $value = floatval($value);
                     } elseif (array_key_exists('date', $tags)) {

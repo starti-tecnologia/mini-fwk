@@ -60,7 +60,7 @@ class EntitySerializerTest extends PHPUnit_Framework_TestCase
         $entity->fields = [
             'id' => '1',
             'name' => 'Lala',
-            'is_draft' => '1',
+            'is_draft' => null,
             'max_users_quantity' => '10',
             'address_street_name' => 'Lala Street',
             'address_number' => '1C',
@@ -72,7 +72,7 @@ class EntitySerializerTest extends PHPUnit_Framework_TestCase
             [
                 'id' => 1,
                 'name' => 'Lala',
-                'isDraft' => true,
+                'isDraft' => null,
                 'maxUsersQuantity' => 10,
                 'address' => [
                     'streetName' => 'Lala Street',

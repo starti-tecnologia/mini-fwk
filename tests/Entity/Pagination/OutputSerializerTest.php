@@ -26,7 +26,7 @@ class OutputSerializerTest extends \PHPUnit_Framework_TestCase
                 'rows' => [
                     [
                         'name' => 'Jonh Doe',
-                        'is_male' => 1,
+                        'is_male' => null,
                         'u_name' => 'Jonh Done Goldenberg'
                     ]
                 ],
@@ -35,7 +35,7 @@ class OutputSerializerTest extends \PHPUnit_Framework_TestCase
             [
                 'format' => [
                     'name',
-                    'is_male' => 1,
+                    'is_male|boolean',
                     'user|object|prefix:u_' => [
                         'name'
                     ]
@@ -44,6 +44,8 @@ class OutputSerializerTest extends \PHPUnit_Framework_TestCase
                 'perPage' => 10
             ]
         );
+
+        $this->assertSame(null, $result['data'][0]['is_male']);
 
         $this->assertEquals(
             [
@@ -59,7 +61,7 @@ class OutputSerializerTest extends \PHPUnit_Framework_TestCase
                 'data' => [
                     [
                         'name' => 'Jonh Doe',
-                        'is_male' => 1,
+                        'is_male' => null,
                         'user' => [
                             'name' => 'Jonh Done Goldenberg'
                         ]
