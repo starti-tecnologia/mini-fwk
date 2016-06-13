@@ -35,10 +35,59 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testIsMakingRawTableSql()
     {
         $this->assertEquals(
-            'SELECT * FROM (SELECT * FROM logins) l',
+            'SELECT * FROM (SELECT * FROM logins) `t`',
             (new Query)
-                ->rawTable('(SELECT * FROM logins) l')
+                ->rawTable('SELECT * FROM logins')
                 ->makeSql()
+        );
+    }
+
+    public function testIsMakingSubQueryTableSql()
+    {
+        $query = (new Query)
+            ->table(
+                (new Query)
+                    ->select(['id'])
+                    ->table('users')
+                    ->where('name', '=', 'Test')
+                    ->limit(0, 1)
+            );
+
+        $this->assertEquals(
+            'SELECT * FROM (SELECT `id` FROM `users` WHERE `name` = :s0p0 LIMIT 0, 1) `users`',
+            $query->makeSql()
+        );
+
+        $this->assertEquals(
+            ['s0p0' => 'Test'],
+            $query->spec['bindings']
+        );
+    }
+
+    public function testIsMakingSubQueryJoinSql()
+    {
+        $query = (new Query)
+            ->table('users')
+            ->alias('u')
+            ->innerJoin(
+                (new Query)
+                    ->select(['picture'])
+                    ->table('profiles')
+                    ->alias('sp')
+                    ->where('id', '=', 1),
+                'sp.id',
+                '=',
+                'u.id'
+            );
+
+        $this->assertEquals(
+            'SELECT * FROM `users` `u` INNER JOIN (SELECT `picture` FROM `profiles` `sp` WHERE `id` = :s0p0) `sp` ON (`sp`.`id` = `u`.`id`)',
+            $query->makeSql()
+        );
+
+        $this->assertEquals(
+            ['s0p0' => 1],
+            $query->spec['bindings']
         );
     }
 

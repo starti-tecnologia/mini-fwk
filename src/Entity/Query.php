@@ -22,6 +22,8 @@ class Query
 
     private $counter = -1;
 
+    private $subQueryCounter = -1;
+
     /**
      * @var \Mini\Entity\Connection
      */
@@ -37,9 +39,14 @@ class Query
      */
     public function table($table)
     {
-        $this->spec['table'] = $table;
-
-        $this->alias($table);
+        if ($table instanceof Query) {
+            $this->mergeQueryParameters($table);
+            $this->spec['rawTable'] = $table->makeSql();
+            $this->alias($table->spec['table']);
+        } else {
+            $this->spec['table'] = $table;
+            $this->alias($table);
+        }
 
         return $this;
     }
@@ -76,16 +83,27 @@ class Query
         return $this;
     }
 
+    private function handleJoin($type, $table, $columnA, $comparator, $columnB)
+    {
+        if ($table instanceof Query) {
+            $query = $table;
+            $this->mergeQueryParameters($query);
+            $table = '(' . $query->makeSql() . ') ' . quote_sql($query->spec['alias']);
+        }
+
+        $this->spec['joins'][] = [$type, $table, $columnA, $comparator, $columnB];
+    }
+
     public function leftJoin($table, $columnA, $comparator, $columnB)
     {
-        $this->spec['joins'][] = ['LEFT JOIN', $table, $columnA, $comparator, $columnB];
+        $this->handleJoin('LEFT JOIN', $table, $columnA, $comparator, $columnB);
 
         return $this;
     }
 
     public function innerJoin($table, $columnA, $comparator, $columnB)
     {
-        $this->spec['joins'][] = ['INNER JOIN', $table, $columnA, $comparator, $columnB];
+        $this->handleJoin('INNER JOIN', $table, $columnA, $comparator, $columnB);
 
         return $this;
     }
@@ -97,7 +115,32 @@ class Query
         return $this;
     }
 
-    private function handleDefaultWhere($column, $comparator, $value, $operator='AND')
+    public function renameBinding($oldKey, $newKey)
+    {
+        $newWheres = [];
+        foreach ($this->spec['wheres'] as $where) {
+            $newWheres[] = str_replace(':' . $oldKey, ':' . $newKey, $where);
+        }
+        $this->spec['wheres'] = $newWheres;
+        $this->table = str_replace(':' . $oldKey, ':' . $newKey, $this->spec['table']);
+    }
+
+    public function mergeQueryParameters(Query $query)
+    {
+        foreach ($query->spec['bindings'] as $oldKey => $value) {
+            $newKey = 's' . (++$this->subQueryCounter) . 'p' . ++$this->counter;
+            $query->renameBinding($oldKey, $newKey);
+            unset($query->spec['bindings'][$oldKey]);
+            $query->spec['bindings'][$newKey] = $value;
+        }
+
+        $this->spec['bindings'] = array_merge(
+            $this->spec['bindings'],
+            $query->spec['bindings']
+        );
+    }
+
+    private function handleDefaultWhere($column, $comparator, $value, $operator = 'AND')
     {
         $rawValue = null;
 
@@ -335,7 +378,9 @@ class Query
             if ($join instanceof RawValue) {
                 return $join->value;
             } else {
-                $join[1] = quote_sql($join[1]);
+                if (! strstr($join[1], 'SELECT')) {
+                    $join[1] = quote_sql($join[1]);
+                }
                 $join[2] = quote_sql($join[2]);
                 $join[4] = quote_sql($join[4]);
                 return vsprintf('%s %s ON (%s %s %s)', $join);
@@ -363,7 +408,7 @@ class Query
         $sql = 'SELECT ' . $this->makeSelectSql() .  ' FROM ';
 
         if ($this->spec['rawTable']) {
-            $sql .= $this->spec['rawTable'];
+            $sql .= '(' . $this->spec['rawTable'] . ') ' . quote_sql($this->spec['alias']);
         } else {
             $sql .= quote_sql($this->spec['table']) . (
                 $this->spec['table'] == $this->spec['alias']
