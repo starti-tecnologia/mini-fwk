@@ -189,6 +189,14 @@ class Kernel
     /**
      * @return string
      */
+    public function getCommandsPath()
+    {
+        return $this->getSourcePath() . DIRECTORY_SEPARATOR . 'Commands';
+    }
+
+    /**
+     * @return string
+     */
     public function getRouterPath()
     {
         return $this->getSourcePath() . DIRECTORY_SEPARATOR . 'routers';

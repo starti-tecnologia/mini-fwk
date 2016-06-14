@@ -38,4 +38,12 @@ abstract class AbstractCommand
             exit (0);
         }
     }
+
+    public function write($message, $color = 'white')
+    {
+        $c = new \Colors\Color();
+        $output = $c($message);
+        $output = $output->$color();
+        echo $output . PHP_EOL;
+    }
 }

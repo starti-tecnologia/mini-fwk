@@ -15,6 +15,16 @@ class Console
      */
     private $commands = [];
 
+    /**
+     * @var AbstractCommand[]
+     */
+    private $frameworkCommands = [];
+
+    /**
+     * @var AbstractCommand[]
+     */
+    private $applicationCommands = [];
+
     public function __construct(Kernel $kernel)
     {
         define('IS_CONSOLE', true);
@@ -25,6 +35,7 @@ class Console
     {
         $this->kernel->loadConfiguration();
         $this->parseFrameworkCommands();
+        $this->parseApplicationCommands();
     }
 
     private function parseFrameworkCommands()
@@ -42,21 +53,50 @@ class Console
 
             $command = new $className;
             $this->commands[$command->getName()] = $command;
+            $this->frameworkCommands[$command->getName()] = $command;
+        }
+    }
+
+    private function parseApplicationCommands()
+    {
+        $pattern  = $this->kernel->getCommandsPath() . '/*.php';
+
+        foreach (glob($pattern) as $file) {
+            if (! is_file($file) || strstr($file, 'Abstract')) {
+                continue;
+            }
+
+            $pieces = explode(DIRECTORY_SEPARATOR, $file);
+            $name = str_replace('.php', '', $pieces[count($pieces) - 1]);
+            $className = 'App\\Commands\\' . $name;
+
+            $command = new $className;
+            $this->commands[$command->getName()] = $command;
+            $this->applicationCommands[$command->getName()] = $command;
         }
     }
 
     private function help()
     {
-        echo 'Mini-Fwk' . PHP_EOL . PHP_EOL;
+        $c = new \Colors\Color();
 
-        echo 'Available Commands:' . PHP_EOL;
+        echo $c('Mini-Fwk')->green() . PHP_EOL . PHP_EOL;
 
-        foreach ($this->commands as $name => $command) {
-            $tabLength = floor(strlen($name) / 8);
-            echo $name . str_repeat("\t", 4 - $tabLength) . $command->getDescription() . PHP_EOL;
+
+        $labels = [
+            'Framework commands:' => $this->frameworkCommands,
+            'Application commands:' => $this->applicationCommands
+        ];
+
+        foreach ($labels as $label => $commands) {
+            echo $c($label)->yellow() . PHP_EOL;
+            foreach ($commands as $name => $command) {
+                $tabLength = floor(strlen($name) / 8);
+                echo $c($name)->green() . str_repeat("\t", 4 - $tabLength) . $command->getDescription() . PHP_EOL;
+            }
+            echo PHP_EOL;
         }
 
-        echo PHP_EOL;
     }
 
     public function run()

@@ -2,6 +2,8 @@
 
 namespace Mini\Console\Command;
 
+use Mini\Console\Common\ConsoleTable;
+use Mini\Router\Router;
 use Commando\Command as Commando;
 use Mini\Controllers\BaseController;
 use Notoj\File;
@@ -116,6 +118,23 @@ class RouteScanCommand extends AbstractCommand
             fwrite($fp, 'return unserialize($routes);');
             fclose($fp);
         }
+
+        $table = new ConsoleTable();
+        $table
+            ->addHeader('Method')
+            ->addHeader('Uri')
+            ->addHeader('Controller')
+            ->addHeader('Middlewares');
+
+        foreach (Router::listRoutes() as $route) {
+            $table->addRow()
+                ->addColumn($route['method'])
+                ->addColumn($route['uri'])
+                ->addColumn($route['controller'])
+                ->addColumn(implode(', ', $route['middlewares']));
+        }
+
+        $table->display();
     }
 
     /**
