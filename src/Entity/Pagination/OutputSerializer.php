@@ -131,14 +131,24 @@ class OutputSerializer
         $format = $options['format'];
         $functions = $this->createTransformFunctions($format);
 
+        $currentPageKey = 'current_page';
+        $perPageKey = 'per_page';
+        $totalPageKey = 'total_pages';
+
+        if (env('CONVERT_CAMEL_CASE')) {
+            $currentPageKey = 'currentPage';
+            $perPageKey = 'perPage';
+            $totalPageKey = 'totalPages';
+        }
+
         return [
             'meta' => [
                 'pagination' => [
                     'count' => count($result['rows']),
-                    'current_page' => $options['page'],
-                    'per_page' => $options['perPage'],
+                    $currentPageKey => $options['page'],
+                    $perPageKey => $options['perPage'],
                     'total' => $result['total'],
-                    'total_pages' => ceil($result['total'] / $options['perPage'])
+                    $totalPageKey => ceil($result['total'] / $options['perPage'])
                 ]
             ],
             'data' => array_map(function ($row) use ($functions) {

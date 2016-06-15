@@ -102,10 +102,10 @@ class OutputSerializerTest extends \PHPUnit_Framework_TestCase
                 'meta' => [
                     'pagination' => [
                         'count' => 1,
-                        'current_page' => 1,
-                        'per_page' => 10,
+                        'currentPage' => 1,
+                        'perPage' => 10,
                         'total' => 1,
-                        'total_pages' => 1
+                        'totalPages' => 1
                     ]
                 ],
                 'data' => [
