@@ -127,8 +127,10 @@ class Query
 
     public function mergeQueryParameters(Query $query)
     {
+        ++$this->subQueryCounter;
+
         foreach ($query->spec['bindings'] as $oldKey => $value) {
-            $newKey = 's' . (++$this->subQueryCounter) . 'p' . ++$this->counter;
+            $newKey = 's' . $this->subQueryCounter . 'p' . ++$this->counter;
             $query->renameBinding($oldKey, $newKey);
             unset($query->spec['bindings'][$oldKey]);
             $query->spec['bindings'][$newKey] = $value;
