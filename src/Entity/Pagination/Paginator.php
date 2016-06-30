@@ -235,6 +235,7 @@ class Paginator
         $page = isset($options['page']) ? $options['page'] : 1;
         $perPage = isset($options['perPage']) ? $options['perPage'] : self::DEFAULT_PER_PAGE;
         $format = isset($options['format']) ? $options['format'] : $this->generateDefaultFormat($options);
+        $postProcess = isset($options['postProcess']) ? $options['postProcess'] : null;
 
         return [
             'sql' => $query->makeSql(),
@@ -243,7 +244,8 @@ class Paginator
             'bindings' => $query->spec['bindings'],
             'page' => $page,
             'perPage' => $perPage,
-            'format' => $format
+            'format' => $format,
+            'postProcess' => $postProcess
         ];
     }
 

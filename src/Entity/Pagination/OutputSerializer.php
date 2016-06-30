@@ -160,7 +160,7 @@ class OutputSerializer
             }, $result['rows'])
         ];
 
-        if (isset($options['postProcess'])) {
+        if (! empty($options['postProcess'])) {
             $output = $options['postProcess']($output);
         }
 
