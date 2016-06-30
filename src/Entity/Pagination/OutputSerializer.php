@@ -141,7 +141,7 @@ class OutputSerializer
             $totalPageKey = 'totalPages';
         }
 
-        return [
+        $output = [
             'meta' => [
                 'pagination' => [
                     'count' => count($result['rows']),
@@ -159,5 +159,11 @@ class OutputSerializer
                 return $object;
             }, $result['rows'])
         ];
+
+        if (isset($options['postProcess'])) {
+            $output = $options['postProcess']($output);
+        }
+
+        return $output;
     }
 }
