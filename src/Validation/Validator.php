@@ -17,7 +17,7 @@ class Validator
     /**
      * @var $rules
      */
-    private $rules = [
+    private $defaultRules = [
         'required' => 'The %s field is required.',
         'char' => 'The %s field is string.',
         'string' => 'The %s field is string.',
@@ -51,6 +51,11 @@ class Validator
      * @var array
      */
     private $data;
+
+    /**
+     * @var array
+     */
+    private $rules;
 
     public function __construct()
     {
@@ -128,8 +133,9 @@ class Validator
      */
     public function validate($rules)
     {
-        $definition = $this->definitionParser->parse($rules);
         $this->data = $this->getData();
+        $this->setRules($rules);
+        $definition = $this->rules;
 
         foreach ($definition as $attribute => $rules) {
             $isRequired = isset($rules['required']);
@@ -146,22 +152,10 @@ class Validator
                 continue;
             }
 
-            $filteredRules = [];
-
-            foreach ($rules as $rule => $parameters) {
-                $filteredRules[$rule] = $parameters;
-
-                if ($rule === 'string') {
-                    $filteredRules['maxLength'] = [isset($parameters[0]) ? $parameters[0] : 255];
-                    $filteredRules['minLength'] = [isset($parameters[1]) ? $parameters[1] : 0];
-                } elseif ($rule == 'text') {
-                    $filteredRules['maxLength'] = [isset($parameters[0]) ? $parameters[0] : 65535];
-                    $filteredRules['minLength'] = [isset($parameters[1]) ? $parameters[1] : 0];
-                }
-            }
+            $filteredRules = $this->filterRules($rules);
 
             foreach ($filteredRules as $rule => $parameters) {
-                if (! isset($this->rules[$rule]) && ! isset($this->customRules[$rule])) {
+                if (! isset($this->defaultRules[$rule]) && ! isset($this->customRules[$rule])) {
                     continue;
                 }
 
@@ -184,7 +178,7 @@ class Validator
             $this->errors[$attribute] = [];
         }
 
-        $message = isset($this->rules[$rule]) ? $this->rules[$rule] : $this->customRules[$rule]->message;
+        $message = isset($this->defaultRules[$rule]) ? $this->defaultRules[$rule] : $this->customRules[$rule]->message;
 
         $this->errors[$attribute][] = vsprintf($message, array_merge([$attribute], $parameters));
     }
@@ -198,7 +192,7 @@ class Validator
     {
         $value = array_get($this->data, $attribute);
 
-        if (isset($this->rules[$rule])) {
+        if (isset($this->defaultRules[$rule])) {
             $method = 'validate' . ucfirst($rule) . 'Rule';
             return $this->{$method}($value, $parameters);
         } else {
@@ -333,8 +327,197 @@ class Validator
     public function getValidTags()
     {
         return array_merge(
-            array_keys($this->rules),
+            array_keys($this->defaultRules),
             array_keys($this->customRules)
         );
+    }
+
+    /**
+     * Extract data based on the given dot-notated path.
+     *
+     * Used to extract a sub-section of the data for faster iteration.
+     *
+     * @param  string  $attribute
+     * @return array
+     */
+    protected function extractDataFromPath($attribute)
+    {
+        $results = [];
+        $value = array_get($this->data, $attribute, '__missing__');
+        if ($value != '__missing__') {
+            array_set($results, $attribute, $value);
+        }
+        return $results;
+    }
+
+    /**
+     * Get the explicit part of the attribute name.
+     *
+     * E.g. 'foo.bar.*.baz' -> 'foo.bar'
+     *
+     * Allows us to not spin through all of the flattened data for some operations.
+     *
+     * @param  string  $attribute
+     * @return string
+     */
+    protected function getLeadingExplicitAttributePath($attribute)
+    {
+        return rtrim(explode('*', $attribute)[0], '.') ?: null;
+    }
+
+    /**
+     * Gather a copy of the attribute data filled with any missing attributes.
+     *
+     * @param  string  $attribute
+     * @return array
+     */
+    protected function initializeAttributeOnData($attribute)
+    {
+        $explicitPath = $this->getLeadingExplicitAttributePath($attribute);
+        $data = $this->extractDataFromPath($explicitPath);
+        if (! strstr($attribute, '*') || str_ends_with($attribute, '*')) {
+            return $data;
+        }
+        return data_set($data, $attribute, null, true);
+    }
+
+    /**
+     * Get all of the exact attribute values for a given wildcard attribute.
+     *
+     * @param  array  $data
+     * @param  string  $attribute
+     * @return array
+     */
+    public function extractValuesForWildcards($data, $attribute)
+    {
+        $keys = [];
+        $pattern = str_replace('\*', '[^\.]+', preg_quote($attribute));
+        foreach ($data as $key => $value) {
+            if ((bool) preg_match('/^'.$pattern.'/', $key, $matches)) {
+                $keys[] = $matches[0];
+            }
+        }
+        $keys = array_unique($keys);
+        $data = [];
+        foreach ($keys as $key) {
+            $data[$key] = array_get($this->data, $key);
+        }
+        return $data;
+    }
+
+    /**
+     * Define a set of rules that apply to each element in an array attribute.
+     *
+     * @param  string  $attribute
+     * @param  string|array  $rules
+     * @return void
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function each($attribute, $rules)
+    {
+        $data = array_dot($this->initializeAttributeOnData($attribute));
+        $pattern = str_replace('\*', '[^\.]+', preg_quote($attribute));
+        $data = array_merge($data, $this->extractValuesForWildcards($data, $attribute));
+        foreach ($data as $key => $value) {
+            if (str_starts_with($key, $attribute) || (bool) preg_match('/^'.$pattern.'\z/', $key)) {
+                foreach ((array) $rules as $ruleKey => $ruleValue) {
+                    if (! is_string($ruleKey) || str_ends_with($key, $ruleKey)) {
+                        $this->implicitAttributes[$attribute][] = $key;
+                        $this->mergeRules($key, $ruleValue);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Explode the rules into an array of rules.
+     *
+     * @param  string|array  $rules
+     * @return array
+     */
+    protected function explodeRules($rules)
+    {
+        foreach ($rules as $key => $rule) {
+            if (strstr($key, '*')) {
+                $this->each($key, [$rule]);
+                unset($rules[$key]);
+            } else {
+                $rules[$key] = [];
+                foreach (explode('|', $rule) as $rawTag) {
+                    $pieces = explode(':', $rawTag);
+                    $rules[$key][array_shift($pieces)] = $pieces;
+                }
+            }
+        }
+        return $rules;
+    }
+
+    protected function filterRules($rules)
+    {
+        $filteredRules = [];
+
+        foreach ($rules as $rule => $parameters) {
+            $filteredRules[$rule] = $parameters;
+
+            if ($rule === 'string') {
+                $filteredRules['maxLength'] = [isset($parameters[0]) ? $parameters[0] : 255];
+                $filteredRules['minLength'] = [isset($parameters[1]) ? $parameters[1] : 0];
+            } elseif ($rule == 'text') {
+                $filteredRules['maxLength'] = [isset($parameters[0]) ? $parameters[0] : 65535];
+                $filteredRules['minLength'] = [isset($parameters[1]) ? $parameters[1] : 0];
+            }
+        }
+
+        return $filteredRules;
+    }
+
+    /**
+     * Merge additional rules into a given attribute(s).
+     *
+     * @param  string  $attribute
+     * @param  string|array  $rules
+     * @return $this
+     */
+    public function mergeRules($attribute, $rules = [])
+    {
+        if (is_array($attribute)) {
+            foreach ($attribute as $innerAttribute => $innerRules) {
+                $this->mergeRulesForAttribute($innerAttribute, $innerRules);
+            }
+            return $this;
+        }
+        return $this->mergeRulesForAttribute($attribute, $rules);
+    }
+
+    /**
+     * Merge additional rules into a given attribute.
+     *
+     * @param  string  $attribute
+     * @param  string|array  $rules
+     * @return $this
+     */
+    protected function mergeRulesForAttribute($attribute, $rules)
+    {
+        $current = isset($this->rules[$attribute]) ? $this->rules[$attribute] : [];
+        $aux = $this->explodeRules([$rules]);
+        $merge = reset($aux);
+        $this->rules[$attribute] = array_merge($current, $merge);
+        return $this;
+    }
+
+    /**
+     * Set the validation rules.
+     *
+     * @param  array  $rules
+     * @return $this
+     */
+    public function setRules(array $rules)
+    {
+        $this->initialRules = $rules;
+        $this->rules = [];
+        $rules = $this->explodeRules($this->initialRules);
+        $this->rules = array_merge($this->rules, $rules);
     }
 }

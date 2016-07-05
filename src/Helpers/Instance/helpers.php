@@ -7,15 +7,16 @@ use Mini\Entity\RawValue;
 use Dotenv\Dotenv;
 
 if (!function_exists('response')) {
-    function response() {
+    function response()
+    {
         return new Response();
     }
 }
 
 if (!function_exists('app')) {
-
-    function app() {
-       return Container::instance();
+    function app()
+    {
+        return Container::instance();
     }
 
 }
@@ -23,7 +24,8 @@ if (!function_exists('app')) {
 if (!function_exists('env')) {
     $env = null;
 
-    function env($name, $default = null) {
+    function env($name, $default = null)
+    {
         global $env;
 
         if (! $env) {
@@ -41,8 +43,7 @@ if (!function_exists('env')) {
     }
 }
 
-if ( ! function_exists('array_get'))
-{
+if (! function_exists('array_get')) {
     /**
      * Get an item from an array using "dot" notation.
      *
@@ -69,8 +70,160 @@ if ( ! function_exists('array_get'))
     }
 }
 
-if ( ! function_exists('array_only'))
-{
+if (! function_exists('array_dot')) {
+    /**
+     * Flatten a multi-dimensional associative array with dots.
+     *
+     * @param  array   $array
+     * @param  string  $prepend
+     * @return array
+     */
+    function array_dot($array, $prepend = '')
+    {
+        $results = [];
+        foreach ($array as $key => $value) {
+            if (is_array($value) && ! empty($value)) {
+                $results = array_merge($results, array_dot($value, $prepend.$key.'.'));
+            } else {
+                $results[$prepend.$key] = $value;
+            }
+        }
+        return $results;
+    }
+}
+
+if (! function_exists('array_set')) {
+    /**
+     * Set an array item to a given value using "dot" notation.
+     *
+     * If no key is given to the method, the entire array will be replaced.
+     *
+     * @param  array   $array
+     * @param  string  $key
+     * @param  mixed   $value
+     * @return array
+     */
+    function array_set(&$array, $key, $value)
+    {
+        if (is_null($key)) {
+            return $array = $value;
+        }
+        $keys = explode('.', $key);
+        while (count($keys) > 1) {
+            $key = array_shift($keys);
+            // If the key doesn't exist at this depth, we will just create an empty array
+            // to hold the next value, allowing us to create the arrays to hold final
+            // values at the correct depth. Then we'll keep digging into the array.
+            if (! isset($array[$key]) || ! is_array($array[$key])) {
+                $array[$key] = [];
+            }
+            $array = &$array[$key];
+        }
+        $array[array_shift($keys)] = $value;
+        return $array;
+    }
+}
+
+if (! function_exists('str_starts_with')) {
+    /**
+     * Determine if a given string starts with a given substring.
+     *
+     * @param  string  $haystack
+     * @param  string|array  $needles
+     * @return bool
+     */
+    function str_starts_with($haystack, $needles)
+    {
+        foreach ((array) $needles as $needle) {
+            if ($needle != '' && mb_strpos($haystack, $needle) === 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+if (! function_exists('str_ends_with')) {
+    function str_ends_with($haystack, $needles)
+    {
+        foreach ((array) $needles as $needle) {
+            if ((string) $needle === mb_substr($haystack, -mb_strlen($needle), null, 'UTF-8')) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+if (! function_exists('str_ends_with')) {
+    function str_ends_with($haystack, $needles)
+    {
+        foreach ((array) $needles as $needle) {
+            if ((string) $needle === mb_substr($haystack, -mb_strlen($needle), null, 'UTF-8')) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+if (! function_exists('data_set')) {
+    /**
+     * Set an item on an array or object using dot notation.
+     *
+     * @param  mixed  $target
+     * @param  string|array  $key
+     * @param  mixed  $value
+     * @param  bool  $overwrite
+     * @return mixed
+     */
+    function data_set(&$target, $key, $value, $overwrite = true)
+    {
+        $segments = is_array($key) ? $key : explode('.', $key);
+        if (($segment = array_shift($segments)) === '*') {
+            if (! is_array($target)) {
+                $target = [];
+            }
+            if ($segments) {
+                foreach ($target as &$inner) {
+                    data_set($inner, $segments, $value, $overwrite);
+                }
+            } elseif ($overwrite) {
+                foreach ($target as &$inner) {
+                    $inner = $value;
+                }
+            }
+        } elseif (is_array($target)) {
+            if ($segments) {
+                if (! array_key_exists($segment, $target)) {
+                    $target[$segment] = [];
+                }
+                data_set($target[$segment], $segments, $value, $overwrite);
+            } elseif ($overwrite || ! array_key_exists($segment, $target)) {
+                $target[$segment] = $value;
+            }
+        } elseif (is_object($target)) {
+            if ($segments) {
+                if (! isset($target->{$segment})) {
+                    $target->{$segment} = [];
+                }
+                data_set($target->{$segment}, $segments, $value, $overwrite);
+            } elseif ($overwrite || ! isset($target->{$segment})) {
+                $target->{$segment} = $value;
+            }
+        } else {
+            $target = [];
+            if ($segments) {
+                data_set($target[$segment], $segments, $value, $overwrite);
+            } elseif ($overwrite) {
+                $target[$segment] = $value;
+            }
+        }
+        return $target;
+    }
+}
+
+if (! function_exists('array_only')) {
     /**
      * Get a subset of the items from the given array.
      *
@@ -84,8 +237,7 @@ if ( ! function_exists('array_only'))
     }
 }
 
-if ( ! function_exists('array_except'))
-{
+if (! function_exists('array_except')) {
     /**
      * Get all of the given array except for a specified array of items.
      *
@@ -99,8 +251,7 @@ if ( ! function_exists('array_except'))
     }
 }
 
-if ( ! function_exists('camel_case'))
-{
+if (! function_exists('camel_case')) {
     /**
      * Convert a value to camel case.
      *
@@ -125,8 +276,7 @@ if ( ! function_exists('camel_case'))
     }
 }
 
-if ( ! function_exists('quote_sql'))
-{
+if (! function_exists('quote_sql')) {
     /**
      * Quote sql values using a array
      *
@@ -145,7 +295,7 @@ if ( ! function_exists('quote_sql'))
 
                     $result = '`' . str_replace('`', '', $item) . '`';
                     // TODO: Refactor subquery to dont treat parentheses as field name
-                    $result = str_replace('`(', '(`', $result); 
+                    $result = str_replace('`(', '(`', $result);
                     $result = str_replace(')`', '`)', $result);
                     return $result;
                 },

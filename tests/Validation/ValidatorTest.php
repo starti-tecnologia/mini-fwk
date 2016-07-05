@@ -188,4 +188,70 @@ class ValidationTest extends PHPUnit_Framework_TestCase
             'child2.name' => ['The child2.name field is required.']
         ], $exception->errors);
     }
+
+    public function testIsValidatingSimpleInnerArrays()
+    {
+        $exception = null;
+
+        $this->validator = new Validator;
+        $this->validator->setData(
+            [
+                'authors' => [
+                    [
+                        'name' => 'Jonh'
+                    ],
+                    [
+                        'name' => null
+                    ]
+                ]
+            ]
+        );
+
+        try {
+            $this->validator->validate(
+                [
+                    'authors.*.name' => 'string|required',
+                ]
+            );
+        } catch (ValidationException $e) {
+            $exception = $e;
+        }
+
+        $this->assertEquals([
+            'authors.1.name' => ['The authors.1.name field is required.']
+        ], $exception->errors);
+    }
+
+    public function testIsValidatingComplexInnerArrays()
+    {
+        $exception = null;
+
+        $this->validator = new Validator;
+        $this->validator->setData(
+            [
+                [
+                    'name' => 'Jonh',
+                    'emails' => ['email@hotmail.com', 'dsklajdaskldjsalk']
+                ],
+                [
+                    'name' => 'Mary',
+                    'emails' => ['email@hotmail.com', 'email2@hotmail.com']
+                ]
+            ]
+        );
+
+        try {
+            $this->validator->validate(
+                [
+                    '*.emails.*' => 'email',
+                ]
+            );
+        } catch (ValidationException $e) {
+            $exception = $e;
+        }
+
+        $this->assertEquals([
+            '0.emails.1' => ['The 0.emails.1 field is email.']
+        ], $exception->errors);
+    }
 }
