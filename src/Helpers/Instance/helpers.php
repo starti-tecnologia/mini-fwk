@@ -317,7 +317,7 @@ if (! function_exists('quote_sql')) {
      */
     function quote_sql($value)
     {
-        $isRaw = preg_match('/[_\w]+\([^)]+\)/', $value);
+        $isRaw = preg_match('/[_\w]+\([^)]+\)/', $value) || preg_match('/ AS /i', $value);
 
         if ($isRaw) {
             return $value;
