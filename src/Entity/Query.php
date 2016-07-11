@@ -323,8 +323,12 @@ class Query
 
         $addSelect = [];
         $mustIgnoreId = strstr($this->spec['select'][0], '*');
-
-        foreach (array_keys($relationInstance->definition) as $key) {
+        $relationKeys = array_keys($relationInstance->definition);
+        if ($relationInstance->useTimeStamps && ! in_array('updated_at', $relationKeys)) {
+            $relationKeys[] = 'updated_at';
+            $relationKeys[] = 'created_at';
+        }
+        foreach ($relationKeys as $key) {
             if ($mustIgnoreId && $key === $relationInstance->idAttribute) {
                 continue;
             }
