@@ -8,9 +8,12 @@ class ConnectionWrapper
 
     private $connection = null;
 
+    public $database = null;
+
     public function __construct($connection)
     {
         $this->connection = $connection;
+        $this->database = $connection->database;
     }
 
     public function prepare($sql)

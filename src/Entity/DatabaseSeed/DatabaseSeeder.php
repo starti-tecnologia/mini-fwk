@@ -26,6 +26,8 @@ class DatabaseSeeder
      */
     public $connectionManager;
 
+    public $idColumnsByTable = [];
+
     public function __construct($basePath, $type)
     {
         $this->basePath = $basePath;
@@ -61,12 +63,48 @@ class DatabaseSeeder
         return array_keys($this->data);
     }
 
-    public function validate()
+    public function getConnection(array $spec, $verbose)
+    {
+        $connection = $this->connectionManager->getConnection($spec['connection']);
+        $connection = new ConnectionWrapper($connection);
+        $connection->isVerbose = $verbose;
+        return $connection;
+    }
+
+    private function getIdColumns($spec, $tableName, $verbose)
+    {
+        if (count($this->idColumnsByTable) == 0) {
+            $connection = $this->getConnection($spec, $tableName, $verbose);
+            $sql = 'SELECT k.column_name, t.table_name FROM information_schema.table_constraints t JOIN information_schema.key_column_usage k USING(constraint_name,table_schema,table_name) WHERE t.constraint_type=\'PRIMARY KEY\' AND t.table_schema=?';
+            $stm = $connection->prepare($sql);
+            $stm->execute([$connection->database]);
+            $rows = $stm->fetchAll(\PDO::FETCH_ASSOC);
+
+            foreach ($rows as $row) {
+                if (! isset($this->idColumnsByTable[$row['table_name']])) {
+                    $this->idColumnsByTable[$row['table_name']] = [];
+                }
+                $this->idColumnsByTable[$row['table_name']][] = $row['column_name'];
+            }
+        }
+
+        return $this->idColumnsByTable[$tableName];
+    }
+
+    public function validate($verbose)
     {
         foreach ($this->data as $tableName => $spec) {
+            $idColumns = $this->getIdColumns($spec, $tableName, $verbose);
+
+            if (count($idColumns) === 0) {
+                throw new \Exception('Primary keys not found on ' . $tableName);
+            }
+
             foreach ($spec['rows'] as $row) {
-                if (empty($row['id'])) {
-                    throw new \Exception('Id is required');
+                foreach ($idColumns as $idColumn) {
+                    if (empty($row[$idColumn])) {
+                        throw new \Exception($idColumn . ' column is required on ' . $tableName);
+                    }
                 }
             }
         }
@@ -75,9 +113,10 @@ class DatabaseSeeder
     public function execute($verbose = false)
     {
         $this->loadData();
-        $this->validate();
+        $this->validate($verbose);
 
         foreach ($this->data as $tableName => $spec) {
+            $idColumns = $this->getIdColumns($spec, $tableName, $verbose);
             $connection = $this->connectionManager->getConnection($spec['connection']);
             $connection = new ConnectionWrapper($connection);
             $connection->isVerbose = $verbose;
@@ -88,14 +127,18 @@ class DatabaseSeeder
             $ids = [];
 
             foreach ($spec['rows'] as $row) {
-                $ids[] = $row['id'];
+                $rowIds = [];
+                foreach ($idColumns as $idColumn) {
+                    $rowIds[] = $row[$idColumn];
+                }
+                $ids[] = '(' . implode(', ', $rowIds) . ')';
 
                 $connection->replace($tableName, $row);
             }
 
             if (count($ids)) {
                 $sql = sprintf(
-                    'DELETE FROM ' . $tableName . ' WHERE id NOT IN (%s)',
+                    'DELETE FROM ' . $tableName . ' WHERE (' . implode(', ', $idColumns) . ') NOT IN (%s)',
                     implode(', ', $ids)
                 );
                 $stm = $connection->prepare($sql);
