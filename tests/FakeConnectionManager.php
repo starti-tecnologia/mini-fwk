@@ -77,6 +77,8 @@ class FakeConnection
 
     private $context;
 
+    public $database = null;
+
     public function __construct(array $context)
     {
         $this->context = $context;

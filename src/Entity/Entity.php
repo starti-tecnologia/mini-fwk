@@ -193,7 +193,7 @@ abstract class Entity implements \JsonSerializable
                 $prefix = $relationName . '_';
 
                 if (strpos($key, $prefix) === 0) {
-                    $relationKey = str_replace($prefix, '', $key);
+                    $relationKey = substr($key, strlen($prefix));
                     $relationInstance->fields[$relationKey] = $value;
                 }
             }
