@@ -64,7 +64,8 @@ class PaginatorTest extends PHPUnit_Framework_TestCase
         $query = (new Query)
             ->select([
                 'posts.id',
-                'posts.name'
+                'posts.name',
+                'posts.owner_will_go'
             ])
             ->className(RelationEntityStub::class)
             ->table('posts')
@@ -78,6 +79,7 @@ class PaginatorTest extends PHPUnit_Framework_TestCase
             [
                 'id|integer',
                 'name',
+                'owner_will_go|boolean',
                 'owner|object|prefix:owner_' => [
                     'id|integer',
                     'name'

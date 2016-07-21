@@ -76,6 +76,12 @@ class EntitySerializer
                 continue;
             }
 
+            $key = substr($field, strlen($prefix));
+
+            if ($key != 'id' && isset($entity->definition[$field])) {
+                continue;
+            }
+
             if (! isset($formatByKey[$relationName])) {
                 $currentFormat = [
                     'key' => $relationName,
@@ -93,7 +99,6 @@ class EntitySerializer
                 $relations[$relationName]['instance'] = new $relations[$relationName]['class'];
             }
 
-            $key = substr($field, strlen($prefix));
             $visible = $relations[$relationName]['instance']->visible;
             $isRelation = true;
 
@@ -197,7 +202,7 @@ class EntitySerializer
 
             if (! $isObject) {
                 $transformFunction = function (&$object, $row) use ($key, $field, $prefix) {
-                    $value = $row[$prefix . $key];
+                    $value = isset($row[$prefix . $key]) ? $row[$prefix . $key] : null;
 
                     if (isset($field['integer'])) {
                         $value = intval($value);

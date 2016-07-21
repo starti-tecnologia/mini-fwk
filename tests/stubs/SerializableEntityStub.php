@@ -16,7 +16,9 @@ class SerializableEntityStub extends Entity
         'max_users_quantity' => 'integer',
         'address_geolocalization' => 'string:200',
         'address_street_name' => 'string:200',
-        'address_number' => 'string:50'
+        'address_number' => 'string:50',
+        'owner_id' => 'integer|belongsTo:owners',
+        'owner_will_go' => 'boolean'
     ];
 
     public $relations = [

@@ -192,9 +192,12 @@ class Paginator
                     continue;
                 }
 
-                $isRelation = true;
                 $fieldWithoutPrefix = substr($field, strlen($prefix));
+                if ($fieldWithoutPrefix != 'id' && isset($instance->definition[$field])) {
+                    continue;
+                }
                 $formatKey = $relationName . '|object|prefix:' . $relationName . '_';
+                $isRelation = true;
 
                 if (! isset($format[$formatKey])) {
                     $format[$formatKey] = [];

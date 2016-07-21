@@ -12,13 +12,15 @@ class RelationEntityStub extends Entity
     public $definition = [
         'id' => 'pk',
         'name' => 'string',
-        'owner_id' => 'integer|belongsTo:customers'
+        'owner_id' => 'integer|belongsTo:customers',
+        'owner_will_go' => 'boolean'
     ];
 
     public $visible = [
         'id',
         'name',
         'owner_id',
+        'owner_will_go',
     ];
 
     public $relations = [

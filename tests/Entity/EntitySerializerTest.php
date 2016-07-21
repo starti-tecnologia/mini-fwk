@@ -29,6 +29,7 @@ class EntitySerializerTest extends PHPUnit_Framework_TestCase
             'address_street_name' => 'Lala Street',
             'address_number' => '1C',
             'owner_id' => '1',
+            'owner_will_go' => '1',
             'owner_name' => 'John'
         ];
 
@@ -42,9 +43,10 @@ class EntitySerializerTest extends PHPUnit_Framework_TestCase
                     'street_name' => 'Lala Street',
                     'number' => '1C'
                 ],
+                'owner_will_go' => true,
                 'owner' => [
                     'id' => 1,
-                    'name' => 'John'
+                    'name' => 'John',
                 ]
             ],
             EntitySerializer::instance()->serialize($entity)
@@ -65,7 +67,8 @@ class EntitySerializerTest extends PHPUnit_Framework_TestCase
             'address_street_name' => 'Lala Street',
             'address_number' => '1C',
             'owner_id' => '1',
-            'owner_name' => 'John'
+            'owner_name' => 'John',
+            'owner_will_go' => '1',
         ];
 
         $this->assertEquals(
@@ -74,6 +77,7 @@ class EntitySerializerTest extends PHPUnit_Framework_TestCase
                 'name' => 'Lala',
                 'isDraft' => null,
                 'maxUsersQuantity' => 10,
+                'ownerWillGo' => true,
                 'address' => [
                     'streetName' => 'Lala Street',
                     'number' => '1C'
@@ -97,7 +101,7 @@ class EntitySerializerTest extends PHPUnit_Framework_TestCase
             'id' => '1',
             'name' => 'Lala',
             'owner_id' => '1',
-            'owner_name' => 'John'
+            'owner_name' => 'John',
         ];
 
         $this->assertEquals(
