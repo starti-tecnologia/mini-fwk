@@ -32,7 +32,11 @@ class DatabaseSeederTest extends PHPUnit_Framework_TestCase
     {
         require_once __TEST_DIRECTORY__ . '/FakeConnectionManager.php';
 
-        $connectionManager = new FakeConnectionManager;
+        $fixtures = [
+            '/information_schema/' => [['column_name' => 'id', 'table_name' => 'users']]
+        ];
+
+        $connectionManager = new FakeConnectionManager($fixtures);
 
         $seeder = new DatabaseSeeder(__TEST_DIRECTORY__ . '/stubs/seeds', 'test');
         $seeder->connectionManager = $connectionManager;
@@ -40,6 +44,11 @@ class DatabaseSeederTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             [
+                [
+                    'default',
+                    "SELECT k.column_name, t.table_name FROM information_schema.table_constraints t JOIN information_schema.key_column_usage k USING(constraint_name,table_schema,table_name) WHERE t.constraint_type='PRIMARY KEY' AND t.table_schema=?",
+                    ['test']
+                ],
                 [
                     'default',
                     'SET foreign_key_checks = 0;',
@@ -52,7 +61,7 @@ class DatabaseSeederTest extends PHPUnit_Framework_TestCase
                 ],
                 [
                     'default',
-                    'DELETE FROM users WHERE id NOT IN (1)',
+                    'DELETE FROM users WHERE (id) NOT IN ((1))',
                     []
                 ],
                 [
