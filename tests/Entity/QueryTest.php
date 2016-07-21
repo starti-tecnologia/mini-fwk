@@ -157,13 +157,14 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testIsMakingWhereWithSubQuerySql()
     {
         $this->assertEquals(
-            'SELECT * FROM `users` WHERE `name` = :p0 OR (`name` = :p1 OR `deleted_at` < NOW())',
+            'SELECT * FROM `users` WHERE `name` = :p0 OR (`name` = :p1 OR `x` IN (:p2) OR `deleted_at` < NOW())',
             (new Query)
                 ->table('users')
                 ->where('name', '=', 'Lala')
                 ->where(
                     (new Query())
                         ->where('name', '=', 'Lala')
+                        ->where('x', 'IN', [1], 'OR')
                         ->where('deleted_at', '<', new RawValue('NOW()'), 'OR'),
                     'OR'
                 )

@@ -183,25 +183,34 @@ class Query
         $ignoredBindings = [];
 
         foreach ($wheres as $index => $where) {
-            if ($where[2] === ':p' . $mergedCounter) {
-                $oldParamName = 'p' . $mergedCounter;
-                $newParamName = 'p' . ++$this->counter;
-                $this->spec['bindings'][$newParamName] = $bindings[$oldParamName];
-                $ignoredBindings[] = $oldParamName;
-
-                $where[2] = ':' . $newParamName;
-                ++$mergedCounter;
+            $isIn = false;
+            if (strstr($where[2], '(:p' . $mergedCounter)) {
+                $isIn = true;
             }
+            if ($where[2] === ':p' . $mergedCounter || $isIn) {
+                $oldWhere = $where[2];
+                $oldWherePieces = explode(',', trim($oldWhere, '()'));
+                $newWherePieces = [];
+                foreach ($oldWherePieces as $oldWherePiece) {
+                    $oldParamName = 'p' . $mergedCounter;
+                    $newParamName = 'p' . ++$this->counter;
+                    $this->spec['bindings'][$newParamName] = $bindings[$oldParamName];
+                    $ignoredBindings[] = $oldParamName;
 
+                    $newWherePieces[] = ':' . $newParamName;
+                    ++$mergedCounter;
+                }
+                $where[2] = $isIn
+                    ? '(' . implode(',', $newWherePieces) . ')'
+                    : implode(',', $newWherePieces);
+            }
             if ($index === 0) {
                 $where[0] = '(' . $where[0];
                 $where[3] = $operator;
             }
-
             if ($index === $count - 1) {
                 $where[2] = $where[2] . ')';
             }
-
             $mergedWheres[] = $where;
         }
 
