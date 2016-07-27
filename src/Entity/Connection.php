@@ -42,4 +42,11 @@ class Connection extends PDO
             }
         }
     }
+
+    /**
+     * @return mixed
+     */
+    public function getDbName() {
+        return $this->database;
+    }
 }
