@@ -129,6 +129,20 @@ trait MongoQueryAware
     }
 
     /**
+     * @param array $query
+     * @param array $data
+     */
+    public static function update(array $query, array $data) {
+        self::instance();
+
+        $bulk = new BulkWrite;
+        $bulk->update($query, $data);
+
+        return self::$instanceConnection
+            ->executeBulkWrite(self::$instanceNamespace, $bulk);
+    }
+
+    /**
      * @param array $data
      */
     public static function prepareBulkWrite(array $data) {
