@@ -125,6 +125,43 @@ class PaginatorTest extends PHPUnit_Framework_TestCase
         );
     }
 
+    public function testIsGeneratingDefaultFormatConsideringPrefixedObjects()
+    {
+        require_once __TEST_DIRECTORY__ . '/stubs/PrefixObjectEntityStub.php';
+
+        $paginator = new Paginator;
+
+        $query = (new Query)
+            ->select([
+                'posts.id',
+                'posts.name',
+                'posts.max_users_quantity',
+                'posts.address_geolocalization',
+                'posts.address_street_name',
+                'posts.address_number'
+            ])
+            ->className(PrefixObjectEntityStub::class)
+            ->table('posts');
+
+        $options = $paginator->processQueryOptions([
+            'query' => $query
+        ]);
+
+        $this->assertEquals(
+            [
+                'id|integer',
+                'name',
+                'max_users_quantity|integer',
+                'address|object|prefix:address_' => [
+                    'geolocalization',
+                    'street_name',
+                    'number'
+                ]
+            ],
+            $options['format']
+        );
+    }
+
     public function testIsGeneratingDefaultFieldFilters()
     {
         require_once __TEST_DIRECTORY__ . '/stubs/SimpleEntityStub.php';

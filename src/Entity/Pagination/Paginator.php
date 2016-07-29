@@ -184,7 +184,28 @@ class Paginator
             }
 
             $isRelation = false;
+            $isPrefix = false;
 
+            $prefixAsObject = $instance->prefixAsObject ? $instance->prefixAsObject : [];
+
+            foreach ($prefixAsObject as $prefixName) {
+                $prefix = $prefixName . '_';
+                if (strpos($field, $prefix) !== 0) {
+                    continue;
+                }
+                $fieldWithoutPrefix = substr($field, strlen($prefix));
+                $formatKey = $prefixName . '|object|prefix:' . $prefixName . '_';
+                $isPrefix = true;
+                if (! isset($format[$formatKey])) {
+                    $format[$formatKey] = [];
+                }
+                $format[$formatKey][] = $this->processFormatDefinition(
+                    $instance,
+                    $fieldWithoutPrefix
+                );
+            }
+
+            if (! $isPrefix)
             foreach ($relations as $relationName => $relationOptions) {
                 $prefix = $relationName . '_';
 
@@ -220,7 +241,7 @@ class Paginator
                 );
             }
 
-            if (! $isRelation) {
+            if (! $isRelation && ! $isPrefix) {
                 $format[] = $this->processFormatDefinition(
                     $instance,
                     $field
