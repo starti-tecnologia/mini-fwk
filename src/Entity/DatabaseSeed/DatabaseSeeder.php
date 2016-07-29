@@ -3,6 +3,9 @@
 namespace Mini\Entity\DatabaseSeed;
 
 use Mini\Console\ConnectionWrapper;
+use Mini\Entity\Mongo\Connection as MongoConnection;
+use Mini\Entity\Connection as SqlConnection;
+use MongoDB\Database;
 
 class DatabaseSeeder
 {
@@ -66,8 +69,10 @@ class DatabaseSeeder
     public function getConnection(array $spec, $verbose)
     {
         $connection = $this->connectionManager->getConnection($spec['connection']);
-        $connection = new ConnectionWrapper($connection);
-        $connection->isVerbose = $verbose;
+        if ($connection instanceof SqlConnection) {
+            $connection = new ConnectionWrapper($connection);
+            $connection->isVerbose = $verbose;
+        }
         return $connection;
     }
 
@@ -95,16 +100,26 @@ class DatabaseSeeder
     public function validate($verbose)
     {
         foreach ($this->data as $tableName => $spec) {
-            $idColumns = $this->getIdColumns($spec, $tableName, $verbose);
+            $connection = $this->getConnection($spec, $verbose);
 
-            if (count($idColumns) === 0) {
-                throw new \Exception('Primary keys not found on ' . $tableName);
-            }
+            if ($connection instanceof MongoConnection) {
+                foreach ($spec['rows'] as $row) {
+                    if (empty($row['_id'])) {
+                        throw new \Exception('_id column is required on ' . $tableName);
+                    }
+                }
+            } else {
+                $idColumns = $this->getIdColumns($spec, $tableName, $verbose);
 
-            foreach ($spec['rows'] as $row) {
-                foreach ($idColumns as $idColumn) {
-                    if (empty($row[$idColumn])) {
-                        throw new \Exception($idColumn . ' column is required on ' . $tableName);
+                if (count($idColumns) === 0) {
+                    throw new \Exception('Primary keys not found on ' . $tableName);
+                }
+
+                foreach ($spec['rows'] as $row) {
+                    foreach ($idColumns as $idColumn) {
+                        if (empty($row[$idColumn])) {
+                            throw new \Exception($idColumn . ' column is required on ' . $tableName);
+                        }
                     }
                 }
             }
@@ -117,37 +132,62 @@ class DatabaseSeeder
         $this->validate($verbose);
 
         foreach ($this->data as $tableName => $spec) {
-            $idColumns = $this->getIdColumns($spec, $tableName, $verbose);
-            $connection = $this->connectionManager->getConnection($spec['connection']);
-            $connection = new ConnectionWrapper($connection);
-            $connection->isVerbose = $verbose;
+            $connection = $this->getConnection($spec, $verbose);
 
-            $stm = $connection->prepare('SET foreign_key_checks = 0;');
-            $stm->execute();
-
-            $ids = [];
-
-            foreach ($spec['rows'] as $row) {
-                $rowIds = [];
-                foreach ($idColumns as $idColumn) {
-                    $rowIds[] = $row[$idColumn];
-                }
-                $ids[] = '(' . implode(', ', $rowIds) . ')';
-
-                $connection->replace($tableName, $row);
+            if ($connection instanceof MongoConnection) {
+                $this->seedMongoDatabase($connection, $spec, $tableName, $verbose);
+            } else {
+                $this->seedSqlDatabase($connection, $spec, $tableName, $verbose);
             }
+        }
+    }
 
-            if (count($ids)) {
-                $sql = sprintf(
-                    'DELETE FROM ' . $tableName . ' WHERE (' . implode(', ', $idColumns) . ') NOT IN (%s)',
-                    implode(', ', $ids)
-                );
-                $stm = $connection->prepare($sql);
-                $stm->execute();
+    public function seedSqlDatabase($connection, $spec, $tableName, $verbose)
+    {
+        $idColumns = $this->getIdColumns($spec, $tableName, $verbose);
+        $stm = $connection->prepare('SET foreign_key_checks = 0;');
+        $stm->execute();
+        $ids = [];
+        foreach ($spec['rows'] as $row) {
+            $rowIds = [];
+            foreach ($idColumns as $idColumn) {
+                $rowIds[] = $row[$idColumn];
             }
+            $ids[] = '(' . implode(', ', $rowIds) . ')';
 
-            $stm = $connection->prepare('SET foreign_key_checks = 1;');
+            $connection->replace($tableName, $row);
+        }
+        if (count($ids)) {
+            $sql = sprintf(
+                'DELETE FROM ' . $tableName . ' WHERE (' . implode(', ', $idColumns) . ') NOT IN (%s)',
+                implode(', ', $ids)
+            );
+            $stm = $connection->prepare($sql);
             $stm->execute();
         }
+        $stm = $connection->prepare('SET foreign_key_checks = 1;');
+        $stm->execute();
+    }
+
+    public function seedMongoDatabase($connection, $spec, $tableName, $verbose)
+    {
+        $database = new Database($connection->getDb(), $connection->getDbName());
+        $collection = $database->$tableName;
+        $ids = [];
+        foreach ($spec['rows'] as $row) {
+            $query = ['_id' => $row['_id']];
+            $update = ['$set' => $row];
+            $options = ['upsert' => true];
+            $result = $collection->updateOne($query, $update, $options);
+            if ($verbose) {
+                echo "Executing: db.$tableName.update(".json_encode($query).", ".json_encode($update).", ".json_encode($options).");" . PHP_EOL;
+            }
+            $ids[] = $row['_id'];
+        }
+        $deleteQuery = ['_id' => ['$nin' => $ids]];
+        if ($verbose) {
+            echo "Executing: db.$tableName.delete(".json_encode($deleteQuery).");" . PHP_EOL;
+        }
+        $collection->deleteMany($deleteQuery);
     }
 }

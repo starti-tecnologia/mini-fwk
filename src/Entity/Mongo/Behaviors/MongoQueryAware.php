@@ -6,6 +6,7 @@ use MongoDB\Driver\Query;
 use MongoDB\Driver\Cursor;
 use MongoDB\BSON\ObjectID;
 use MongoDB\Driver\BulkWrite;
+use Mini\Entity\Mongo\Query as QueryBuilder;
 
 trait MongoQueryAware
 {
@@ -206,4 +207,10 @@ trait MongoQueryAware
         return $array;
     }
 
+    public static function q()
+    {
+        self::instance();
+        $query = new QueryBuilder(self::$instanceNamespace, self::$instanceConnection);
+        return $query;
+    }
 }

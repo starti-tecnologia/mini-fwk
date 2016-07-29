@@ -6,6 +6,9 @@ use Mini\Entity\Pagination\Paginator;
 use Mini\Entity\Query;
 use Mini\Helpers\Request;
 
+/**
+ * @deprecated Its better to implement pagination logic at application layer
+ */
 trait PaginatorAware
 {
 
