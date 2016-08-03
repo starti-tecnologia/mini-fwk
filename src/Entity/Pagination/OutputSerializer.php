@@ -88,7 +88,7 @@ class OutputSerializer
                     } elseif (array_key_exists('date', $tags)) {
                         $value = $value ? DateTime::createFromFormat('Y-m-d H:i:s', $value)->format('Y-m-d') : null;
                     } elseif (array_key_exists('datetime', $tags)) {
-                        $value = $value ? DateTime::createFromFormat('Y-m-d H:i:s', $value)->format('c') : null;
+                        $value = $value ? DateTime::createFromFormat('Y-m-d H:i:s', $value)->format('Y-m-d H:i:s') : null;
                     }
 
                     if (env('CONVERT_CAMEL_CASE')) {
