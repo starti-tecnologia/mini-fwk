@@ -80,11 +80,11 @@ class OutputSerializer
                     $value = $row[$prefix . $key];
 
                     if (array_key_exists('integer', $tags)) {
-                        $value = intval($value);
+                        $value = ! is_null($value) ? intval($value) : null;
                     } elseif (array_key_exists('boolean', $tags)) {
                         $value = ! is_null($value) ? !! $value : null;
                     } elseif (array_key_exists('float', $tags)) {
-                        $value = floatval($value);
+                        $value = ! is_null($value) ? floatval($value) : null;
                     } elseif (array_key_exists('date', $tags)) {
                         $value = $value ? DateTime::createFromFormat('Y-m-d H:i:s', $value)->format('Y-m-d') : null;
                     } elseif (array_key_exists('datetime', $tags)) {
