@@ -211,7 +211,7 @@ trait QueryAware
         return self::getInstanceConnection()->exec($sql);
     }
 
-    public static function query()
+    public static function query($ignoreDefault = false)
     {
         self::instance();
 
@@ -220,7 +220,7 @@ trait QueryAware
             ->connection(self::getInstanceConnection())
             ->className(static::class);
 
-        if (self::$instanceUseSoftDeletes) {
+        if (self::$instanceUseSoftDeletes && ! $ignoreDefault) {
             $query->whereIsNull(self::$instanceTable . '.deleted_at');
         }
 
@@ -230,8 +230,8 @@ trait QueryAware
     /**
      * @return Query
      */
-    public static function q()
+    public static function q($ignoreDefault = false)
     {
-        return self::query();
+        return self::query($ignoreDefault);
     }
 }
