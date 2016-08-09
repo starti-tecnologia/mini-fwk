@@ -53,7 +53,16 @@ class Query
 
     public function alias($alias)
     {
+        $oldAlias = $this->spec['alias'];
         $this->spec['alias'] = $alias;
+
+        foreach ($this->spec['wheres'] as &$where) {
+            $where[0] = preg_replace(
+                '/^' . preg_quote($oldAlias). '\./',
+                $alias . '.',
+                $where[0]
+            );
+        }
 
         return $this;
     }

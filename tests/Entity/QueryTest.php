@@ -328,6 +328,17 @@ class QueryTest extends PHPUnit_Framework_TestCase
         );
     }
 
+    public function testIsReplacingAliasSql()
+    {
+        $this->assertEquals(
+            'SELECT * FROM `posts` `p` WHERE `p`.`deleted_at` IS NULL',
+            RelationEntityStub::query()
+                ->whereIsNull('posts.deleted_at')
+                ->alias('p')
+                ->makeSql()
+        );
+    }
+
     public function testIsGettingObject()
     {
         $result = (new Query)
