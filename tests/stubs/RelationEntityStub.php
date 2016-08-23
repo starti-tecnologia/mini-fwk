@@ -27,6 +27,10 @@ class RelationEntityStub extends Entity
         'owner' => [
             'class' => SimpleEntityStub::class,
             'field' => 'owner_id'
+        ],
+        'reversed' => [
+            'class' => ReversedRelationEntityStub::class,
+            'reference' => 'relation'
         ]
     ];
 }

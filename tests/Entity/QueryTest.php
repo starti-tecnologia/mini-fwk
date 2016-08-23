@@ -14,6 +14,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
         require_once __TEST_DIRECTORY__ . '/stubs/EntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/SimpleEntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/RelationEntityStub.php';
+        require_once __TEST_DIRECTORY__ . '/stubs/ReversedRelationEntityStub.php';
 
         $this->connectionManager = new FakeConnectionManager;
 
@@ -293,6 +294,16 @@ class QueryTest extends PHPUnit_Framework_TestCase
             'SELECT `posts`.* FROM `posts` LEFT JOIN `users` `owner` ON (`posts`.`owner_id` = `owner`.`id`)',
             RelationEntityStub::query()
                 ->includeRelation('owner', false, [])
+                ->makeSql()
+        );
+    }
+
+    public function testIsMakingIncludeRelationReversed()
+    {
+        $this->assertEquals(
+            'SELECT `posts`.*, reversed.id as reversed_id, reversed.name as reversed_name, reversed.relation_id as reversed_relation_id FROM `posts` INNER JOIN `reverseds` `reversed` ON (`reversed`.`relation_id` = `posts`.`id`)',
+            RelationEntityStub::query()
+                ->includeRelation('reversed')
                 ->makeSql()
         );
     }

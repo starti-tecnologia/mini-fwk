@@ -161,6 +161,10 @@ abstract class Entity implements \JsonSerializable
      */
     public function setRelation($relationName, Entity $relationInstance = null)
     {
+        if (! isset($this->relations[$relationName]['field'])) {
+            throw new \Exception('Invalid or read-only relation: ' . $relationName);
+        }
+
         if ($relationInstance) {
             $id = $relationInstance->fields[$relationInstance->idAttribute];
             $this->relationCache[$relationName] = $relationInstance;

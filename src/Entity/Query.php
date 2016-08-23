@@ -326,21 +326,35 @@ class Query
         $instance = $this->getInstance();
         $relationArray = $instance->relations[$relation];
         $relationInstance = new $relationArray['class'];
-        $relationField = $relationArray['field'];
+        $isReversed = false;
 
-        $this->$method(
-            $relationInstance->table . ' ' . $relation,
-            $this->spec['alias'] . '.' . $relationField,
-            '=',
-            $relation . '.' . $relationInstance->idAttribute
-        );
+        if (isset($relationArray['field'])) {
+            $relationField = $relationArray['field'];
+            $this->$method(
+                $relationInstance->table . ' ' . $relation,
+                $this->spec['alias'] . '.' . $relationField,
+                '=',
+                $relation . '.' . $relationInstance->idAttribute
+            );
+        } elseif (isset($relationArray['reference'])) {
+            $isReversed = true;
+            $relationField = $relationInstance->relations[$relationArray['reference']]['field'];
+            $this->$method(
+                $relationInstance->table . ' ' . $relation,
+                $relation . '.' . $relationField,
+                '=',
+                $this->spec['alias'] . '.' . $instance->idAttribute
+            );
+        } else {
+            throw new \Exception('Unknow relation type');
+        }
 
         if ($this->spec['select'] === ['*']) {
             $this->select([$this->spec['alias'] . '.*']);
         }
 
         $addSelect = [];
-        $mustIgnoreId = strstr($this->spec['select'][0], '*');
+        $mustIgnoreId = ! $isReversed && strstr($this->spec['select'][0], '*');
         $relationKeys = array_keys($relationInstance->definition);
         if ($relationInstance->useTimeStamps && ! in_array('updated_at', $relationKeys)) {
             $relationKeys[] = 'updated_at';
