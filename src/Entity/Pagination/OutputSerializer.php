@@ -89,7 +89,8 @@ class OutputSerializer
                         $df = $value && strlen($value) == 10 ? 'Y-m-d' : 'Y-m-d H:i:s';
                         $value = $value ? DateTime::createFromFormat($df, $value)->format('Y-m-d') : null;
                     } elseif (array_key_exists('datetime', $tags)) {
-                        $value = $value ? DateTime::createFromFormat('Y-m-d H:i:s', $value)->format('Y-m-d H:i:s') : null;
+                        $df = $value && strlen($value) == 10 ? 'Y-m-d' : 'Y-m-d H:i:s';
+                        $value = $value ? DateTime::createFromFormat($df, $value)->format('Y-m-d H:i:s') : null;
                     }
 
                     if (env('CONVERT_CAMEL_CASE')) {
