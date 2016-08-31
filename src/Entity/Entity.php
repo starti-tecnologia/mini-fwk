@@ -187,7 +187,9 @@ abstract class Entity implements \JsonSerializable
         } else if (isset($this->relations[$relationName])) {
             $relation = $this->relations[$relationName];
 
-            if (empty($this->fields[$relation['field']])) {
+            if (isset($relation['field']) && empty($this->fields[$relation['field']])) {
+                return null;
+            } elseif (isset($relation['reference']) && empty($this->fields[$relationName . '_id'])) {
                 return null;
             }
 

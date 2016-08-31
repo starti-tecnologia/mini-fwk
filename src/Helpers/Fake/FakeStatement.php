@@ -1,7 +1,6 @@
 <?php
 
-use Mini\Entity\ConnectionManager;
-use Mini\Entity\Behaviors\SqlBuilderAware;
+namespace Mini\Helpers\Fake;
 
 class FakeStatement
 {
@@ -49,10 +48,11 @@ class FakeStatement
         if (stristr($this->context['sql'], 'FAKE_CONNECTION_EMPTY_TABLE')) {
             return null;
         }
-
         $instance = new $className;
-        $instance->lala = 'hi';
-
+        $row = $this->getResults()[0];
+        foreach ($row as $key => $value) {
+            $instance->$key = $value;
+        }
         return $instance;
     }
 
@@ -79,51 +79,5 @@ class FakeStatement
         }
 
         return $results;
-    }
-}
-
-class FakeConnection
-{
-    use SqlBuilderAware;
-
-    private $context;
-
-    public $database = 'test';
-
-    public function __construct(array $context)
-    {
-        $this->context = $context;
-    }
-
-    public function prepare($sql)
-    {
-        return new FakeStatement(array_merge($this->context, ['sql' => $sql]));
-    }
-
-    public function lastInsertId()
-    {
-        return 1;
-    }
-}
-
-class FakeConnectionManager extends ConnectionManager
-{
-    public $log;
-
-    public $fixtures = []; // Array in format 'regex' => [results]
-
-    public function __construct($fixtures = [])
-    {
-        $this->log = [];
-        $this->fixtures = $fixtures;
-    }
-
-    public function getConnection($name)
-    {
-        return new FakeConnection([
-            'connection' => $name,
-            'manager' => $this,
-            'fixtures' => $this->fixtures
-        ]);
     }
 }

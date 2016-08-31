@@ -1,6 +1,7 @@
 <?php
 
 use Mini\Entity\DatabaseSeed\DatabaseSeeder;
+use Mini\Helpers\Fake\FakeConnectionManager;
 
 class DatabaseSeederTest extends PHPUnit_Framework_TestCase
 {
@@ -30,8 +31,6 @@ class DatabaseSeederTest extends PHPUnit_Framework_TestCase
 
     public function testIsExecuting()
     {
-        require_once __TEST_DIRECTORY__ . '/FakeConnectionManager.php';
-
         $fixtures = [
             '/information_schema/' => [['column_name' => 'id', 'table_name' => 'users']]
         ];

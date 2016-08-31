@@ -13,7 +13,8 @@ class RelationEntityStub extends Entity
         'id' => 'pk',
         'name' => 'string',
         'owner_id' => 'integer|belongsTo:customers',
-        'owner_will_go' => 'boolean'
+        'owner_will_go' => 'boolean',
+        'deep_id' => 'integer'
     ];
 
     public $visible = [
@@ -31,6 +32,10 @@ class RelationEntityStub extends Entity
         'reversed' => [
             'class' => ReversedRelationEntityStub::class,
             'reference' => 'relation'
+        ],
+        'deep' => [
+            'class' => DeepRelationEntityStub::class,
+            'field' => 'deep_id'
         ]
     ];
 }

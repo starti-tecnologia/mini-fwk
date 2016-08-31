@@ -3,6 +3,7 @@
 use Mini\Entity\Query;
 use Mini\Entity\RawValue;
 use Mini\Exceptions\QueryException;
+use Mini\Helpers\Fake\FakeConnectionManager;
 
 class QueryTest extends PHPUnit_Framework_TestCase
 {
@@ -10,11 +11,11 @@ class QueryTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        require_once __TEST_DIRECTORY__ . '/FakeConnectionManager.php';
         require_once __TEST_DIRECTORY__ . '/stubs/EntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/SimpleEntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/RelationEntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/ReversedRelationEntityStub.php';
+        require_once __TEST_DIRECTORY__ . '/stubs/DeepRelationEntityStub.php';
 
         $this->connectionManager = new FakeConnectionManager;
 
@@ -267,6 +268,17 @@ class QueryTest extends PHPUnit_Framework_TestCase
             'SELECT `posts`.*, owner.name as owner_name FROM `posts` INNER JOIN `users` `owner` ON (`posts`.`owner_id` = `owner`.`id`)',
             RelationEntityStub::query()
                 ->includeRelation('owner')
+                ->makeSql()
+        );
+    }
+
+    public function testIsMakingRequiredIncludeDeepRelationSql()
+    {
+        $this->assertEquals(
+            'SELECT `posts`.*, deep.name as deep_name, deep.more_deep_id as deep_more_deep_id, deep_moreDeep.id as deep_moreDeep_id, deep_moreDeep.name as deep_moreDeep_name, deep_moreDeep.more_deep_id as deep_moreDeep_more_deep_id FROM `posts` INNER JOIN `deep` `deep` ON (`posts`.`deep_id` = `deep`.`id`) INNER JOIN `deep` `deep_moreDeep` ON (`deep`.`more_deep_id` = `deep_moreDeep`.`id`)',
+            RelationEntityStub::query()
+                ->includeRelation('deep')
+                ->includeRelation('deep.moreDeep')
                 ->makeSql()
         );
     }

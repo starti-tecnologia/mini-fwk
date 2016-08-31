@@ -2,6 +2,7 @@
 
 use Mini\Entity\DataMapper;
 use Mini\Entity\RawValue;
+use Mini\Helpers\Fake\FakeConnectionManager;
 
 class DataMapperTest extends PHPUnit_Framework_TestCase
 {
@@ -9,7 +10,6 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        require_once __TEST_DIRECTORY__ . '/FakeConnectionManager.php';
         require_once __TEST_DIRECTORY__ . '/stubs/EntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/SoftDeleteEntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/DataMapperStub.php';

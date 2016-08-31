@@ -1,6 +1,7 @@
 <?php
 
 use Mini\Entity\Entity;
+use Mini\Helpers\Fake\FakeConnectionManager;
 
 class EntityTest extends PHPUnit_Framework_TestCase
 {
@@ -8,7 +9,6 @@ class EntityTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        require_once __TEST_DIRECTORY__ . '/FakeConnectionManager.php';
         require_once __TEST_DIRECTORY__ . '/stubs/SimpleEntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/RelationEntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/PrefixObjectEntityStub.php';

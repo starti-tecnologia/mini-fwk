@@ -17,7 +17,8 @@ class Query
         'groupBy' => null,
         'select' => ['*'],
         'bindings' => [],
-        'limit' => null
+        'limit' => null,
+        'relations' => []
     ];
 
     private $counter = -1;
@@ -322,28 +323,62 @@ class Query
      */
     public function includeRelation($relation, $required = true, $fields = null)
     {
+        $path = explode('.', $relation);
+        $pathCount = count($path);
+        $lastInstance = $this->getInstance();
+        $lastAlias = $this->spec['alias'];
+        for ($i = 0; $i < $pathCount - 1; $i++) {
+            $step = $path[$i];
+            $parentRelation = implode('.', array_slice ($path, 0, $i + 1));
+            if ($i != $pathCount - 1 && ! isset($this->spec['relations'][$parentRelation])) {
+                throw new \Exception('Parent relation needed: ' . $step);
+            }
+            $lastInstance = new $lastInstance->relations[$step]['class'];
+            $lastAlias = $step;
+        }
+        $this->processIncludeRelation(
+            $lastInstance,
+            $lastAlias,
+            $path[$pathCount - 1],
+            $required ,
+            $fields
+        );
+        $this->spec['relations'][$relation] = ['required' => true, 'fields' => $fields];
+        return $this;
+    }
+
+    private function processIncludeRelation(
+        Entity $instance,
+        $alias,
+        $relation,
+        $required = true,
+        $fields = null
+    ) {
         $method = $required ? 'innerJoin' : 'leftJoin';
-        $instance = $this->getInstance();
         $relationArray = $instance->relations[$relation];
         $relationInstance = new $relationArray['class'];
         $isReversed = false;
+        $includeCurrentAliasAsPrefix = $instance != $this->getInstance();
+        $selectPrefix = $includeCurrentAliasAsPrefix
+            ? $alias . '_' . $relation
+            : $relation;
 
         if (isset($relationArray['field'])) {
             $relationField = $relationArray['field'];
             $this->$method(
-                $relationInstance->table . ' ' . $relation,
-                $this->spec['alias'] . '.' . $relationField,
+                $relationInstance->table . ' ' . $selectPrefix,
+                $alias . '.' . $relationField,
                 '=',
-                $relation . '.' . $relationInstance->idAttribute
+                $selectPrefix . '.' . $relationInstance->idAttribute
             );
         } elseif (isset($relationArray['reference'])) {
             $isReversed = true;
             $relationField = $relationInstance->relations[$relationArray['reference']]['field'];
             $this->$method(
-                $relationInstance->table . ' ' . $relation,
-                $relation . '.' . $relationField,
+                $relationInstance->table . ' ' . $selectPrefix,
+                $selectPrefix . '.' . $relationField,
                 '=',
-                $this->spec['alias'] . '.' . $instance->idAttribute
+                $alias . '.' . $instance->idAttribute
             );
         } else {
             throw new \Exception('Unknow relation type');
@@ -354,7 +389,11 @@ class Query
         }
 
         $addSelect = [];
-        $mustIgnoreId = ! $isReversed && strstr($this->spec['select'][0], '*');
+        $mustIgnoreId = ! $isReversed && (
+            strstr($this->spec['select'][0], '*') && isset($instance->definition[
+                $relation . '_' . $relationInstance->idAttribute
+            ])
+        );
         $relationKeys = array_keys($relationInstance->definition);
         if ($relationInstance->useTimeStamps && ! in_array('updated_at', $relationKeys)) {
             $relationKeys[] = 'updated_at';
@@ -369,7 +408,7 @@ class Query
                 continue;
             }
 
-            $addSelect[] = $relation . '.' . $key . ' as ' . $relation . '_' . $key;
+            $addSelect[] = $selectPrefix . '.' . $key . ' as ' . $selectPrefix . '_' . $key;
         }
 
         $this->addSelect($addSelect);
