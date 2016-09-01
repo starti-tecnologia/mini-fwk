@@ -49,7 +49,10 @@ class FakeStatement
             return null;
         }
         $instance = new $className;
-        $row = $this->getResults()[0];
+        $row = $this->getResults()[0] ?? null;
+        if (! $row) {
+            return null;
+        }
         foreach ($row as $key => $value) {
             $instance->$key = $value;
         }
