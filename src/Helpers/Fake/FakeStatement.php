@@ -83,4 +83,16 @@ class FakeStatement
 
         return $results;
     }
+
+    public function fetchColumn()
+    {
+        if (stristr($this->context['sql'], 'FAKE_CONNECTION_EMPTY_TABLE')) {
+            return null;
+        }
+        $row = $this->getResults()[0] ?? null;
+        if ($row) {
+            $keys = array_keys($row);
+            return $row[$keys[0]];
+        }
+    }
 }
