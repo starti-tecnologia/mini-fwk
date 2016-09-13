@@ -117,6 +117,9 @@ abstract class Entity implements \JsonSerializable
                 }
 
                 foreach ($data[$prefix] as $key => $value) {
+                    if (env('CONVERT_CAMEL_CASE')) {
+                        $key = snake_case($key);
+                    }
                     $data[$prefix . '_' . $key] = $value;
                 }
 
