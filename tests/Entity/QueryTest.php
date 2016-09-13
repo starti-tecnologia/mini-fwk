@@ -265,7 +265,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testIsMakingRequiredIncludeRelationSql()
     {
         $this->assertEquals(
-            'SELECT `posts`.*, owner.name as owner_name FROM `posts` INNER JOIN `users` `owner` ON (`posts`.`owner_id` = `owner`.`id`)',
+            'SELECT `posts`.*, owner.guid as owner_guid, owner.name as owner_name FROM `posts` INNER JOIN `users` `owner` ON (`posts`.`owner_id` = `owner`.`id`)',
             RelationEntityStub::query()
                 ->includeRelation('owner')
                 ->makeSql()
@@ -286,7 +286,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testIsMakingNotRequiredIncludeRelationSql()
     {
         $this->assertEquals(
-            'SELECT `posts`.*, owner.name as owner_name FROM `posts` LEFT JOIN `users` `owner` ON (`posts`.`owner_id` = `owner`.`id`)',
+            'SELECT `posts`.*, owner.guid as owner_guid, owner.name as owner_name FROM `posts` LEFT JOIN `users` `owner` ON (`posts`.`owner_id` = `owner`.`id`)',
             RelationEntityStub::query()
                 ->includeRelation('owner', false)
                 ->makeSql()
@@ -343,7 +343,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testIsMakingAliasSql()
     {
         $this->assertEquals(
-            'SELECT `p`.*, owner.name as owner_name FROM `posts` `p` INNER JOIN `users` `owner` ON (`p`.`owner_id` = `owner`.`id`)',
+            'SELECT `p`.*, owner.guid as owner_guid, owner.name as owner_name FROM `posts` `p` INNER JOIN `users` `owner` ON (`p`.`owner_id` = `owner`.`id`)',
             RelationEntityStub::query()
                 ->alias('p')
                 ->includeRelation('owner')

@@ -11,6 +11,7 @@ class SimpleEntityStub extends Entity
 
     public $definition = [
         'id' => 'pk',
+        'guid' => 'string',
         'name' => 'string',
     ];
 

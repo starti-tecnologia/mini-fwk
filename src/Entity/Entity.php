@@ -106,6 +106,10 @@ abstract class Entity implements \JsonSerializable
      */
     public function fill($data)
     {
+        if (env('CONVERT_CAMEL_CASE')) {
+            $data = array_snake_case($data);
+        }
+
         if ($this->prefixAsObject) {
             foreach ($this->prefixAsObject as $prefix) {
                 if (! isset($data[$prefix])) {
@@ -124,7 +128,36 @@ abstract class Entity implements \JsonSerializable
 
         foreach ($data as $key => $value) {
             if ($allowEverything || in_array($key, $this->fillable)) {
-                $this->fields[$key] = $value;
+                if (isset($this->definition[$key])) {
+                    $this->fields[$key] = $value;
+                    continue;
+                }
+
+                if (isset($this->relations[$key])) {
+                    if (! $value) {
+                        $this->setRelation($key, null);
+                        continue;
+                    }
+
+                    $relationInstance = new $this->relations[$key]['class'];
+                    $relationQuery = call_user_func_array(
+                        [$this->relations[$key]['class'], 'q'],
+                        []
+                    );
+                    $relationAttribute = is_numeric($value)
+                        ? $relationInstance->idAttribute
+                        : (
+                            isset($relationInstance->definition['guid'])
+                            ? 'guid'
+                            : 'id'
+                        );
+                    $this->setRelation(
+                        $key,
+                        $relationQuery
+                            ->where($relationAttribute, '=', $value)
+                            ->getObjectOrFail()
+                    );
+                }
             }
         }
     }

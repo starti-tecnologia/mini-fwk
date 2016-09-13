@@ -24,6 +24,11 @@ class RelationEntityStub extends Entity
         'owner_will_go',
     ];
 
+    public $fillable = [
+        'name',
+        'owner',
+    ];
+
     public $relations = [
         'owner' => [
             'class' => SimpleEntityStub::class,

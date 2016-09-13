@@ -276,6 +276,107 @@ if (! function_exists('camel_case')) {
     }
 }
 
+if (! function_exists('array_camel_case')) {
+    /**
+     * Convert a value to camel case.
+     *
+     * @param  string  $value
+     * @return string
+     */
+    function array_camel_case($source)
+    {
+        $target = [];
+        foreach ($source as $key => $value) {
+            $newKey = is_numeric($key) ? $key : camel_case($key);
+            if (is_array($value)) {
+                $value = array_camel_case($value);
+            }
+            $target[$newKey] = $value;
+        }
+        return $target;
+    }
+}
+
+if (! function_exists('camel_case')) {
+    /**
+     * Convert a value to camel case.
+     *
+     * @param  string  $value
+     * @return string
+     */
+    function camel_case($value)
+    {
+        return lcfirst(
+            str_replace(
+                ' ',
+                '',
+                ucwords(
+                    str_replace(
+                        '_',
+                        ' ',
+                        $value
+                    )
+                )
+            )
+        );
+    }
+}
+
+if (! function_exists('array_camel_case')) {
+    /**
+     * Convert a value to camel case.
+     *
+     * @param  string  $value
+     * @return string
+     */
+    function array_camel_case($source)
+    {
+        $target = [];
+        foreach ($source as $key => $value) {
+            $newKey = is_numeric($key) ? $key : camel_case($key);
+            if (is_array($value)) {
+                $value = array_camel_case($value);
+            }
+            $target[$newKey] = $value;
+        }
+        return $target;
+    }
+}
+
+if (! function_exists('snake_case')) {
+    /**
+     * Convert a value to snake case.
+     *
+     * @param  string  $value
+     * @return string
+     */
+    function snake_case($value)
+    {
+        return strtolower(preg_replace('/(.)(?=[A-Z])/', '$1_', $value));
+    }
+}
+
+if (! function_exists('array_snake_case')) {
+    /**
+     * Convert a value to snake case.
+     *
+     * @param  string  $value
+     * @return string
+     */
+    function array_snake_case($source)
+    {
+        $target = [];
+        foreach ($source as $key => $value) {
+            $newKey = is_numeric($key) ? $key : snake_case($key);
+            if (is_array($value)) {
+                $value = array_snake_case($value);
+            }
+            $target[$newKey] = $value;
+        }
+        return $target;
+    }
+}
+
 if (! function_exists('quote_sql')) {
     /**
      * Quote sql values using a array

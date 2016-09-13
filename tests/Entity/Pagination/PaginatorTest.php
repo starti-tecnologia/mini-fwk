@@ -192,7 +192,8 @@ class PaginatorTest extends PHPUnit_Framework_TestCase
                 ['(posts.id', 'LIKE', ':p1', 'AND'],
                 ['posts.name', 'LIKE', ':p2', 'OR'],
                 ['owner.id', 'LIKE', ':p3', 'OR'],
-                ['owner.name', 'LIKE', ':p4)', 'OR'],
+                ['owner.guid', 'LIKE', ':p4', 'OR'],
+                ['owner.name', 'LIKE', ':p5)', 'OR'],
             ],
             $query->spec['wheres']
         );
@@ -235,7 +236,8 @@ class PaginatorTest extends PHPUnit_Framework_TestCase
                 ['posts.id', 'LIKE', ':p2', 'OR'],
                 ['CONCAT(posts.name, owner.name)', 'LIKE', ':p3', 'OR'],
                 ['owner.id', 'LIKE', ':p4', 'OR'],
-                ['owner.name', 'LIKE', ':p5)', 'OR']
+                ['owner.guid', 'LIKE', ':p5', 'OR'],
+                ['owner.name', 'LIKE', ':p6)', 'OR']
             ],
             $query->spec['wheres']
         );
