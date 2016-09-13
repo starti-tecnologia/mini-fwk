@@ -107,7 +107,7 @@ abstract class Entity implements \JsonSerializable
     public function fill($data)
     {
         if (env('CONVERT_CAMEL_CASE')) {
-            $data = array_snake_case($data);
+            $data = array_snake_case($data, $this->relations);
         }
 
         if ($this->prefixAsObject) {
