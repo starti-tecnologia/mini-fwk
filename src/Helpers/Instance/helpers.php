@@ -333,9 +333,9 @@ if (! function_exists('array_camel_case')) {
     {
         $target = [];
         foreach ($source as $key => $value) {
-            $newKey = is_numeric($key) ? $key : camel_case($key);
+            $newKey = is_numeric($key) || isset($ignoredKeys[$key]) ? $key : camel_case($key);
             if (is_array($value)) {
-                $value = array_camel_case($value);
+                $value = array_camel_case($value, $ignoredKeys);
             }
             $target[$newKey] = $value;
         }
@@ -363,13 +363,13 @@ if (! function_exists('array_snake_case')) {
      * @param  string  $value
      * @return string
      */
-    function array_snake_case($source)
+    function array_snake_case($source, $ignoredKeys = [])
     {
         $target = [];
         foreach ($source as $key => $value) {
-            $newKey = is_numeric($key) ? $key : snake_case($key);
+            $newKey = is_numeric($key) || isset($ignoredKeys[$key]) ? $key : snake_case($key);
             if (is_array($value)) {
-                $value = array_snake_case($value);
+                $value = array_snake_case($value, $ignoredKeys);
             }
             $target[$newKey] = $value;
         }
