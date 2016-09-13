@@ -26,6 +26,7 @@ class EntitySerializer
         $className = get_class($entity);
 
         if (! isset($this->transformCache[$className])) {
+            $entity = $this->flattenEntity($entity);
             $format = $this->makeDefaultFormat($entity);
             $fn = $this->makeTransformFunction($format);
             $this->transformCache[$className] = $fn;
@@ -162,6 +163,21 @@ class EntitySerializer
         }
 
         return $context;
+    }
+
+    public function flattenEntity(Entity $entity)
+    {
+        $entity = clone $entity;
+        foreach ($entity->relations as $relationKey => $value) {
+            $relationInstance = $entity->getRelation($relationKey);
+            if (! $relationInstance) {
+                continue;
+            }
+            foreach ($relationInstance->fields as $relationField => $value) {
+                $entity->fields[$relationKey . '_' . $relationField] = $value;
+            }
+        }
+        return $entity;
     }
 
     private function makeDefaultFormat(Entity $entity)
