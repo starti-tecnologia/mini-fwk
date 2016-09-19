@@ -185,6 +185,7 @@ class Paginator
 
             $isRelation = false;
             $isPrefix = false;
+            $required = null;
 
             $prefixAsObject = $instance->prefixAsObject ? $instance->prefixAsObject : [];
 
@@ -194,7 +195,7 @@ class Paginator
                     continue;
                 }
                 $fieldWithoutPrefix = substr($field, strlen($prefix));
-                $formatKey = $prefixName . '|object|prefix:' . $prefixName . '_';
+                $formatKey = $prefixName . '|object|prefix:' . $prefixName . '_|required';
                 $isPrefix = true;
                 if (! isset($format[$formatKey])) {
                     $format[$formatKey] = [];

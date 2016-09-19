@@ -15,6 +15,7 @@ class EntitySerializerTest extends PHPUnit_Framework_TestCase
         require_once __TEST_DIRECTORY__ . '/stubs/SerializableEntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/SimpleEntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/RelationEntityStub.php';
+        require_once __TEST_DIRECTORY__ . '/stubs/PrefixObjectEntityStub.php';
     }
 
     public function testIsSerializingEntities()
@@ -111,6 +112,32 @@ class EntitySerializerTest extends PHPUnit_Framework_TestCase
                 'owner' => [
                     'id' => 1,
                     'name' => 'John'
+                ]
+            ],
+            EntitySerializer::instance()->serialize($entity)
+        );
+    }
+
+    public function testIsGeneratingDefaultFormatConsideringPrefixedObjects()
+    {
+        $entity = new PrefixObjectEntityStub;
+        $entity->fields = [
+            'id' => 0,
+            'name' => 'Hello',
+            'max_users_quantity' => 1,
+            'address_geolocalization' => null,
+            'address_street_name' => null,
+            'address_number' => null,
+        ];
+        $this->assertEquals(
+            [
+                'id' => 0,
+                'name' => 'Hello',
+                'max_users_quantity' => 1,
+                'address' => [
+                    'geolocalization' => null,
+                    'street_name' => null,
+                    'number' => null
                 ]
             ],
             EntitySerializer::instance()->serialize($entity)

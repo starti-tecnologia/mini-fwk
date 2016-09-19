@@ -123,11 +123,13 @@ class EntitySerializer
 
         if (! $isRelation) {
             $prefix = null;
+            $required = null;
 
             if ($entity->prefixAsObject) {
                 foreach ($entity->prefixAsObject as $availablePrefix) {
                     if (strpos($field, $availablePrefix) === 0) {
                         $prefix = $availablePrefix;
+                        $required = true;
                     }
                 }
             }
@@ -140,6 +142,9 @@ class EntitySerializer
                         'prefix' => $prefix . '_',
                         'child' => []
                     ];
+                    if ($required) {
+                        $currentFormat['required'] = true;
+                    }
                     $formatByKey[$prefix] = &$currentFormat;
                     $format[] = &$currentFormat;
                 } else {

@@ -60,11 +60,13 @@ class EntityTest extends PHPUnit_Framework_TestCase
         $entity = new PrefixObjectEntityStub;
 
         $entity->fill([
+            'id' => 0,
             'name' => 'Lala',
             'max_users_quantity' => 10,
             'address' => [
                 'street_name' => 'Some street',
-                'number' => '1C'
+                'number' => '1C',
+                'geolocalization' => null
             ]
         ]);
 
@@ -84,11 +86,13 @@ class EntityTest extends PHPUnit_Framework_TestCase
         $entity = $this->getFilledPrefixObjectEntity();
         $this->assertEquals(
             [
+                'id' => 0,
                 'name' => 'Lala',
                 'max_users_quantity' => 10,
                 'address' => [
                     'street_name' => 'Some street',
-                    'number' => '1C'
+                    'number' => '1C',
+                    'geolocalization' => null
                 ]
             ],
             $entity->jsonSerialize()

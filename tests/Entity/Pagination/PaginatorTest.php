@@ -152,7 +152,7 @@ class PaginatorTest extends PHPUnit_Framework_TestCase
                 'id|integer',
                 'name',
                 'max_users_quantity|integer',
-                'address|object|prefix:address_' => [
+                'address|object|prefix:address_|required' => [
                     'geolocalization',
                     'street_name',
                     'number'
