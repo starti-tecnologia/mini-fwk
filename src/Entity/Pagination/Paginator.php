@@ -48,7 +48,7 @@ class Paginator
                 $subQuery = new Query;
 
                 foreach ($baseQuery->spec['select'] as $index => $rawColumn) {
-                    $column = explode(' as ', strtolower($rawColumn), 2)[0];
+                    $column = explode(' as ', $rawColumn, 2)[0];
                     $comparator = 'LIKE';
                     $value = '%' . $rawValue . '%';
 
