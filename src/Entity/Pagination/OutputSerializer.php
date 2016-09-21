@@ -85,12 +85,8 @@ class OutputSerializer
                         $value = ! is_null($value) ? !! $value : null;
                     } elseif (array_key_exists('float', $tags)) {
                         $value = ! is_null($value) ? floatval($value) : null;
-                    } elseif (array_key_exists('date', $tags)) {
-                        $df = $value && strlen($value) == 10 ? 'Y-m-d' : 'Y-m-d H:i:s';
-                        $value = $value ? DateTime::createFromFormat($df, $value)->format('Y-m-d') : null;
-                    } elseif (array_key_exists('datetime', $tags)) {
-                        $df = $value && strlen($value) == 10 ? 'Y-m-d' : 'Y-m-d H:i:s';
-                        $value = $value ? DateTime::createFromFormat($df, $value)->format('Y-m-d H:i:s') : null;
+                    } elseif (array_key_exists('date', $tags) || array_key_exists('datetime', $tags)) {
+                        $value = $value ? $value : null;
                     }
 
                     if (env('CONVERT_CAMEL_CASE')) {
