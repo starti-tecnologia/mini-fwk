@@ -84,13 +84,13 @@ class WorkerRunner extends WorkerBase
 
         $driver = env("WORKER_DRIVER");
         if ($driver == "BEANSTALKD") {
-
             while (1) {
                 $this->log("--- RUN ---");
                 $queues = WorkerQueue::getDataFromQueue($this->worker);
                 if (count($queues) > 0) {
-                    foreach ($queues as $queue) {
-                        $this->objWorker->run(unserialize($queue));
+                    $queues = array_map('unserialize', $queues);
+                    foreach ($this->objWorker->removeDuplicates($queues) as $queue) {
+                        $this->objWorker->run($queue);
                     }
                 }
                 app()->get('Mini\Entity\ConnectionManager')->closeAll();

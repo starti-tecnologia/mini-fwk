@@ -5,7 +5,6 @@ use Colors\Color;
 
 class WorkerBase
 {
-
     public function log($msg) {
         $c = new Color();
         $c->setTheme(
@@ -22,4 +21,8 @@ EOF;
         echo $c($text)->colorize() . PHP_EOL;
     }
 
+    public function removeDuplicates(array $queues)
+    {
+        return $queues;
+    }
 }
