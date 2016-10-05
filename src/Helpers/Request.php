@@ -19,6 +19,8 @@ class Request extends RequestBase
      */
     private $data;
 
+    private static $currentInstance;
+
     /**
      * @param mixed $data
      */
@@ -48,12 +50,12 @@ class Request extends RequestBase
      * @return Request
      */
     public static function instance() {
-        $dataParsed = static::parse();
-
-        $obj = new Request();
-        $obj->setData($dataParsed);
-
-        return $obj;
+        if (! self::$currentInstance) {
+            $dataParsed = static::parse();
+            self::$currentInstance = new Request();
+            self::$currentInstance->setData($dataParsed);
+        }
+        return self::$currentInstance;
     }
 
     /**
