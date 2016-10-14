@@ -249,4 +249,39 @@ class PaginatorTest extends PHPUnit_Framework_TestCase
             $query->spec['orderBy']
         );
     }
+
+    public function testIsGeneratingRawSelectFilters()
+    {
+        require_once __TEST_DIRECTORY__ . '/stubs/SimpleEntityStub.php';
+        require_once __TEST_DIRECTORY__ . '/stubs/RelationEntityStub.php';
+
+        $paginator = new Paginator;
+
+        $query = (new Query)
+            ->select([
+                'posts.id',
+                'posts.name',
+                'IF(NOW() > (customers_licenses.validate), \'1\', \'0\') AS expirate'
+            ])
+            ->className(RelationEntityStub::class)
+            ->table('posts')
+            ->where('context', '=', 'test');
+
+        $options = $paginator->processQueryHandlers([
+            'query' => $query,
+            'filter' => [
+                'search' => 'Hi'
+            ]
+        ]);
+
+        $this->assertEquals(
+            [
+                ['context', '=', ':p0', 'AND'],
+                ['(posts.id', 'LIKE', ':p1', 'AND'],
+                ['posts.name', 'LIKE', ':p2', 'OR'],
+                ['IF(NOW() > (customers_licenses.validate), \'1\', \'0\')', 'LIKE', ':p3)', 'OR'],
+            ],
+            $query->spec['wheres']
+        );
+    }
 }
