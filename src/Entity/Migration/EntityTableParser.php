@@ -129,6 +129,18 @@ class EntityTableParser
             }
         }
 
+        foreach ($entity->indexes as $indexName => $indexParameters) {
+            $pieces = explode('|', $indexParameters);
+            $unique = isset($pieces[1]) ? strtoupper($pieces[1]) . ' ' : '';
+            $columNames = $pieces[0];
+            $column = new TableItem(
+                TableItem::TYPE_CONSTRAINT,
+                'constraint_' . $indexName,
+                'CREATE ' . $unique . 'INDEX ' . $indexName . ' ON ' . $table->name . ' (' . $columNames . ')'
+            );
+            $table->items['constraint_' . $indexName] = $column;
+        }
+
         $byType = [
             TableItem::TYPE_COLUMN => [],
             TableItem::TYPE_CONSTRAINT => []
@@ -200,10 +212,8 @@ class EntityTableParser
         $column->sql = $column->name . ' ' . $type;
     }
 
-    public function processIntegerType(Table $table, TableItem $column, array $tagParameters)
+    private function getIntegerTypeBySize($length)
     {
-        $length = !empty($tagParameters[0]) ? $tagParameters[0] : 11;
-
         if ($length <= 4) {
             $type = 'tinyint';
         } elseif ($length <= 6) {
@@ -215,7 +225,13 @@ class EntityTableParser
         } else {
             throw new Exception('Unsupported integer length: ' . $length);
         }
+        return $type;
+    }
 
+    public function processIntegerType(Table $table, TableItem $column, array $tagParameters)
+    {
+        $length = !empty($tagParameters[0]) ? $tagParameters[0] : 11;
+        $type = $this->getIntegerTypeBySize($length);
         $column->sql = $column->name . ' ' . $type . '(' . $length . ')';
     }
 
@@ -281,7 +297,15 @@ class EntityTableParser
 
     public function processPkType(Table $table, TableItem $column, array $tagParameters)
     {
-        $column->sql = $column->name . ' int(11) unsigned not null primary key auto_increment';
+        if (! $tagParameters) {
+            $column->sql = $column->name . ' int(11) unsigned not null primary key auto_increment';
+            return;
+        }
+        if ($tagParameters[0]) {
+            $length = $tagParameters[0];
+            $type = $this->getIntegerTypeBySize($length);
+            $column->sql =  $column->name . " $type($length) not null primary key auto_increment";
+        }
     }
 
     public function processEmailType(Table $table, TableItem $column, array $tagParameters)
@@ -296,7 +320,9 @@ class EntityTableParser
     {
         $default = $tagParameters[0];
 
-        if (! is_numeric($default)) {
+        if ($default === '\'\'') {
+            $default = '\'\'';
+        } elseif (! is_numeric($default)) {
             $default = '\'' . $default . '\'';
         }
 

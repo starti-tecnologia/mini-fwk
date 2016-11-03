@@ -25,7 +25,15 @@ class DefinitionParser
             $definition[$key] = [];
 
             foreach (explode('|', $params) as $rawTag) {
+                $placeholder = '$';
+                $rawTag = str_replace('\\:', $placeholder, $rawTag);
                 $pieces = explode(':', $rawTag);
+                $pieces = array_map(
+                    function ($piece) use ($placeholder) {
+                        return str_replace($placeholder, ':', $piece);
+                    },
+                    $pieces
+                );
                 $definition[$key][array_shift($pieces)] = $pieces;
             }
         }

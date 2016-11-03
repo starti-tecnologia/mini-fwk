@@ -211,7 +211,7 @@ class DatabaseTableParser
         if ($sql) {
             return new TableItem(
                 TableItem::TYPE_CONSTRAINT,
-                $row['CONSTRAINT_NAME'],
+                'constraint_' . $row['CONSTRAINT_NAME'],
                 $sql
             );
         }

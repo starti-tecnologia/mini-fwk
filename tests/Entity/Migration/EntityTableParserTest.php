@@ -10,6 +10,7 @@ class EntityTableParserTest extends PHPUnit_Framework_TestCase
         require_once __TEST_DIRECTORY__ . '/stubs/EntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/FieldOrderEntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/EmptyDefaultEntityStub.php';
+        require_once __TEST_DIRECTORY__ . '/stubs/EntityIndexStub.php';
 
         app()->register('Mini\Validation\Validator', function () {
             return new Validator;
@@ -92,6 +93,28 @@ class EntityTableParserTest extends PHPUnit_Framework_TestCase
                     'id int(11) unsigned not null primary key auto_increment,',
                     'field varchar(20) default \'\'',
                 ' ) ENGINE=InnoDB COMMENT \'MINI_FWK_ENTITY\''
+            ]
+        );
+
+        $this->assertEquals($sql, $table->makeCreateSql());
+    }
+
+    public function testIsParsingEntityIndexes()
+    {
+        $entity = new EntityIndexStub;
+        $parser = new EntityTableParser;
+        $table = $parser->parseEntity($entity);
+
+        $sql = implode(
+            '',
+            [
+                'CREATE TABLE users ( ',
+                    'id int(11) unsigned not null primary key auto_increment,',
+                    'name varchar(255),',
+                    'title varchar(255)',
+                ' ) ENGINE=InnoDB COMMENT \'MINI_FWK_ENTITY\';',
+                'CREATE INDEX name ON users (name);',
+                'CREATE UNIQUE INDEX name_title ON users (name,title)',
             ]
         );
 

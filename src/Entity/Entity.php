@@ -51,6 +51,20 @@ abstract class Entity implements \JsonSerializable
     public $fields = [];
 
     /**
+     * All current entity indexes
+     *
+     * Example:
+     *
+     * [
+     *   'name' => 'name',
+     *   'name_title' => 'name,title|unique'
+     * ]
+     *
+     * @var array
+     */
+    public $indexes = [];
+
+    /**
      * Fields that get prefixed as object on fill and jsonSerialize;
      *
      * Example: Turn {address_name:'', address_number:''} into {address: {name:'', number:''}}
