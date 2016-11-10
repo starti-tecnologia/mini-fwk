@@ -91,7 +91,8 @@ class Router
             $routeFile = $basePathRouter . 'routes.scanned.php';
 
         if (!file_exists($routeFile)) {
-            throw new \Exception("Route config file not found.");
+            error_log('WARNING: Route config file not found.' . PHP_EOL);
+            return;
         }
 
         $routes = include_once $routeFile;
