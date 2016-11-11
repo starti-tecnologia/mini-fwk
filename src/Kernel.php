@@ -79,6 +79,10 @@ class Kernel
      */
     private function setUpCache() {
         if (env('MEMCACHED_HOST') !== null && env('MEMCACHED_PORT') !== null) {
+            if (! class_exists('\Memcached')) {
+                error_log('WARNING: Memcached class not found.' . PHP_EOL);
+                return;
+            }
             $cacheInstance = new \Memcached();
             $cacheInstance->addServer(env('MEMCACHED_HOST'), env('MEMCACHED_PORT'));
             app()->register('Memcached', $cacheInstance);
