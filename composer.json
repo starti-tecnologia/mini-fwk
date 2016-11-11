@@ -11,6 +11,7 @@
     }
   ],
   "require": {
+    "php": ">=5.4.0",
     "vlucas/phpdotenv": "^2.2",
     "nategood/commando": "^0.2.8",
     "crodas/notoj": "^1.2",

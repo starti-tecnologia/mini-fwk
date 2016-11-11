@@ -22,7 +22,7 @@ class ReversedRelationEntityStub extends Entity
 
     public $relations = [
         'relation' => [
-            'class' => RelationEntityStub::class,
+            'class' => 'RelationEntityStub',
             'field' => 'relation_id'
         ]
     ];

@@ -31,15 +31,15 @@ class RelationEntityStub extends Entity
 
     public $relations = [
         'owner' => [
-            'class' => SimpleEntityStub::class,
+            'class' => 'SimpleEntityStub',
             'field' => 'owner_id'
         ],
         'reversed' => [
-            'class' => ReversedRelationEntityStub::class,
+            'class' => 'ReversedRelationEntityStub',
             'reference' => 'relation'
         ],
         'deep' => [
-            'class' => DeepRelationEntityStub::class,
+            'class' => 'DeepRelationEntityStub',
             'field' => 'deep_id'
         ]
     ];

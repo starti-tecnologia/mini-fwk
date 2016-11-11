@@ -23,7 +23,7 @@ class SerializableEntityStub extends Entity
 
     public $relations = [
         'owner' => [
-            'class' => SimpleEntityStub::class,
+            'class' => 'SimpleEntityStub',
             'field' => 'owner_id'
         ]
     ];

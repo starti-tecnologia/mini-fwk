@@ -22,7 +22,7 @@ class DeepRelationEntityStub extends Entity
 
     public $relations = [
         'moreDeep' => [
-            'class' => DeepRelationEntityStub::class,
+            'class' => 'DeepRelationEntityStub',
             'field' => 'more_deep_id'
         ]
     ];

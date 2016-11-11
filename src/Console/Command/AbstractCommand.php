@@ -17,6 +17,11 @@ abstract class AbstractCommand
     public abstract function setUp(Commando $commando);
     public abstract function run(Commando $commando);
 
+    public function __construct()
+    {
+
+    }
+
     public function setKernel(Kernel $kernel)
     {
         $this->kernel = $kernel;

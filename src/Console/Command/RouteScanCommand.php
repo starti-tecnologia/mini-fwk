@@ -5,24 +5,15 @@ namespace Mini\Console\Command;
 use Mini\Console\Common\ConsoleTable;
 use Mini\Router\Router;
 use Commando\Command as Commando;
-use Mini\Controllers\BaseController;
 use Notoj\File;
-use Notoj\Notoj;
-use Notoj\ReflectionClass;
-
 
 class RouteScanCommand extends AbstractCommand
 {
-    /**
-     *
-     */
-    const METHODS = [
+    private $methods = [
         'get', 'post', 'delete', 'put'
     ];
-    /**
-     *
-     */
-    const HELPERS = [
+
+    private $helpers = [
         'middleware'
     ];
 
@@ -154,7 +145,7 @@ class RouteScanCommand extends AbstractCommand
      * @return bool
      */
     private function matchMethod($string) {
-        foreach (self::METHODS as $method) {
+        foreach ($this->methods as $method) {
             $pttrn = '/' . $method . '/';
             if (preg_match($pttrn, $string)) {
                 return true;
@@ -168,7 +159,7 @@ class RouteScanCommand extends AbstractCommand
      * @return string
      */
     private function matchHelpers($string) {
-        foreach (self::HELPERS as $helper) {
+        foreach ($this->helpers as $helper) {
             $pttrn = '/' . $helper . '/';
             if (preg_match($pttrn, $string)) {
                 return $helper;

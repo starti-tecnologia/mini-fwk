@@ -49,7 +49,7 @@ class FakeStatement
             return null;
         }
         $instance = new $className;
-        $row = $this->getResults()[0] ?? null;
+        $row = $this->getResults()[0] ? $this->getResults()[0] : null;
         if (! $row) {
             return null;
         }
@@ -89,7 +89,7 @@ class FakeStatement
         if (stristr($this->context['sql'], 'FAKE_CONNECTION_EMPTY_TABLE')) {
             return null;
         }
-        $row = $this->getResults()[0] ?? null;
+        $row = $this->getResults()[0] ? $this->getResults()[0] : null;
         if ($row) {
             $keys = array_keys($row);
             return $row[$keys[0]];

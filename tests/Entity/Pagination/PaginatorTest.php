@@ -67,7 +67,7 @@ class PaginatorTest extends PHPUnit_Framework_TestCase
                 'posts.name',
                 'posts.owner_will_go'
             ])
-            ->className(RelationEntityStub::class)
+            ->className('RelationEntityStub')
             ->table('posts')
             ->includeRelation('owner');
 
@@ -101,7 +101,7 @@ class PaginatorTest extends PHPUnit_Framework_TestCase
                 'posts.id',
                 'posts.name'
             ])
-            ->className(RelationEntityStub::class)
+            ->className('RelationEntityStub')
             ->table('posts')
             ->includeRelation('owner');
 
@@ -140,7 +140,7 @@ class PaginatorTest extends PHPUnit_Framework_TestCase
                 'posts.address_street_name',
                 'posts.address_number'
             ])
-            ->className(PrefixObjectEntityStub::class)
+            ->className('PrefixObjectEntityStub')
             ->table('posts');
 
         $options = $paginator->processQueryOptions([
@@ -174,7 +174,7 @@ class PaginatorTest extends PHPUnit_Framework_TestCase
                 'posts.id',
                 'posts.name'
             ])
-            ->className(RelationEntityStub::class)
+            ->className('RelationEntityStub')
             ->table('posts')
             ->where('context', '=', 'test')
             ->includeRelation('owner');
@@ -212,7 +212,7 @@ class PaginatorTest extends PHPUnit_Framework_TestCase
                 'posts.id',
                 'posts.name'
             ])
-            ->className(RelationEntityStub::class)
+            ->className('RelationEntityStub')
             ->table('posts')
             ->includeRelation('owner');
 
@@ -263,7 +263,7 @@ class PaginatorTest extends PHPUnit_Framework_TestCase
                 'posts.name',
                 'IF(NOW() > (customers_licenses.validate), \'1\', \'0\') AS expirate'
             ])
-            ->className(RelationEntityStub::class)
+            ->className('RelationEntityStub')
             ->table('posts')
             ->where('context', '=', 'test');
 

@@ -366,7 +366,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     {
         $result = (new Query)
             ->connection('default')
-            ->className(EntityStub::class)
+            ->className('EntityStub')
             ->table('users')
             ->getObject();
 
@@ -381,7 +381,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
         try {
             $result = (new Query)
                 ->connection('default')
-                ->className(EntityStub::class)
+                ->className('EntityStub')
                 ->table('FAKE_CONNECTION_EMPTY_TABLE')
                 ->getObjectOrFail();
         } catch (\Exception $e) {
@@ -395,7 +395,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     {
         $result = (new Query)
             ->connection('default')
-            ->className(EntityStub::class)
+            ->className('EntityStub')
             ->table('users')
             ->getArray();
 
@@ -409,7 +409,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
         try {
             $result = (new Query)
                 ->connection('default')
-                ->className(EntityStub::class)
+                ->className('EntityStub')
                 ->table('FAKE_CONNECTION_EMPTY_TABLE')
                 ->getArrayOrFail();
         } catch (\Exception $e) {
@@ -426,7 +426,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     {
         $results = (new Query)
             ->connection('default')
-            ->className(EntityStub::class)
+            ->className('EntityStub')
             ->table('users')
             ->listObject();
 
@@ -438,7 +438,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
     {
         $results = (new Query)
             ->connection('default')
-            ->className(EntityStub::class)
+            ->className('EntityStub')
             ->table('users')
             ->listArray();
 
