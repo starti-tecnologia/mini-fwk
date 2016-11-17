@@ -6,7 +6,7 @@ class Response extends ResponseBase
 {
 
     /**
-     * @param $object
+     * @param array $object
      * @param int $statuCode
      */
     public function json($object, $statuCode = 200)
@@ -20,6 +20,22 @@ class Response extends ResponseBase
 
         $this->setStatusCode($statuCode);
         $this->header('Content-Type', 'application/json');
+        $this->setBody($text);
+        $this->make();
+    }
+
+    /**
+     * @param string $text
+     * @param int $statuCode
+     */
+    public function text($text, $statuCode = 200)
+    {
+        if (env('GZIP')) {
+            $text = gzencode($text, -1);
+            $this->header('Content-Encoding', 'gzip');
+        }
+
+        $this->setStatusCode($statuCode);
         $this->setBody($text);
         $this->make();
     }
