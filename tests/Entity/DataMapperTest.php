@@ -15,7 +15,6 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
         require_once __TEST_DIRECTORY__ . '/stubs/DataMapperStub.php';
 
         $this->connectionManager = new FakeConnectionManager;
-        DataMapper::$connectionMap = [];
 
         app()->register('Mini\Entity\ConnectionManager', function () {
             return $this->connectionManager;

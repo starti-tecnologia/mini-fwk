@@ -6,11 +6,6 @@ use Mini\Entity\Entity;
 
 class DataMapper
 {
-    /**
-     * @var Mini\Entity\Connection[]
-     */
-    public static $connectionMap = [];
-
     public static $generatedFields = [
         'created_at', 'updated_at', 'deleted_at'
     ];
@@ -20,13 +15,9 @@ class DataMapper
      */
     protected function getConnection($connectionName)
     {
-        if (! isset(self::$connectionMap[$connectionName])) {
-            self::$connectionMap[$connectionName] = app()
-                ->get('Mini\Entity\ConnectionManager')
-                ->getConnection($connectionName);
-        }
-
-        return self::$connectionMap[$connectionName];
+        return app()
+            ->get('Mini\Entity\ConnectionManager')
+            ->getConnection($connectionName);
     }
 
     protected function onBeforeSave(Entity $entity)
