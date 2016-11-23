@@ -117,12 +117,17 @@ class RouteScanCommand extends AbstractCommand
             ->addHeader('Controller')
             ->addHeader('Middlewares');
 
-        foreach (Router::listRoutes() as $route) {
+        foreach ($routesScanned as $route) {
             $table->addRow()
                 ->addColumn($route['method'])
-                ->addColumn($route['uri'])
-                ->addColumn($route['controller'])
-                ->addColumn(implode(', ', $route['middlewares']));
+                ->addColumn($route['route'])
+                ->addColumn($route['uses'])
+                ->addColumn(
+                    implode(
+                        ', ',
+                        isset($route['middleware']) ? $route['middleware'] : []
+                    )
+                );
         }
 
         $table->display();
