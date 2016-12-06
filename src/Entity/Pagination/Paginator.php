@@ -313,7 +313,7 @@ class Paginator
     public function createPaginatorSelect(array $options)
     {
         $initialSql = $options['sql'];
-        $from = $options['from'] ?: null;
+        $from = isset($options['from']) ? $options['from'] : null;
         $initialSql = preg_replace('@\n@', ' ', trim($initialSql));
         $columnsQuantity = $options['columnsQuantity'];
         $page = $options['page'];
