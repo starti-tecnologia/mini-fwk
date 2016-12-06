@@ -480,19 +480,28 @@ class Query
         }, $this->spec['groupBy']));
     }
 
-    public function makeSql()
+    public function makeFromSql()
     {
-        $sql = 'SELECT ' . $this->makeSelectSql() .  ' FROM ';
+        $sql = null;
 
         if ($this->spec['rawTable']) {
-            $sql .= '(' . $this->spec['rawTable'] . ') ' . quote_sql($this->spec['alias']);
+            $sql = '(' . $this->spec['rawTable'] . ') ' . quote_sql($this->spec['alias']);
         } else {
-            $sql .= quote_sql($this->spec['table']) . (
+            $sql = quote_sql($this->spec['table']) . (
                 $this->spec['table'] == $this->spec['alias']
                 ? ''
                 : ' ' . quote_sql($this->spec['alias'])
             );
         }
+
+        return $sql;
+    }
+
+    public function makeSql()
+    {
+        $sql = 'SELECT ' . $this->makeSelectSql() .  ' FROM ';
+
+        $sql .= $this->makeFromSql();
 
         if (count($this->spec['joins'])) {
             $sql .= ' ' . $this->makeJoinSql();

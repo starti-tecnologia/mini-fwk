@@ -284,4 +284,49 @@ class PaginatorTest extends PHPUnit_Framework_TestCase
             $query->spec['wheres']
         );
     }
+
+    public function testIsCreatingSimplePaginatorSql()
+    {
+        $paginator = new Paginator;
+        $query = (new Query)
+            ->select(['name'])
+            ->table('users');
+
+        $paginatorSql = $paginator->createPaginatorSelect([
+            'sql' => $query->makeSql(),
+            'from' => $query->makeFromSql(),
+            'columnsQuantity' => 1,
+            'page' => 1,
+            'perPage' => 20
+        ]);
+
+        $this->assertEquals(
+            'SELECT SQL_CALC_FOUND_ROWS t0.* FROM (SELECT `name` , 0 as __pagination_total FROM `users`) t0  LIMIT 0, 20 UNION ALL SELECT 0,found_rows()',
+            $paginatorSql
+        );
+    }
+
+    public function testIsCreatingSimplePaginatorSqlWithSubqueryColumns()
+    {
+        $paginator = new Paginator;
+        $query = (new Query)
+            ->select([
+                'name',
+                '(SELECT COUNT(1) FROM comments WHERE user_id = users.id) as total'
+            ])
+            ->table('users');
+
+        $paginatorSql = $paginator->createPaginatorSelect([
+            'sql' => $query->makeSql(),
+            'from' => $query->makeFromSql(),
+            'columnsQuantity' => 1,
+            'page' => 1,
+            'perPage' => 20
+        ]);
+
+        $this->assertEquals(
+            'SELECT SQL_CALC_FOUND_ROWS t0.* FROM (SELECT `name`, (SELECT COUNT(1) FROM comments WHERE user_id = users.id) as total , 0 as __pagination_total FROM `users`) t0  LIMIT 0, 20 UNION ALL SELECT 0,found_rows()',
+            $paginatorSql
+        );
+    }
 }

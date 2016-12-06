@@ -266,6 +266,7 @@ class Paginator
 
         return [
             'sql' => $query->makeSql(),
+            'from' => $query->makeFromSql(),
             'columnsQuantity' => count($query->spec['select']),
             'connectionInstance' => $query->connectionInstance,
             'bindings' => $query->spec['bindings'],
@@ -309,9 +310,10 @@ class Paginator
         ];
     }
 
-    private function createPaginatorSelect(array $options)
+    public function createPaginatorSelect(array $options)
     {
         $initialSql = $options['sql'];
+        $from = $options['from'] ?: null;
         $initialSql = preg_replace('@\n@', ' ', trim($initialSql));
         $columnsQuantity = $options['columnsQuantity'];
         $page = $options['page'];
@@ -321,8 +323,12 @@ class Paginator
         $skip = ($page - 1) * $perPage;
 
         $sql = preg_replace(
-            '/^SELECT (.*?)FROM(.*)$/i',
-            'SELECT SQL_CALC_FOUND_ROWS t0.* FROM (SELECT $1, 0 as __pagination_total FROM $2) t0 ' .
+            $from
+                ? '/^SELECT (.*?)FROM (' . preg_quote($from) . ')(.*)$/i'
+                : '/^SELECT (.*?)FROM(.*)$/i',
+            ($from
+                ? 'SELECT SQL_CALC_FOUND_ROWS t0.* FROM (SELECT $1, 0 as __pagination_total FROM $2$3) t0 '
+                : 'SELECT SQL_CALC_FOUND_ROWS t0.* FROM (SELECT $1, 0 as __pagination_total FROM $2) t0 ') .
             ' LIMIT ' . $skip . ', ' . $perPage .
             ' UNION ALL SELECT ' . $union,
             $initialSql
