@@ -1,0 +1,5 @@
+test:
+  image: 172.16.45.194:5000/starti/php:5.6
+  script:
+  - composer install
+  - bin/phpunit
