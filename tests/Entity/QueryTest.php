@@ -144,6 +144,17 @@ class QueryTest extends PHPUnit_Framework_TestCase
         );
     }
 
+    public function testIsMakingHavingSql()
+    {
+        $this->assertEquals(
+            'SELECT * FROM `users` HAVING `name` = :p0',
+            (new Query)
+                ->table('users')
+                ->having('name', '=', 'Lala')
+                ->makeSql()
+        );
+    }
+
     public function testIsMakingWhereWithOperatorSql()
     {
         $this->assertEquals(
@@ -323,19 +334,21 @@ class QueryTest extends PHPUnit_Framework_TestCase
     public function testIsMakingFullSql()
     {
         $this->assertEquals(
-            'SELECT `name`, `age` FROM `users` INNER JOIN `a` ON (`a`.`id` = `users`.`id`) LEFT JOIN `b` ON (`b`.`id` = `users`.`id`) WHERE `x` = :p0 AND `y` = NOW() OR `z` <= :p1 ORDER BY `age` ASC, `name` ASC LIMIT 0, 1000',
+            'SELECT `name`, 1 as type, `age` FROM `users` INNER JOIN `a` ON (`a`.`id` = `users`.`id`) LEFT JOIN `b` ON (`b`.`id` = `users`.`id`) WHERE `x` = :p0 AND `y` = NOW() OR `z` <= :p1 GROUP BY `id` HAVING `type` = :p2 ORDER BY `age` ASC, `name` ASC LIMIT 0, 1000',
             (new Query)
                 ->table('users')
-                ->select(['name'])
+                ->select(['name', '1 as type'])
                 ->addSelect(['age'])
                 ->innerJoin('a', 'a.id', '=', 'users.id')
                 ->leftJoin('b', 'b.id', '=', 'users.id')
                 ->where('x', '=', 'A')
                 ->where('y', '=', new RawValue('NOW()'))
                 ->where('z', '<=', 3, 'OR')
+                ->having('type', '=', 1)
                 ->limit(0, 1000)
                 ->orderBy('age')
                 ->orderBy('name', 'ASC')
+                ->groupBy('id')
                 ->makeSql()
         );
     }

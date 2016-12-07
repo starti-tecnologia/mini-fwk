@@ -13,6 +13,7 @@ class Query
         'rawTable' => null,
         'joins' => [],
         'wheres' => [],
+        'having' => [],
         'orderBy' => [],
         'groupBy' => null,
         'select' => ['*'],
@@ -152,7 +153,7 @@ class Query
         );
     }
 
-    private function handleDefaultWhere($column, $comparator, $value, $operator = 'AND')
+    private function handleDefaultComparation($column, $comparator, $value, $operator = 'AND')
     {
         $rawValue = null;
 
@@ -235,7 +236,7 @@ class Query
     public function where ($column, $comparator=null, $value=null, $operator='AND')
     {
         if (is_string($column)) {
-            $this->spec['wheres'][] = $this->handleDefaultWhere($column, $comparator, $value, $operator);
+            $this->spec['wheres'][] = $this->handleDefaultComparation($column, $comparator, $value, $operator);
         } elseif ($column instanceof Query) {
             $operator = $comparator;
 
@@ -245,6 +246,12 @@ class Query
             );
         }
 
+        return $this;
+    }
+
+    public function having ($column, $comparator=null, $value=null, $operator='AND')
+    {
+        $this->spec['having'][] = $this->handleDefaultComparation($column, $comparator, $value, $operator);
         return $this;
     }
 
@@ -438,6 +445,28 @@ class Query
         return $sql;
     }
 
+    /**
+     * Sql building functions
+     */
+    public function makeHavingSql()
+    {
+        $sql = '';
+
+        $count = count($this->spec['having']);
+
+        foreach ($this->spec['having'] as $i => $having) {
+            if ($i > 0) {
+                $sql .= ' ' . $having[3] . ' ';
+            }
+
+            $sql .= sprintf(
+                '%s %s %s', quote_sql($having[0]), $having[1], $having[2]
+            );
+        }
+
+        return $sql;
+    }
+
     public function makeSelectSql()
     {
         return implode(
@@ -513,6 +542,10 @@ class Query
 
         if (count($this->spec['groupBy'])) {
             $sql .= ' GROUP BY ' . $this->makeGroupBySql();
+        }
+
+        if (count($this->spec['having'])) {
+            $sql .= ' HAVING ' . $this->makeHavingSql();
         }
 
         if (count($this->spec['orderBy'])) {
