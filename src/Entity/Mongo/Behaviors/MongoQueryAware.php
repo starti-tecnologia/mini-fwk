@@ -5,6 +5,7 @@ namespace Mini\Entity\Mongo\Behaviors;
 use MongoDB\Driver\Query;
 use MongoDB\Driver\Cursor;
 use MongoDB\BSON\ObjectID;
+use MongoDB\BSON\ISODate;
 use MongoDB\Driver\BulkWrite;
 use Mini\Entity\Mongo\Query as QueryBuilder;
 
@@ -196,7 +197,7 @@ trait MongoQueryAware
         $i = 0;
         foreach ($cursor as $item) {
             foreach ($item as $key => $value) {
-                if ($value instanceof ObjectID) {
+                if ($value instanceof ObjectID || $value instanceof ISODate) {
                     $value = $value->__toString();
                 }
 
