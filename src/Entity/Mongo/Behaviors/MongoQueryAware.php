@@ -5,7 +5,7 @@ namespace Mini\Entity\Mongo\Behaviors;
 use MongoDB\Driver\Query;
 use MongoDB\Driver\Cursor;
 use MongoDB\BSON\ObjectID;
-use MongoDB\BSON\ISODate;
+use MongoDB\BSON\UTCDateTime;
 use MongoDB\Driver\BulkWrite;
 use Mini\Entity\Mongo\Query as QueryBuilder;
 
@@ -197,8 +197,10 @@ trait MongoQueryAware
         $i = 0;
         foreach ($cursor as $item) {
             foreach ($item as $key => $value) {
-                if ($value instanceof ObjectID || $value instanceof ISODate) {
+                if ($value instanceof ObjectID) {
                     $value = $value->__toString();
+                } else if ($value instanceof UTCDateTime) {
+                    $value = (new \DateTime(strtotime($value->__toString())))->format(\DateTime::ISO8601);
                 }
 
                 $array[$i][$key] = $value;
