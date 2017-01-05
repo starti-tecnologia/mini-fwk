@@ -77,7 +77,7 @@ trait MongoQueryAware
             }, array_flip($columns));
             $queryOptions['projection'] = $columns;
         }
-        if (count($options)) > 0) {
+        if (count($options) > 0) {
           $queryOptions = array_merge($queryOptions, $options);
         }
 
@@ -111,7 +111,7 @@ trait MongoQueryAware
             }, array_flip($columns));
             $queryOptions['projection'] = $columns;
         }
-        if (count($options)) > 0) {
+        if (count($options) > 0) {
           $queryOptions = array_merge($queryOptions, $options);
         }
 
