@@ -67,7 +67,7 @@ trait MongoQueryAware
      * @param array $columns
      * @return array
      */
-    public static function findAll($columns = []) {
+    public static function findAll($columns = [], $options = []) {
         self::instance();
 
         $queryOptions = [];
@@ -76,6 +76,9 @@ trait MongoQueryAware
                 return 1;
             }, array_flip($columns));
             $queryOptions['projection'] = $columns;
+        }
+        if (count($options)) > 0) {
+          $queryOptions = array_merge($queryOptions, $options);
         }
 
         $query = new Query(
@@ -94,7 +97,7 @@ trait MongoQueryAware
      * @param array $columns
      * @return array
      */
-    public static function find($query, $columns = []) {
+    public static function find($query, $columns = [], $options = []) {
         self::instance();
 
         if (isset($query['_id']) && ! $query['_id'] instanceof ObjectID) {
@@ -107,6 +110,9 @@ trait MongoQueryAware
                 return 1;
             }, array_flip($columns));
             $queryOptions['projection'] = $columns;
+        }
+        if (count($options)) > 0) {
+          $queryOptions = array_merge($queryOptions, $options);
         }
 
         $query = new Query($query, $queryOptions);
