@@ -206,7 +206,8 @@ trait MongoQueryAware
                 if ($value instanceof ObjectID) {
                     $value = $value->__toString();
                 } else if ($value instanceof UTCDateTime) {
-                    $value = (new \DateTime(strtotime($value->__toString())))->format(\DateTime::ISO8601);
+                    $datetime = $value->toDateTime();
+                    $value = $datetime->format(\DateTime::ATOM);
                 }
 
                 $array[$i][$key] = $value;
