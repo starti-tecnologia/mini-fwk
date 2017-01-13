@@ -74,6 +74,22 @@ class DataMapper
         $this->onAfterCreate($entity);
     }
 
+    /**
+     * Insert entity to database
+     */
+    public function createOrUpdate(Entity $entity, array $ignoredUpdates = [])
+    {
+        $this->onBeforeCreate($entity);
+        $connection = $this->getConnection($entity->connection);
+        $fields = array_only($entity->fields, array_merge(array_keys($entity->definition), self::$generatedFields));
+        if ($entity->useTimeStamps) {
+            $fields['created_at'] = new RawValue('NOW()');
+        }
+        $connection->insertOrUpdate($entity->table, $fields, array_merge(['created_at'], $ignoredUpdates));
+        $entity->fields[$entity->idAttribute] = $connection->lastInsertId();
+        $this->onAfterCreate($entity);
+    }
+
     protected function onBeforeUpdate(Entity $entity)
     {
         // Hook for inherited classes

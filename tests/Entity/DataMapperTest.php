@@ -63,6 +63,27 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
         );
     }
 
+    public function testIsCreatingOrUpdating()
+    {
+        $entity = new EntityStub;
+        $entity->name = 'Hi';
+
+        $mapper = new DataMapperStub;
+        $mapper->createOrUpdate($entity);
+
+        $this->assertEquals(
+            [
+                [
+                    'default',
+                    'INSERT INTO users (name) VALUES (?) ON DUPLICATE KEY UPDATE name = ?',
+                    ['Hi', 'Hi']
+                ],
+            ],
+            $this->connectionManager->log
+        );
+        $this->assertEquals(1, $entity->id);
+    }
+
     public function testIsDeleting()
     {
         $entity = new EntityStub;

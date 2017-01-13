@@ -55,13 +55,55 @@ trait SqlBuilderAware
         $this->handleCreate('REPLACE', $table, $fields);
     }
 
+    public function insertOrUpdate($table, $fields, array $ignoredUpdates = [])
+    {
+        $template = 'INSERT INTO %s (%s) VALUES (%s) ON DUPLICATE KEY UPDATE %s';
+        $insertColumns = array_keys($fields);
+        $insertValues = [];
+        $updates = [];
+        $bindings = [];
+
+        foreach ($fields as $key => $value) {
+            if ($value instanceof RawValue) {
+                $insertValues[] = $value->value;
+            } else {
+                $insertValues[] = '?';
+                $bindings[] = $this->filterBinding($value);
+            }
+        }
+
+        foreach ($fields as $key => $value) {
+            if (in_array($key, $ignoredUpdates)) {
+                continue;
+            }
+
+            if ($value instanceof RawValue) {
+                $updates[] = $key . ' = ' . $value->value;
+            } else {
+                $updates[] = $key . ' = ?';
+                $bindings[] = $this->filterBinding($value);
+            }
+        }
+
+        $stm = $this->prepare(
+            sprintf(
+                $template,
+                $table,
+                implode(', ', $insertColumns),
+                implode(', ', $insertValues),
+                implode(', ', $updates)
+            )
+        );
+
+        $stm->execute($bindings);
+    }
+
     public function update($table, array $fields, array $filter)
     {
         $template = 'UPDATE %s SET %s WHERE %s';
         $updates = [];
         $wheres = [];
         $bindings = [];
-        $count = 0;
 
         foreach ($fields as $key => $value) {
             if ($value instanceof RawValue) {
