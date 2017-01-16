@@ -55,7 +55,7 @@ trait SqlBuilderAware
         $this->handleCreate('REPLACE', $table, $fields);
     }
 
-    public function insertOrUpdate($table, $fields, array $ignoredUpdates = [])
+    public function insertOrUpdate($table, $fields, array $ignoredUpdates = [], array $extraUpdates = [])
     {
         $template = 'INSERT INTO %s (%s) VALUES (%s) ON DUPLICATE KEY UPDATE %s';
         $insertColumns = array_keys($fields);
@@ -72,7 +72,7 @@ trait SqlBuilderAware
             }
         }
 
-        foreach ($fields as $key => $value) {
+        foreach (array_merge($fields, $extraUpdates) as $key => $value) {
             if (in_array($key, $ignoredUpdates)) {
                 continue;
             }

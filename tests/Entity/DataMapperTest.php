@@ -75,7 +75,7 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
             [
                 [
                     'default',
-                    'INSERT INTO users (name) VALUES (?) ON DUPLICATE KEY UPDATE name = ?',
+                    'INSERT INTO users (name) VALUES (?) ON DUPLICATE KEY UPDATE name = ?, id = LAST_INSERT_ID(id)',
                     ['Hi', 'Hi']
                 ],
             ],

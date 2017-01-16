@@ -85,7 +85,13 @@ class DataMapper
         if ($entity->useTimeStamps) {
             $fields['created_at'] = new RawValue('NOW()');
         }
-        $connection->insertOrUpdate($entity->table, $fields, array_merge(['created_at'], $ignoredUpdates));
+        $connection->insertOrUpdate(
+            $entity->table,
+            $fields,
+            array_merge(['created_at'], $ignoredUpdates),
+            // Its important to use LAST_INSERT_ID function to enable PDO lastInsertId
+            [$entity->idAttribute => new RawValue('LAST_INSERT_ID(' . $entity->idAttribute . ')')]
+        );
         $entity->fields[$entity->idAttribute] = $connection->lastInsertId();
         $this->onAfterCreate($entity);
     }
