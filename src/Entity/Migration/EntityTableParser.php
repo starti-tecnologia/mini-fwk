@@ -63,8 +63,11 @@ class EntityTableParser
     {
         $result = [];
         $kernel = app()->get('Mini\Kernel');
-        $pattern = $kernel->getEntitiesPath() . DIRECTORY_SEPARATOR . '*.php';
-        $files = glob($pattern);
+        $patterns = [
+            $kernel->getEntitiesPath() . DIRECTORY_SEPARATOR . '*.php',
+            $kernel->getEntitiesPath() . DIRECTORY_SEPARATOR . '**' . DIRECTORY_SEPARATOR . '*.php'
+        ];
+        $files = array_reduce(array_map('glob', $patterns), 'array_merge', []);
 
         foreach ($files as $file) {
             $matches = null;
@@ -73,7 +76,7 @@ class EntityTableParser
 
             $matches = null;
             $contents = file_get_contents($file);
-            preg_match('/namespace ([^ ]+\Models)/', str_replace("\n", '', $contents), $matches);
+            preg_match('/namespace ([^ ]+\Models[^; ]+)/', str_replace("\n", '', $contents), $matches);
             $namespace = $matches[1];
 
             require_once $file;
