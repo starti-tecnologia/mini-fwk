@@ -144,7 +144,12 @@ class Router
      * @throws MiniException
      */
     public static function matchRoutes() {
-        $urlParts = parse_url($_SERVER['REQUEST_URI']);
+        $requestUri = $_SERVER['REQUEST_URI'];
+        $requestPrefix = getenv('REQUEST_PREFIX');
+        if ($requestPrefix && strpos($requestUri, $requestPrefix) === 0) {
+            $requestUri = substr($requestUri, strlen($requestPrefix));
+        }
+        $urlParts = parse_url($requestUri);
         $request_uri = $urlParts['path'];
 
         if (self::$onloadControllers) {
