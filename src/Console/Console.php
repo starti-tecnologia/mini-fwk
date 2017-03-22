@@ -25,10 +25,16 @@ class Console
      */
     private $applicationCommands = [];
 
-    public function __construct(Kernel $kernel)
+    /**
+     * @var bool
+     */
+    private $showHelp;
+
+    public function __construct(Kernel $kernel, array $options = [])
     {
         define('IS_CONSOLE', true);
         $this->kernel = $kernel;
+        $this->showHelp = isset($options['showHelp']) ? $options['showHelp'] : true;
     }
 
     public function setUp()
@@ -78,6 +84,8 @@ class Console
 
     private function help()
     {
+        if (! $this->showHelp) return;
+
         $c = new \Colors\Color();
 
         echo $c('Mini-Fwk')->green() . PHP_EOL . PHP_EOL;
@@ -131,12 +139,19 @@ class Console
             return;
         }
 
+        $helpRequested = in_array('--help', $_SERVER['argv']) ||
+            in_array('-h', $_SERVER['argv']);
+
+        if ($helpRequested && ! $this->showHelp) {
+            exit;
+        }
+
         $commando = new Commando;
         $commando->setHelp($command->getDescription());
         $command->setKernel($this->kernel);
         $command->setUp($commando);
 
-        if (! in_array('--help', $_SERVER['argv']) && ! in_array('-h', $_SERVER['argv'])) {
+        if (! $helpRequested) {
             $command->run($commando);
         }
     }
