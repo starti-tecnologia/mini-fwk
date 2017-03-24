@@ -76,7 +76,7 @@ class EntityTableParser
 
             $matches = null;
             $contents = file_get_contents($file);
-            preg_match('/namespace ([^ ]+\Models[^; ]+)/', str_replace("\n", '', $contents), $matches);
+            preg_match('/namespace ([^ ]+\Models[^; ]*)/', str_replace("\n", '', $contents), $matches);
             $namespace = $matches[1];
 
             require_once $file;
@@ -348,7 +348,7 @@ class EntityTableParser
 
         $table->items[$keyName] = new TableItem(
             TableItem::TYPE_CONSTRAINT,
-            $keyName,
+            'constraint_' . $keyName,
             'CREATE UNIQUE INDEX ' . $keyName . ' ON ' . $table->name . ' (' . $column->name . ')'
         );
     }
@@ -362,7 +362,7 @@ class EntityTableParser
 
         $table->items[$keyName] = new TableItem(
             TableItem::TYPE_CONSTRAINT,
-            $keyName,
+            'constraint_' . $keyName,
             'ALTER TABLE ' . $table->name . ' ADD CONSTRAINT ' . $keyName . ' FOREIGN KEY (' . $column->name . ') REFERENCES ' . $otherTableName . ' (id)'
         );
     }
