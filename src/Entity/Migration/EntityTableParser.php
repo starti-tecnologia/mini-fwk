@@ -103,12 +103,12 @@ class EntityTableParser
         $this->validateDefinition($definition);
 
         if ($entity->useSoftDeletes) {
-            $definition['deleted_at'] = ['datetime' => []];
+            $definition[$entity->deletedAttribute] = [$this->deletedType => []];
         }
 
         if ($entity->useTimeStamps) {
-            $definition['created_at'] = ['datetime' => [], 'required' => []];
-            $definition['updated_at'] = ['datetime' => []];
+            $definition[$entity->createdAttribute] = ['datetime' => [], 'required' => []];
+            $definition[$entity->updatedAttribute] = ['datetime' => []];
         }
 
         $table = new Table($entity->table, $entity->engine);

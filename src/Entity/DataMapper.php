@@ -6,10 +6,6 @@ use Mini\Entity\Entity;
 
 class DataMapper
 {
-    public static $generatedFields = [
-        'created_at', 'updated_at', 'deleted_at'
-    ];
-
     /**
      * @return Mini\Entity\Connection
      */
@@ -65,9 +61,12 @@ class DataMapper
     {
         $this->onBeforeCreate($entity);
         $connection = $this->getConnection($entity->connection);
-        $fields = array_only($entity->fields, array_merge(array_keys($entity->definition), self::$generatedFields));
+        $fields = array_only($entity->fields, array_merge(array_keys($entity->definition), $entity->getGeneratedFields()));
         if ($entity->useTimeStamps) {
-            $fields['created_at'] = new RawValue('NOW()');
+            $fields[$entity->createdAttribute] = new RawValue('NOW()');
+            if ($entity->updatedAttributeRequired) {
+                $fields[$entity->updatedAttribute] = new RawValue('NOW()');
+            }
         }
         $connection->insert($entity->table, $fields);
         $entity->fields[$entity->idAttribute] = $connection->lastInsertId();
@@ -81,14 +80,14 @@ class DataMapper
     {
         $this->onBeforeCreate($entity);
         $connection = $this->getConnection($entity->connection);
-        $fields = array_only($entity->fields, array_merge(array_keys($entity->definition), self::$generatedFields));
+        $fields = array_only($entity->fields, array_merge(array_keys($entity->definition), $entity->getGeneratedFields()));
         if ($entity->useTimeStamps) {
-            $fields['created_at'] = new RawValue('NOW()');
+            $fields[$entity->createdAttribute] = new RawValue('NOW()');
         }
         $connection->insertOrUpdate(
             $entity->table,
             $fields,
-            array_merge(['created_at'], $ignoredUpdates),
+            array_merge([$entity->createdAttribute], $ignoredUpdates),
             // Its important to use LAST_INSERT_ID function to enable PDO lastInsertId
             [$entity->idAttribute => new RawValue('LAST_INSERT_ID(' . $entity->idAttribute . ')')]
         );
@@ -112,11 +111,11 @@ class DataMapper
     protected function update(Entity $entity)
     {
         $this->onBeforeUpdate($entity);
-        $updates = array_only($entity->fields, array_merge(array_keys($entity->definition), self::$generatedFields));
+        $updates = array_only($entity->fields, array_merge(array_keys($entity->definition), $entity->getGeneratedFields()));
         unset($updates[$entity->idAttribute]);
         $where = [ $entity->idAttribute => $entity->{$entity->idAttribute} ];
         if ($entity->useTimeStamps) {
-            $updates['updated_at'] = new RawValue('NOW()');
+            $updates[$entity->updatedAttribute] = new RawValue('NOW()');
         }
         $this->getConnection($entity->connection)->update($entity->table, $updates, $where);
         $this->onAfterUpdate($entity);
@@ -147,7 +146,9 @@ class DataMapper
 
         if ($entity->useSoftDeletes) {
             $connection->update($entity->table, [
-                'deleted_at' => new RawValue('NOW()')
+                $entity->deletedAttribute => $entity->deletedType == 'datetime'
+                    ? new RawValue('NOW()')
+                    : new RawValue('1')
             ], $where);
         } else {
             $connection->delete($entity->table, $where);
@@ -169,7 +170,7 @@ class DataMapper
         $connection = $this->getConnection($entity->connection);
 
         if ($entity->useTimeStamps) {
-            $updates['updated_at'] = new RawValue('NOW()');
+            $updates[$entity->updatedAttribute] = new RawValue('NOW()');
         }
 
         $connection->update($entity->table, $updates, $where);

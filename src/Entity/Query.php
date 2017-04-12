@@ -402,9 +402,9 @@ class Query
             ])
         );
         $relationKeys = array_keys($relationInstance->definition);
-        if ($relationInstance->useTimeStamps && ! in_array('updated_at', $relationKeys)) {
-            $relationKeys[] = 'updated_at';
-            $relationKeys[] = 'created_at';
+        if ($relationInstance->useTimeStamps && ! in_array($relationInstance->updatedAttribute, $relationKeys)) {
+            $relationKeys[] = $relationInstance->updatedAttribute;
+            $relationKeys[] = $relationInstance->createdAttribute;
         }
         foreach ($relationKeys as $key) {
             if ($mustIgnoreId && $key === $relationInstance->idAttribute) {

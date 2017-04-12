@@ -6,6 +6,7 @@ use Mini\Entity\Connection;
 use Mini\Exceptions\MiniException;
 use Mini\Container;
 use Mini\Entity\Query;
+use Mini\Entity\RawValue;
 
 /**
  * Trait QueryAware
@@ -22,7 +23,34 @@ trait QueryAware
     /**
      * @var string
      */
-    private static $instanceIdAttribute = "id";
+    private static $instanceIdAttribute = 'id';
+
+    /**
+     * @var string
+     */
+    public static $instanceCreatedAttribute = 'created_at';
+
+    /**
+     * @var string
+     */
+    public static $instanceUpdatedAttribute = 'updated_at';
+
+    /**
+     * Set the updated attribute to be set when creating
+     *
+     * @var string
+     */
+    public static $instanceUpdatedAttributeRequired = false;
+
+    /**
+     * @var string
+     */
+    public static $instanceDeletedAttribute = 'deleted_at';
+
+    /**
+     * @var string
+     */
+    public static $instanceDeletedType = 'datetime';
 
     /**
      * @var bool
@@ -43,6 +71,11 @@ trait QueryAware
         self::$instanceTable = $obj->table;
         if (isset($obj->idAttribute)) self::$instanceIdAttribute = $obj->idAttribute;
         self::$instanceUseSoftDeletes = $obj->useSoftDeletes;
+        self::$instanceCreatedAttribute = $obj->createdAttribute;
+        self::$instanceUpdatedAttribute = $obj->updatedAttribute;
+        self::$instanceUpdatedAttributeRequired = $obj->updatedAttributeRequired;
+        self::$instanceDeletedAttribute = $obj->deletedAttribute;
+        self::$instanceDeletedType = $obj->deletedType;
 
         self::$instanceConnectionName = $obj->connection;
     }
@@ -52,17 +85,41 @@ trait QueryAware
         return app()->get('Mini\Entity\ConnectionManager')->getConnection(self::$instanceConnectionName);
     }
 
+    private static function getWhereSoftDelete($includeAnd = true)
+    {
+        $deletedAttribute = self::$deletedAttribute;
+        if (!self::$instanceUseSoftDeletes) {
+            $where_soft_delete = '';
+        } elseif (self::$instanceDeletedType == 'datetime') {
+            $where_soft_delete = "($deletedAttribute IS NULL)";
+        } else {
+            $where_soft_delete = "($deletedAttribute = 0)";
+        }
+        if ($where_soft_delete && $includeAnd) {
+            $where_soft_delete = ' AND ' . $where_soft_delete;
+        }
+        return $where_soft_delete;
+    }
+
+    private static function getSetSoftDelete()
+    {
+        $deletedAttribute = self::$deletedAttribute;
+        if (!self::$instanceUseSoftDeletes) {
+            $setSoftDelete = '';
+        } elseif (self::$instanceDeletedType == 'datetime') {
+            $setSoftDelete = "$deletedAttribute = NOW()";
+        } else {
+            $setSoftDelete = "$deletedAttribute = 1";
+        }
+        return $setSoftDelete;
+    }
+
     /**
      * @param $id
      */
     public static function find($id, $columns = ['*']) {
         self::instance();
-
-        if (!self::$instanceUseSoftDeletes)
-            $where_soft_delete = "";
-        else
-            $where_soft_delete = " AND (deleted_at IS NULL)";
-
+        $where_soft_delete = self::getWhereSoftDelete();
         $sql = sprintf(
             "SELECT %s FROM %s WHERE %s = %d %s",
             implode(", ", $columns),
@@ -82,12 +139,7 @@ trait QueryAware
      */
     public static function findOne($id, $columns = ['*']) {
         self::instance();
-
-        if (!self::$instanceUseSoftDeletes)
-            $where_soft_delete = "";
-        else
-            $where_soft_delete = " AND (deleted_at IS NULL)";
-
+        $where_soft_delete = self::getWhereSoftDelete();
         $sql = sprintf(
             "SELECT %s FROM %s WHERE %s = %d %s",
             implode(", ", $columns),
@@ -106,12 +158,7 @@ trait QueryAware
      */
     public static function findAll($columns = ['*']) {
         self::instance();
-
-        if (!self::$instanceUseSoftDeletes)
-            $where_soft_delete = "";
-        else
-            $where_soft_delete = " WHERE (deleted_at IS NULL)";
-
+        $where_soft_delete = self::getWhereSoftDelete();
         $sql = sprintf(
             "SELECT %s FROM %s %s",
             implode(", ", $columns),
@@ -137,8 +184,9 @@ trait QueryAware
                 intval($id)
             );
         } else {
+            $setSoftDelete = self::getSetSoftDelete();
             $sql = sprintf(
-                "UPDATE %s SET deleted_at = NOW() WHERE %s = %d",
+                "UPDATE %s SET $setSoftDelete WHERE %s = %d",
                 self::$instanceTable,
                 self::$instanceIdAttribute,
                 intval($id)
@@ -170,8 +218,9 @@ trait QueryAware
             );
         }
 
-        if (self::$instanceUseSoftDeletes)
-            $where[] = "(deleted_at IS NULL)";
+        if (self::$instanceUseSoftDeletes) {
+            $where[] = self::getWhereSoftDelete(false);
+        }
 
         if (count($orderBy) > 0) {
             $orders = [];
@@ -221,7 +270,12 @@ trait QueryAware
             ->className(get_called_class());
 
         if (self::$instanceUseSoftDeletes && ! $ignoreDefault) {
-            $query->whereIsNull(self::$instanceTable . '.deleted_at');
+            $deletedAttribute = self::$instanceTable . '.' . self::$instanceDeletedAttribute;
+            if (self::$instanceDeletedType == 'datetime') {
+                $query->whereIsNull($deletedAttribute);
+            } else {
+                $query->where($deletedAttribute, '=', new RawValue('0'));
+            }
         }
 
         return $query;

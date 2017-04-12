@@ -13,6 +13,7 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
         require_once __TEST_DIRECTORY__ . '/stubs/EntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/SoftDeleteEntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/DataMapperStub.php';
+        require_once __TEST_DIRECTORY__ . '/stubs/CustomFieldStub.php';
 
         $this->connectionManager = new FakeConnectionManager;
 
@@ -42,6 +43,27 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, $entity->id);
     }
 
+    public function testIsCreatingWithTimestamp()
+    {
+        $entity = new CustomFieldStub;
+        $entity->name = 'Hi';
+
+        $mapper = new DataMapperStub;
+        $mapper->save($entity);
+
+        $this->assertEquals(
+            [
+                [
+                    'default',
+                    'INSERT INTO users (name, data_cadastro, data_atualizacao) VALUES (?, NOW(), NOW())',
+                    ['Hi']
+                ],
+            ],
+            $this->connectionManager->log
+        );
+        $this->assertEquals(1, $entity->id);
+    }
+
     public function testIsUpdating()
     {
         $entity = new EntityStub;
@@ -56,6 +78,27 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
                 [
                     'default',
                     'UPDATE users SET name = ? WHERE id = ?',
+                    ['Test', 2]
+                ],
+            ],
+            $this->connectionManager->log
+        );
+    }
+
+    public function testIsUpdatingWithTimestamp()
+    {
+        $entity = new CustomFieldStub;
+        $entity->id = 2;
+        $entity->name = 'Test';
+
+        $mapper = new DataMapperStub;
+        $mapper->save($entity);
+
+        $this->assertEquals(
+            [
+                [
+                    'default',
+                    'UPDATE users SET name = ?, data_atualizacao = NOW() WHERE id = ?',
                     ['Test', 2]
                 ],
             ],
@@ -117,6 +160,26 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
                 [
                     'default',
                     'UPDATE users SET deleted_at = NOW() WHERE id = ?',
+                    [2]
+                ],
+            ],
+            $this->connectionManager->log
+        );
+    }
+
+    public function testIsSoftDeletingCustomField()
+    {
+        $entity = new CustomFieldStub;
+        $entity->id = 2;
+
+        $mapper = new DataMapperStub;
+        $mapper->delete($entity);
+
+        $this->assertEquals(
+            [
+                [
+                    'default',
+                    'UPDATE users SET inativo = 1 WHERE id = ?',
                     [2]
                 ],
             ],

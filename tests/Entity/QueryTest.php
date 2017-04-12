@@ -16,6 +16,7 @@ class QueryTest extends PHPUnit_Framework_TestCase
         require_once __TEST_DIRECTORY__ . '/stubs/RelationEntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/ReversedRelationEntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/DeepRelationEntityStub.php';
+        require_once __TEST_DIRECTORY__ . '/stubs/CustomFieldStub.php';
 
         $this->connectionManager = new FakeConnectionManager;
 
@@ -456,5 +457,14 @@ class QueryTest extends PHPUnit_Framework_TestCase
             ->listArray();
 
         $this->assertEquals(['lala' => 'hi'], $results[0]);
+    }
+
+    public function testIsConsideringDeletedAttribute()
+    {
+        $this->assertEquals(
+            'SELECT * FROM `users` WHERE `users`.`inativo` = 0',
+            CustomFieldStub::query()
+                ->makeSql()
+        );
     }
 }
