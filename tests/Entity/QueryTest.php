@@ -459,12 +459,92 @@ class QueryTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(['lala' => 'hi'], $results[0]);
     }
 
-    public function testIsConsideringDeletedAttribute()
+    public function testIsConsideringDeletedAttributeWithQueryBuilder()
     {
         $this->assertEquals(
             'SELECT * FROM `users` WHERE `users`.`inativo` = 0',
             CustomFieldStub::query()
                 ->makeSql()
+        );
+    }
+
+    public function testIsConsideringDeletedAttributeWithFind()
+    {
+        CustomFieldStub::find(1, ['name']);
+
+        $this->assertEquals(
+            [
+                [
+                    'default',
+                    'SELECT name FROM users WHERE id = 1  AND (inativo = 0)',
+                    []
+                ],
+            ],
+            $this->connectionManager->log
+        );
+    }
+
+    public function testIsConsideringDeletedAttributeWithFindOne()
+    {
+        CustomFieldStub::findOne(1, ['name']);
+
+        $this->assertEquals(
+            [
+                [
+                    'default',
+                    'SELECT name FROM users WHERE id = 1  AND (inativo = 0)',
+                    []
+                ],
+            ],
+            $this->connectionManager->log
+        );
+    }
+
+    public function testIsConsideringDeletedAttributeWithFindAll()
+    {
+        CustomFieldStub::findAll();
+
+        $this->assertEquals(
+            [
+                [
+                    'default',
+                    'SELECT * FROM users WHERE (inativo = 0)',
+                    []
+                ],
+            ],
+            $this->connectionManager->log
+        );
+    }
+
+    public function testIsConsideringDeletedAttributeWithDestroy()
+    {
+        CustomFieldStub::destroy(1);
+
+        $this->assertEquals(
+            [
+                [
+                    'default',
+                    'UPDATE users SET inativo = 1 WHERE id = 1',
+                    []
+                ],
+            ],
+            $this->connectionManager->log
+        );
+    }
+
+    public function testIsConsideringDeletedAttributeWithWhere()
+    {
+        CustomFieldStub::where(['name' => 'John'], ['name' => 'ASC'], ['name']);
+
+        $this->assertEquals(
+            [
+                [
+                    'default',
+                    'SELECT name FROM users WHERE name = \'John\' AND (inativo = 0) ORDER BY name ASC',
+                    []
+                ],
+            ],
+            $this->connectionManager->log
         );
     }
 }

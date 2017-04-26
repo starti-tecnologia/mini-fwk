@@ -22,6 +22,12 @@ class FakeConnection
         return new FakeStatement(array_merge($this->context, ['sql' => $sql]));
     }
 
+    public function exec($sql)
+    {
+        return (new FakeStatement(array_merge($this->context, ['sql' => $sql])))
+            ->execute();
+    }
+
     public function lastInsertId()
     {
         return 1;

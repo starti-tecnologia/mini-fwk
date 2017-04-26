@@ -87,7 +87,7 @@ trait QueryAware
 
     private static function getWhereSoftDelete($includeAnd = true)
     {
-        $deletedAttribute = self::$deletedAttribute;
+        $deletedAttribute = self::$instanceDeletedAttribute;
         if (!self::$instanceUseSoftDeletes) {
             $where_soft_delete = '';
         } elseif (self::$instanceDeletedType == 'datetime') {
@@ -103,7 +103,7 @@ trait QueryAware
 
     private static function getSetSoftDelete()
     {
-        $deletedAttribute = self::$deletedAttribute;
+        $deletedAttribute = self::$instanceDeletedAttribute;
         if (!self::$instanceUseSoftDeletes) {
             $setSoftDelete = '';
         } elseif (self::$instanceDeletedType == 'datetime') {
@@ -158,12 +158,12 @@ trait QueryAware
      */
     public static function findAll($columns = ['*']) {
         self::instance();
-        $where_soft_delete = self::getWhereSoftDelete();
+        $where_soft_delete = self::getWhereSoftDelete(false);
         $sql = sprintf(
             "SELECT %s FROM %s %s",
             implode(", ", $columns),
             self::$instanceTable,
-            $where_soft_delete
+            $where_soft_delete ? 'WHERE ' . $where_soft_delete : ''
         );
         $result = self::getInstanceConnection()->select($sql);
         return $result;
