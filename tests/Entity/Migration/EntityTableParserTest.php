@@ -11,6 +11,7 @@ class EntityTableParserTest extends PHPUnit_Framework_TestCase
         require_once __TEST_DIRECTORY__ . '/stubs/FieldOrderEntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/EmptyDefaultEntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/EntityIndexStub.php';
+        require_once __TEST_DIRECTORY__ . '/stubs/CustomFieldStub.php';
 
         app()->register('Mini\Validation\Validator', function () {
             return new Validator;
@@ -115,6 +116,28 @@ class EntityTableParserTest extends PHPUnit_Framework_TestCase
                 ' ) ENGINE=InnoDB COMMENT \'MINI_FWK_ENTITY\';',
                 'CREATE INDEX name ON users (name);',
                 'CREATE UNIQUE INDEX name_title ON users (name,title)',
+            ]
+        );
+
+        $this->assertEquals($sql, $table->makeCreateSql());
+    }
+
+    public function testIsParsingEntityCustomAttributes()
+    {
+        $entity = new CustomFieldStub;
+        $parser = new EntityTableParser;
+        $table = $parser->parseEntity($entity);
+
+        $sql = implode(
+            '',
+            [
+                'CREATE TABLE users ( ',
+                    'id int(11) unsigned not null primary key auto_increment,',
+                    'name varchar(100),',
+                    'inativo int(11),',
+                    'data_cadastro datetime not null,',
+                    'data_atualizacao datetime',
+                ' ) ENGINE=InnoDB COMMENT \'MINI_FWK_ENTITY\''
             ]
         );
 

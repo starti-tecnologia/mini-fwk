@@ -103,7 +103,7 @@ class EntityTableParser
         $this->validateDefinition($definition);
 
         if ($entity->useSoftDeletes) {
-            $definition[$entity->deletedAttribute] = [$this->deletedType => []];
+            $definition[$entity->deletedAttribute] = [$entity->deletedType => []];
         }
 
         if ($entity->useTimeStamps) {
