@@ -14,6 +14,7 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
         require_once __TEST_DIRECTORY__ . '/stubs/SoftDeleteEntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/DataMapperStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/CustomFieldStub.php';
+        require_once __TEST_DIRECTORY__ . '/stubs/MultipleColumnPrimaryKeyStub.php';
 
         $this->connectionManager = new FakeConnectionManager;
 
@@ -62,6 +63,49 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
             $this->connectionManager->log
         );
         $this->assertEquals(1, $entity->id);
+    }
+
+    public function testIsSavingMultipleColumnPrimaryKey()
+    {
+        $entity = new MultipleColumnPrimaryKeyStub;
+        $entity->user_id = 2;
+        $entity->group_id = 1;
+        $entity->active = 0;
+
+        $mapper = new DataMapperStub;
+        $mapper->save($entity);
+
+        $this->assertEquals(
+            [
+                [
+                    'default',
+                    'INSERT INTO users_groups (user_id, group_id, active) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE user_id = ?, group_id = ?, active = ?',
+                    [2, 1, 0, 2, 1, 0]
+                ],
+            ],
+            $this->connectionManager->log
+        );
+    }
+
+    public function testIsSavingMultipleColumnPrimaryKeyWithoutFields()
+    {
+        $entity = new MultipleColumnPrimaryKeyStub;
+        $entity->user_id = 2;
+        $entity->group_id = 1;
+
+        $mapper = new DataMapperStub;
+        $mapper->save($entity);
+
+        $this->assertEquals(
+            [
+                [
+                    'default',
+                    'INSERT INTO users_groups (user_id, group_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE user_id = ?, group_id = ?',
+                    [2, 1, 2, 1]
+                ],
+            ],
+            $this->connectionManager->log
+        );
     }
 
     public function testIsUpdating()
@@ -181,6 +225,27 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
                     'default',
                     'UPDATE users SET inativo = 1 WHERE id = ?',
                     [2]
+                ],
+            ],
+            $this->connectionManager->log
+        );
+    }
+
+    public function testIsDeletingMultipleColumnPrimaryKey()
+    {
+        $entity = new MultipleColumnPrimaryKeyStub;
+        $entity->user_id = 1;
+        $entity->group_id = 2;
+
+        $mapper = new DataMapperStub;
+        $mapper->delete($entity);
+
+        $this->assertEquals(
+            [
+                [
+                    'default',
+                    'DELETE FROM users_groups WHERE user_id = ? AND group_id = ?',
+                    [1, 2]
                 ],
             ],
             $this->connectionManager->log

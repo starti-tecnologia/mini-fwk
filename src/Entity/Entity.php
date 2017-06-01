@@ -309,4 +309,18 @@ abstract class Entity implements \JsonSerializable
             $this->deletedAttribute
         ];
     }
+
+    /**
+     * Return if model is new
+     *
+     * @return boolean
+     */
+    public function isNew()
+    {
+        if (is_string($this->idAttribute) && ! empty($this->fields[$this->idAttribute])) {
+            return false;
+        }
+
+        return true;
+    }
 }

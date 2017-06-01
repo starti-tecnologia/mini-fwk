@@ -33,7 +33,9 @@ class DataMapper
     {
         $this->onBeforeSave($entity);
 
-        if (isset($entity->fields[$entity->idAttribute])) {
+        if (is_array($entity->idAttribute)) {
+            $this->createOrUpdate($entity);
+        } elseif (! $entity->isNew()) {
             $this->update($entity);
         } else {
             $this->create($entity);
@@ -89,9 +91,13 @@ class DataMapper
             $fields,
             array_merge([$entity->createdAttribute], $ignoredUpdates),
             // Its important to use LAST_INSERT_ID function to enable PDO lastInsertId
-            [$entity->idAttribute => new RawValue('LAST_INSERT_ID(' . $entity->idAttribute . ')')]
+            is_string($entity->idAttribute)
+                ? [$entity->idAttribute => new RawValue('LAST_INSERT_ID(' . $entity->idAttribute . ')')]
+                : []
         );
-        $entity->fields[$entity->idAttribute] = $connection->lastInsertId();
+        if (is_string($entity->idAttribute)) {
+            $entity->fields[$entity->idAttribute] = $connection->lastInsertId();
+        }
         $this->onAfterCreate($entity);
     }
 
@@ -127,7 +133,14 @@ class DataMapper
     public function delete(Entity $entity)
     {
         $connection = $this->getConnection($entity->connection);
-        $where = [ $entity->idAttribute => $entity->{$entity->idAttribute} ];
+        if (is_string($entity->idAttribute)) {
+            $where = [ $entity->idAttribute => $entity->{$entity->idAttribute} ];
+        } else {
+            $where = [];
+            foreach ($entity->idAttribute as $attribute) {
+                $where[$attribute] = $entity->{$attribute};
+            }
+        }
         $this->deleteByFilters($entity, $where);
     }
 

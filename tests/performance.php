@@ -40,11 +40,11 @@ testPerformance(
         return $entity;
     },
     function ($entity) {
-        $loops = 50000;
+        $loops = 10000;
 
         echo "Doing $loops loops over entity serialization\n";
 
-        for ($i = 0; $i < 50000; $i++) {
+        for ($i = 0; $i < $loops; $i++) {
             EntitySerializer::instance()->serialize($entity);
         }
     }
