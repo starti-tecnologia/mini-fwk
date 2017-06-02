@@ -53,7 +53,7 @@ class ExampleController
 
 ##### Routing
 
-By the default, the files relatad to url routing are stored in `src/routes`. As the controllers can define routes with annotations you won't need to edit them. To generate routes from your controller annotations run the following command inside your project directory:
+By the default, the files related to url routing are stored in `src/routes`. As the controllers can define routes with annotations you won't need to edit them. To generate routes from your controller annotations run the following command inside your project directory:
 
 ```sh
 $ ./console route:scan
@@ -290,7 +290,7 @@ You can check examples on [unit tests](http://187.87.153.124:3000/jonathas/mini-
 
 ### MongoDB ODM
 
-You can build complex MySQL queries with `Mini\Entity\Query` class. Follow the examples.
+You can build complex MongoDB queries with `Mini\Entity\Mongo\Query` class. Follow the examples.
 
 ```php
 <?php
@@ -315,7 +315,7 @@ $chatMessages = ChatMessage::q()->filter('chat_id', 1)->listArray();
 
 ### Data migrations and seeds
 
-Data migrations and seeds are essential to keep mysql schemas and default data in sync between development and production environment. There are are two ways of creating a migration: manually and automatic. The most common is to generate a migration that automatically check for differences in your entity field definition and mysql information schema. Use the following example:
+Data migrations and seeds are essential to keep mysql schemas and default data in sync between development and production environment. There are two ways of creating a migration: manually and automatic. The most common is to generate a migration that automatically check for differences in your entity definition and mysql information schema. Use the following example:
 
 ##### Migrations
 
@@ -562,7 +562,7 @@ class Application
 
 ### Helper functions
 
-Thare are some global functions that come with the framework. Examples:
+There are some global functions that come with the framework. Examples:
 
 ```php
 
