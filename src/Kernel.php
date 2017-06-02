@@ -201,6 +201,14 @@ class Kernel
     /**
      * @return string
      */
+    public function getWorkersPath()
+    {
+        return $this->getSourcePath() . DIRECTORY_SEPARATOR . 'Workers';
+    }
+
+    /**
+     * @return string
+     */
     public function getRouterPath()
     {
         return $this->getSourcePath() . DIRECTORY_SEPARATOR . 'routers';
