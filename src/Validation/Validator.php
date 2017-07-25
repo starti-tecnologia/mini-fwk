@@ -213,12 +213,12 @@ class Validator
 
     private function validateCharRule($value, array $parameters)
     {
-        $this->validateStringRule($value, $parameters);
+        return $this->validateStringRule($value, $parameters);
     }
 
     private function validateTextRule($value, array $parameters)
     {
-        $this->validateStringRule($value, $parameters);
+        return $this->validateStringRule($value, $parameters);
     }
 
     private function validateIntegerRule($value, array $parameters)
