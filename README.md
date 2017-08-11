@@ -18,7 +18,7 @@ OBS: This documentation does not cover all the framework features. Feel free to 
 Run the following command to clone the example project and install dependencies
 
 ```sh
-$ git clone git@187.87.153.124:git-starti/mini-fwk-project.git myproject
+$ git clone git@github.com:StartiOne/mini-fwk.git myproject
 $ cd myproject
 $ rm -Rf .git
 $ cp .env.example .env
@@ -134,7 +134,7 @@ class PermissionMiddleware
 
 Data validation works with the class `Mini\Validation\Validator` and the currently supported rules are: required, char, string, text, integer, float, double, decimal, boolean, date, datetime, time, email, maxLength, minLength, min, max.
 
-You can check examples on [unit tests](http://187.87.153.124:3000/jonathas/mini-fwk/blob/master/tests/Validation/ValidatorTest.php)
+You can check examples on [unit tests](https://github.com/StartiOne/mini-fwk/blob/master/tests/Validation/ValidatorTest.php)
 
 ```php
 <?php
@@ -286,7 +286,7 @@ $sql = $query->makeSql();
 $users = User::q()->limit(0, 1)->listObject(); // Can be listArray if you dont need an object
 ```
 
-You can check examples on [unit tests](http://187.87.153.124:3000/jonathas/mini-fwk/blob/master/tests/Entity/QueryTest.php)
+You can check examples on [unit tests](https://github.com/StartiOne/mini-fwk/blob/master/tests/Entity/QueryTest.php)
 
 ### MongoDB ODM
 
@@ -579,4 +579,4 @@ array_only(['name' => 'John', 'password' => '123'], ['name']);
 array_except(['name' => 'John', 'password' => '123'], ['password']);
 ```
 
-You can check more examples on [source code](http://187.87.153.124:3000/jonathas/mini-fwk/blob/master/src/Helpers/Instance/helpers.php)
+You can check more examples on [source code](https://github.com/StartiOne/mini-fwk/blob/master/src/Helpers/Instance/helpers.php)
