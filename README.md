@@ -331,7 +331,7 @@ In other moments, creating a migration manually will be needed. Run the followin
 
 ```sh
 $ ./console make:migration
-Migration file created at /home/jeferson/Projects/Starti/starti-backoffice-api/migrations/Migration20170531174950.php
+Migration file created at ~/PROJECT_FOLDER/migrations/Migration20170531174950.php
 ```
 
 ```php
@@ -393,7 +393,7 @@ The console executable available in the root directory of your project can execu
 
 ```sh
 $ ./console make:command --name script:license:refresh --description "Update license file"
-Command file created at /home/jeferson/Projects/Starti/starti-backoffice-api/src/Commands/ScriptLicenseRefresh.php
+Command file created at ~/PROJECT_FOLDER/src/Commands/ScriptLicenseRefresh.php
 ```
 
 ```php
