@@ -26,6 +26,7 @@ class ValidationTest extends PHPUnit_Framework_TestCase
                 'city' => 'a',
                 'state' => 'dsadsadsa',
                 'age' => 1,
+                'min_quantity' => 0,
                 'quantity' => 999,
                 'is_male' => false
             ]
@@ -42,6 +43,7 @@ class ValidationTest extends PHPUnit_Framework_TestCase
                 'state' => 'string:2',
                 'age' => 'integer|min:18',
                 'quantity' => 'integer|max:18',
+                'min_quantity' => 'integer|max:18|required',
                 'is_male' => 'boolean|required',
                 'is_test' => 'boolean|required'
             ]);

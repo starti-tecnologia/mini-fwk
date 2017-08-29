@@ -203,7 +203,7 @@ class Validator
 
     private function validateRequiredRule($value, array $parameters)
     {
-        return is_bool($value) || !! trim($value);
+        return is_bool($value) || is_numeric($value) || !! trim($value);
     }
 
     private function validateStringRule($value, array $parameters)
