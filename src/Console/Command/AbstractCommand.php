@@ -44,7 +44,7 @@ abstract class AbstractCommand
         }
     }
 
-    public function write($message, $color = 'white')
+    public function write($message, $color = 'default')
     {
         $c = new \Colors\Color();
         $output = $c($message);

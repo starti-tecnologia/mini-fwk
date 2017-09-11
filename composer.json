@@ -15,7 +15,9 @@
     "vlucas/phpdotenv": "^2.2",
     "nategood/commando": "^0.2.8",
     "crodas/notoj": "^1.2",
-    "pda/pheanstalk": "^3.1"
+    "pda/pheanstalk": "^3.1",
+    "react/event-loop": "^0.4.3",
+    "react/child-process": "^0.5.0"
   },
   "suggest": {
       "mongodb/mongodb": "Allows MongoDB entities"
