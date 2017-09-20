@@ -71,7 +71,7 @@ class DataMapper
             }
         }
         $connection->insert($entity->table, $fields);
-        $entity->fields[$entity->idAttribute] = $connection->lastInsertId();
+        $this->setEntityId($entity, $connection->lastInsertId());
         $this->onAfterCreate($entity);
     }
 
@@ -96,7 +96,7 @@ class DataMapper
                 : []
         );
         if (is_string($entity->idAttribute)) {
-            $entity->fields[$entity->idAttribute] = $connection->lastInsertId();
+            $this->setEntityId($entity, $connection->lastInsertId());
         }
         $this->onAfterCreate($entity);
     }
@@ -125,6 +125,19 @@ class DataMapper
         }
         $this->getConnection($entity->connection)->update($entity->table, $updates, $where);
         $this->onAfterUpdate($entity);
+    }
+
+    /**
+     * When a new relation is created using setRelation with a new instance, the inversed relations must be updated to reflect the change
+     *
+     * @return void
+     */
+    private function setEntityId(Entity $entity, $id)
+    {
+        $entity->fields[$entity->idAttribute] = $id;
+        foreach ($entity->inversedRelations as $key => $relation) {
+            $relation['reference']->fields[$relation['field']] = $id;
+        }
     }
 
     /**

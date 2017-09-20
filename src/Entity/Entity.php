@@ -5,6 +5,13 @@ namespace Mini\Entity;
 abstract class Entity implements \JsonSerializable
 {
     /**
+     * Instance id used for tracking relation updates
+     *
+     * @var string
+     */
+    private $instanceId;
+
+    /**
      * @var string
      */
     public $table;
@@ -93,6 +100,13 @@ abstract class Entity implements \JsonSerializable
      * @var array
      */
     public $relations = [];
+
+    /**
+     * Track inversed relations only for internal framework usage
+     *
+     * @var array
+     */
+    public $inversedRelations = [];
 
     /**
      * Stores cached relations for use in getRelation
@@ -246,10 +260,24 @@ abstract class Entity implements \JsonSerializable
             throw new \Exception('Invalid or read-only relation: ' . $relationName);
         }
 
+        $lastRelationInstance = $this->getRelation($relationName);
+        $this->instanceId = $this->instanceId ?: uniqid();
+        $inversedRelationKey = self::class . '.' . $this->instanceId . '.' . $relationName;
+
+        if ($lastRelationInstance) {
+            unset($lastRelationInstance->inversedRelations[$inversedRelationKey]);
+        }
+
         if ($relationInstance) {
-            $id = $relationInstance->fields[$relationInstance->idAttribute];
+            $id = isset($relationInstance->fields[$relationInstance->idAttribute])
+                ? $relationInstance->fields[$relationInstance->idAttribute]
+                : null;
             $this->relationCache[$relationName] = $relationInstance;
             $this->fields[$this->relations[$relationName]['field']] = $id;
+            $relationInstance->inversedRelations[$inversedRelationKey] = [
+                'reference' => $this,
+                'field' => $this->relations[$relationName]['field']
+            ];
         } else {
             $this->fields[$this->relations[$relationName]['field']] = null;
         }
