@@ -149,6 +149,41 @@ class EntityTest extends PHPUnit_Framework_TestCase
         $this->assertSqlPattern('/WHERE `id` = /');
     }
 
+    public function testIsFillingNewRelationByArray()
+    {
+        $entity = new RelationEntityStub;
+        $entity->fill([
+            'name' => 'lala',
+            'owner' => [
+                'name' => 'Jane'
+            ]
+        ]);
+        $this->assertEquals('lala', $entity->name);
+        $this->assertEquals(null, $entity->getRelation('owner')->id);
+        $this->assertEquals('Jane', $entity->getRelation('owner')->name);
+    }
+
+    public function testIsFillingExistingRelationByArray()
+    {
+        $entity = new RelationEntityStub;
+
+        $owner = new SimpleEntityStub;
+        $owner->id = 143;
+        $owner->name = 'John';
+        $entity->setRelation('owner', $owner);
+
+        $entity->fill([
+            'name' => 'lala',
+            'owner' => [
+                'name' => 'Jane'
+            ]
+        ]);
+
+        $this->assertEquals('lala', $entity->name);
+        $this->assertEquals(143, $entity->getRelation('owner')->id);
+        $this->assertEquals('Jane', $entity->getRelation('owner')->name);
+    }
+
     public function testIsFillingCamelCaseArraysWhenConvertCamelCaseIsEnabled()
     {
         putenv('CONVERT_CAMEL_CASE=1');

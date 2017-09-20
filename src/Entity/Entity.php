@@ -181,26 +181,30 @@ abstract class Entity implements \JsonSerializable
                     if (! $value) {
                         $this->setRelation($key, null);
                         continue;
-                    }
-
-                    $relationInstance = new $this->relations[$key]['class'];
-                    $relationQuery = call_user_func_array(
-                        [$this->relations[$key]['class'], 'q'],
-                        []
-                    );
-                    $relationAttribute = is_numeric($value)
-                        ? $relationInstance->idAttribute
-                        : (
-                            isset($relationInstance->definition['guid'])
-                            ? 'guid'
-                            : 'id'
+                    } elseif (is_array($value) && count($value) && ! isset($value[0])) { // Check if is a array with string keys
+                        $relationInstance = $this->getRelation($key) ?: new $this->relations[$key]['class'];
+                        $relationInstance->fill($value);
+                        $this->setRelation($key, $relationInstance);
+                    } else {
+                        $relationInstance = new $this->relations[$key]['class'];
+                        $relationQuery = call_user_func_array(
+                            [$this->relations[$key]['class'], 'q'],
+                            []
                         );
-                    $this->setRelation(
-                        $key,
-                        $relationQuery
-                            ->where($relationAttribute, '=', $value)
-                            ->getObjectOrFail()
-                    );
+                        $relationAttribute = is_numeric($value)
+                            ? $relationInstance->idAttribute
+                            : (
+                                isset($relationInstance->definition['guid'])
+                                ? 'guid'
+                                : 'id'
+                            );
+                        $this->setRelation(
+                            $key,
+                            $relationQuery
+                                ->where($relationAttribute, '=', $value)
+                                ->getObjectOrFail()
+                        );
+                    }
                 }
             }
         }
