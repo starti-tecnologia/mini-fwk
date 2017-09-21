@@ -252,6 +252,20 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
         );
     }
 
+    public function testIsCallingDeleteHooks()
+    {
+        $entity = new CustomFieldStub;
+        $entity->id = 2;
+
+        $mapper = new DataMapperStub;
+        $mapper->delete($entity);
+
+        $this->assertEquals(
+            ['before_delete', 'after_delete'],
+            $mapper->calledHooks
+        );
+    }
+
     public function testIsConvertingBooleanToInteger()
     {
         $mapper = new DataMapperStub;

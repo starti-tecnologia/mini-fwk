@@ -140,6 +140,16 @@ class DataMapper
         }
     }
 
+    protected function onBeforeDelete(Entity $entity)
+    {
+        // Hook for inherited classes
+    }
+
+    protected function onAfterDelete(Entity $entity)
+    {
+        // Hook for inherited classes
+    }
+
     /**
      * Delete entity from database
      */
@@ -154,7 +164,9 @@ class DataMapper
                 $where[$attribute] = $entity->{$attribute};
             }
         }
+        $this->onBeforeDelete($entity);
         $this->deleteByFilters($entity, $where);
+        $this->onAfterDelete($entity);
     }
 
     /**
