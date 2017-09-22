@@ -98,6 +98,29 @@ trait SqlBuilderAware
         $stm->execute($bindings);
     }
 
+    private function makeComparation($key, $value, &$bindings)
+    {
+        $comparator = '=';
+        if (is_array($value)) {
+            $comparator = $value[0];
+            $value = $value[1];
+        }
+        if ($value instanceof RawValue) {
+            $result = $key . ' ' . $comparator . ' ' . $value->value;
+        } elseif (is_array($value) && ($comparator === 'IN' || $comparator === 'NOT IN')) {
+            $params = [];
+            foreach ($value as $item) {
+                $bindings[] = $item;
+                $params[] = '?';
+            }
+            $result = $key . ' ' . $comparator . ' (' . implode(', ', $params) . ')';
+        } else {
+            $result = $key . ' ' . $comparator . ' ?';
+            $bindings[] = $this->filterBinding($value);
+        }
+        return $result;
+    }
+
     public function update($table, array $fields, array $filter)
     {
         $template = 'UPDATE %s SET %s WHERE %s';
@@ -115,12 +138,7 @@ trait SqlBuilderAware
         }
 
         foreach ($filter as $key => $value) {
-            if ($value instanceof RawValue) {
-                $wheres[] = $key . ' = ' . $value->value;
-            } else {
-                $wheres[] = $key . ' = ?';
-                $bindings[] = $this->filterBinding($value);
-            }
+            $wheres[] = $this->makeComparation($key, $value, $bindings);
         }
 
         $stm = $this->prepare(sprintf($template, $table, implode(', ', $updates), implode(' AND ', $wheres)));
@@ -134,12 +152,7 @@ trait SqlBuilderAware
         $bindings = [];
 
         foreach ($filters as $key => $value) {
-            if ($value instanceof RawValue) {
-                $wheres[] = $key . ' = ' . $value->value;
-            } else {
-                $wheres[] = $key . ' = ?';
-                $bindings[] = $this->filterBinding($value);
-            }
+            $wheres[] = $this->makeComparation($key, $value, $bindings);
         }
 
         $stm = $this->prepare(sprintf($template, $table, implode(' AND ', $wheres)));

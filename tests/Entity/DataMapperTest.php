@@ -291,4 +291,57 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
             $this->connectionManager->log
         );
     }
+
+    public function testIsUpdatingByFiltersWithCustomComparator()
+    {
+        $mapper = new DataMapperStub;
+        $mapper->updateByFilters(
+            new EntityStub,
+            [
+                'is_draft' => 1,
+            ],
+            [
+                'id' => ['IN', [1, 2, 3]],
+                'is_active' => 1,
+                'is_draft' => ['<=', 5],
+                'lala' => new RawValue(3)
+            ]
+        );
+
+        $this->assertEquals(
+            [
+                [
+                    'default',
+                    'UPDATE users SET is_draft = ? WHERE id IN (?, ?, ?) AND is_active = ? AND is_draft <= ? AND lala = 3',
+                    [1, 1, 2, 3, 1, 5]
+                ],
+            ],
+            $this->connectionManager->log
+        );
+    }
+
+    public function testIsDeletingByFiltersWithCustomComparator()
+    {
+        $mapper = new DataMapperStub;
+        $mapper->deleteByFilters(
+            new EntityStub,
+            [
+                'id' => ['IN', [1, 2, 3]],
+                'is_active' => 1,
+                'is_draft' => ['<=', 5],
+                'lala' => new RawValue(3)
+            ]
+        );
+
+        $this->assertEquals(
+            [
+                [
+                    'default',
+                    'DELETE FROM users WHERE id IN (?, ?, ?) AND is_active = ? AND is_draft <= ? AND lala = 3',
+                    [1, 2, 3, 1, 5]
+                ],
+            ],
+            $this->connectionManager->log
+        );
+    }
 }
