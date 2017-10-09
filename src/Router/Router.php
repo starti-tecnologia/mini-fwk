@@ -169,7 +169,7 @@ class Router
                     $route_method = $route['method'];
                     $route_middlewares = isset($route['middleware']) ? $route['middleware'] : [];
 
-                    $pattern = "@^" . preg_replace('/\\\:[a-zA-Z0-9\_\-]+/', '([a-zA-Z0-9\-\_]+)', preg_quote($route_uri)) . "$@D";
+                    $pattern = "@^" . preg_replace('/\\\:[a-zA-Z0-9\_\-]+/', '([a-zA-Z0-9\-\_.]+)', preg_quote($route_uri)) . "$@D";
                     $matches = Array();
                     // check if the current request matches the expression
                     if(self::matchMethod($route_method) && preg_match($pattern, $request_uri, $matches)) {
