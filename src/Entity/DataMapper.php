@@ -63,7 +63,7 @@ class DataMapper
     {
         $this->onBeforeCreate($entity);
         $connection = $this->getConnection($entity->connection);
-        $fields = array_only($entity->fields, array_merge(array_keys($entity->definition), $entity->getGeneratedFields()));
+        $fields = $entity->getStoredFields();
         if ($entity->useTimeStamps) {
             $fields[$entity->createdAttribute] = new RawValue('NOW()');
             if ($entity->updatedAttributeRequired) {
@@ -82,7 +82,7 @@ class DataMapper
     {
         $this->onBeforeCreate($entity);
         $connection = $this->getConnection($entity->connection);
-        $fields = array_only($entity->fields, array_merge(array_keys($entity->definition), $entity->getGeneratedFields()));
+        $fields = $entity->getStoredFields();
         if ($entity->useTimeStamps) {
             $fields[$entity->createdAttribute] = new RawValue('NOW()');
         }
@@ -117,7 +117,7 @@ class DataMapper
     protected function update(Entity $entity)
     {
         $this->onBeforeUpdate($entity);
-        $updates = array_only($entity->fields, array_merge(array_keys($entity->definition), $entity->getGeneratedFields()));
+        $updates = $entity->getStoredFields();
         unset($updates[$entity->idAttribute]);
         $where = [ $entity->idAttribute => $entity->{$entity->idAttribute} ];
         if ($entity->useTimeStamps) {

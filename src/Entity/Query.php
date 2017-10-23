@@ -582,8 +582,12 @@ class Query
             $this->limit(0, 1);
         }
         $stm = $this->execute();
-        $result = $stm->fetchObject($this->spec['class']);
-        return $result ? $result : null;
+        $row = $stm->fetch(\PDO::FETCH_ASSOC);
+        if ($row) {
+            $object = new $this->spec['class'];
+            $object->setStoredFields($row);
+            return $object;
+        }
     }
 
     /**
@@ -659,7 +663,13 @@ class Query
     public function listObject()
     {
         $stm = $this->execute();
-        return $stm->fetchAll(\PDO::FETCH_CLASS, $this->spec['class']);
+        $objects = [];
+        foreach ($stm->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+            $object = new $this->spec['class'];
+            $object->setStoredFields($row);
+            $objects[] = $object;
+        };
+        return $objects;
     }
 
     /**

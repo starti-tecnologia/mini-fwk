@@ -355,4 +355,25 @@ abstract class Entity implements \JsonSerializable
 
         return true;
     }
+
+    /**
+     * Set store fields comming from database
+     *
+     * @param [type] $fields
+     * @return void
+     */
+    public function setStoredFields($fields)
+    {
+        $this->fields = $fields;
+    }
+
+    /**
+     * Get stored fields before they are sent to database
+     *
+     * @return void
+     */
+    public function getStoredFields()
+    {
+        return array_only($this->fields, array_merge(array_keys($this->definition), $this->getGeneratedFields()));
+    }
 }
