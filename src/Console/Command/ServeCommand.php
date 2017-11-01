@@ -86,8 +86,8 @@ class ServeCommand extends AbstractCommand
                     }
                 }
                 if ($maxModifyTime > $oldModifyTime) {
-                    $commandTimeMap[$command] = $maxModifyTime;
                     $self->runCommand($command);
+                    $commandTimeMap[$command] = time();
                 }
             }
         });
