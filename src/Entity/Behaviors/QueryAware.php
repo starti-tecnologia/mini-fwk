@@ -288,4 +288,12 @@ trait QueryAware
     {
         return self::query($ignoreDefault);
     }
+
+    /**
+     * @return Entity|null
+     */
+    public static function fetchById($id)
+    {
+        return self::query()->where(self::$instanceIdAttribute, '=', $id)->getObject();
+    }
 }

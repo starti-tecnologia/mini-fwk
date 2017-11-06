@@ -459,6 +459,13 @@ class QueryTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(['lala' => 'hi'], $results[0]);
     }
 
+    public function testIsFetchingById()
+    {
+        $this->assertNotNull(
+            CustomFieldStub::fetchById(1)
+        );
+    }
+
     public function testIsConsideringDeletedAttributeWithQueryBuilder()
     {
         $this->assertEquals(
