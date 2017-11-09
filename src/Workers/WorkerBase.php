@@ -1,11 +1,19 @@
 <?php
 
 namespace Mini\Workers;
+
 use Colors\Color;
+use React\EventLoop\LoopInterface;
 
 class WorkerBase
 {
-    public function log($msg) {
+    /**
+     * @var LoopInterface
+     */
+    private $loop;
+
+    public function log($msg)
+    {
         $c = new Color();
         $c->setTheme(
             array(
@@ -24,5 +32,26 @@ EOF;
     public function removeDuplicates(array $queues)
     {
         return $queues;
+    }
+
+    /**
+     * Set execution loop
+     *
+     * @param LoopInterface $loop
+     * @return void
+     */
+    public function setLoop(LoopInterface $loop)
+    {
+        $this->loop = $loop;
+    }
+
+    /**
+     * Get execution loop
+     *
+     * @return LoopInterface
+     */
+    protected function getLoop()
+    {
+        return $this->loop;
     }
 }
