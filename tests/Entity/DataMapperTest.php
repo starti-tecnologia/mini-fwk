@@ -41,6 +41,10 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
             ],
             $this->connectionManager->log
         );
+        $this->connectionManager->assertCall(
+            'insert',
+            ['users', ['name' => 'Hi']]
+        );
         $this->assertEquals(1, $entity->id);
     }
 
@@ -85,6 +89,17 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
             ],
             $this->connectionManager->log
         );
+        $this->connectionManager->assertCall(
+            'insertOrUpdate',
+            [
+                'users_groups',
+                [
+                    'user_id' => 2,
+                    'group_id' => 1,
+                    'active' => 0
+                ]
+            ]
+        );
     }
 
     public function testIsSavingMultipleColumnPrimaryKeyWithoutFields()
@@ -126,6 +141,14 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
                 ],
             ],
             $this->connectionManager->log
+        );
+        $this->connectionManager->assertCall(
+            'update',
+            [
+                'users',
+                ['name' => 'Test'],
+                ['id' => 2]
+            ]
         );
     }
 
@@ -188,6 +211,13 @@ class DataMapperTest extends PHPUnit_Framework_TestCase
                 ],
             ],
             $this->connectionManager->log
+        );
+        $this->connectionManager->assertCall(
+            'delete',
+            [
+                'users',
+                ['id' => 2]
+            ]
         );
     }
 

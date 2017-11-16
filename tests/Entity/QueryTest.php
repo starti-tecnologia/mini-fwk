@@ -18,7 +18,12 @@ class QueryTest extends PHPUnit_Framework_TestCase
         require_once __TEST_DIRECTORY__ . '/stubs/DeepRelationEntityStub.php';
         require_once __TEST_DIRECTORY__ . '/stubs/CustomFieldStub.php';
 
-        $this->connectionManager = new FakeConnectionManager;
+        $this->connectionManager = new FakeConnectionManager([
+            '/.+/' => [
+                ['lala' => 'hi'],
+                ['lala' => 'good day']
+            ]
+        ]);
 
         app()->register('Mini\Entity\ConnectionManager', function () {
             return $this->connectionManager;

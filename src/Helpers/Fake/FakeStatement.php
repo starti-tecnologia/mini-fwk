@@ -22,10 +22,7 @@ class FakeStatement
 
     private function getResults()
     {
-        $rows = [
-            ['lala' => 'hi'],
-            ['lala' => 'good day']
-        ];
+        $rows = [];
         foreach ($this->context['fixtures'] as $pattern => $results) {
             if (preg_match($pattern, $this->context['sql'])) {
               $rows = $results;
@@ -39,8 +36,8 @@ class FakeStatement
         if (stristr($this->context['sql'], 'FAKE_CONNECTION_EMPTY_TABLE')) {
             return null;
         }
-
-        return $this->getResults()[0];
+        $results = $this->getResults();
+        return count($results) ? $results[0] : null;
     }
 
     public function fetchObject($className)
@@ -49,7 +46,8 @@ class FakeStatement
             return null;
         }
         $instance = new $className;
-        $row = $this->getResults()[0] ? $this->getResults()[0] : null;
+        $results = $this->getResults();
+        $row = $results && $results[0] ? $results[0] : null;
         if (! $row) {
             return null;
         }
@@ -89,7 +87,8 @@ class FakeStatement
         if (stristr($this->context['sql'], 'FAKE_CONNECTION_EMPTY_TABLE')) {
             return null;
         }
-        $row = $this->getResults()[0] ? $this->getResults()[0] : null;
+        $results = $this->getResults();
+        $row = $results && $results[0] ? $results[0] : null;
         if ($row) {
             $keys = array_keys($row);
             return $row[$keys[0]];
