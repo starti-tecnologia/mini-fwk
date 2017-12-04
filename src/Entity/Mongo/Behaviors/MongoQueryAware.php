@@ -223,4 +223,24 @@ trait MongoQueryAware
         $query = new QueryBuilder(self::$instanceNamespace, self::$instanceConnection);
         return $query;
     }
+
+    public static function aggregate(array $pipeline)
+    {
+        self::instance();
+        list($db, $collection) = explode('.', self::$instanceNamespace);
+        $cursor = self::$instanceConnection->executeCommand(
+            $db,
+            new \MongoDB\Driver\Command([
+                'aggregate' => $collection,
+                'cursor' => (object) [],
+                'pipeline' => $pipeline
+            ])
+        );
+        $aggregation = json_decode(json_encode(iterator_to_array($cursor)), true);
+        $rows = [];
+        foreach ($aggregation as $row) {
+            $rows[$row['_id']] = $row;
+        }
+        return $rows;
+    }
 }
