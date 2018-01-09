@@ -304,7 +304,7 @@ class MariaDBPaginator
         $rows = $resultStm->fetchAll(\PDO::FETCH_ASSOC);
         $countStm = $options['connectionInstance']->prepare($sqls[1]);
         $countStm->execute($bindings);
-        $total = $resultStm->fetchColumn();
+        $total = intval($countStm->fetchColumn());
 
         return [
             'rows' => $rows,
