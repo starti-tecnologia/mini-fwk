@@ -236,6 +236,18 @@ class QueryTest extends PHPUnit_Framework_TestCase
         );
     }
 
+    public function testIsMakingWhereWithComputedColumn()
+    {
+        $this->assertEquals(
+            'SELECT * FROM `users` WHERE SUBSTRING(name, 0, 3) = :p0',
+            (new Query)
+                ->table('users')
+                ->where('SUBSTRING(name, 0, 3)', '=', 'eth')
+                ->makeSql()
+        );
+    }
+
+
     public function testIsMakingOrderBySql()
     {
         $this->assertEquals(
