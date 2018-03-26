@@ -241,6 +241,10 @@ abstract class Entity implements \JsonSerializable
             return $this->fields[$key];
         } else if (isset($this->definition[$key])) {
             return null;
+	} else if ($this->useSoftDeletes && $key == $this->deletedAttribute) {
+            return null;
+	} else if ($this->useTimeStamps && ($key == $this->createdAttribute || $key == $this->updatedAttribute)) {
+            return null;
         } else {
             throw new \Exception('Unknown field ' .  $key);
         }

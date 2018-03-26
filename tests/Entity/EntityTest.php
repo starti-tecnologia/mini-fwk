@@ -227,4 +227,14 @@ class EntityTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('A Street', $entity->address_street_name);
         $this->assertEquals('1.659', $entity->address_latitude);
     }
+
+    public function testIsGettingGeneratedFields()
+    {
+        $entity = new SoftDeleteEntityStub;
+        $entity->deleted_at = '2016-01-01';
+	$this->assertEquals('2016-01-01', $entity->deleted_at);
+
+        $entity = new SoftDeleteEntityStub;
+	$this->assertEquals(null, $entity->deleted_at);
+    }
 }
