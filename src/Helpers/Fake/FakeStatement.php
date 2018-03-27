@@ -13,10 +13,12 @@ class FakeStatement
 
     public function execute($parameters = [])
     {
+        $this->context['parameters'] = $parameters;
+
         $this->context['manager']->log[] = [
             $this->context['connection'],
             $this->context['sql'],
-            $parameters
+            $this->context['parameters']
         ];
     }
 
@@ -24,7 +26,8 @@ class FakeStatement
     {
         $rows = [];
         foreach ($this->context['fixtures'] as $pattern => $results) {
-            if (preg_match($pattern, $this->context['sql'])) {
+            $sql = $this->makeSql($this->context['sql'], $this->context['parameters']);
+            if (preg_match($pattern, $sql)) {
               $rows = $results;
             }
         }
@@ -93,5 +96,38 @@ class FakeStatement
             $keys = array_keys($row);
             return $row[$keys[0]];
         }
+    }
+
+    /**
+     * Escape sql params
+     *
+     * @param  string $sql
+     * @param  array  $params
+     * @return string
+     */
+    private function makeSql($sql, $params = array())
+    {
+        if (! is_array($params)) {
+            return $sql;
+        }
+        if (count($params) && array_keys($params) !== range(0, count($params) - 1)) {
+            $keys = array_map('strlen', array_keys($params));
+            array_multisort($keys, SORT_DESC, $params);
+        }
+        foreach ($params as $key => $value) {
+            $value = is_null($value)
+                ? 'NULL'
+                : (
+                    is_numeric($value)
+                        ? addcslashes($value, '\'')
+                        : "'" . addcslashes($value, '\'') . "'"
+                );
+            if (is_numeric($key)) {
+                $sql = preg_replace('/\?/', $value, $sql, 1);
+            } else {
+                $sql = str_replace(':' . $key, $value, $sql);
+            }
+        }
+        return $sql;
     }
 }
