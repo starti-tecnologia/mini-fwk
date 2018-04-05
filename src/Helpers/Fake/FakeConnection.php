@@ -68,4 +68,19 @@ class FakeConnection
         $this->context['calls'][] = ['method' => 'delete', 'arguments' => func_get_args()];
         $this->traitDelete($table, $filters);
     }
+
+    public function beginTransaction()
+    {
+        $this->context['calls'][] = ['method' => 'beginTransaction', 'arguments' => []];
+    }
+
+    public function commit()
+    {
+        $this->context['calls'][] = ['method' => 'commit', 'arguments' => []];
+    }
+
+    public function rollback()
+    {
+        $this->context['calls'][] = ['method' => 'rollback', 'arguments' => []];
+    }
 }
