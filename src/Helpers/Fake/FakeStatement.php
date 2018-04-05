@@ -29,6 +29,7 @@ class FakeStatement
             $sql = $this->makeSql($this->context['sql'], $this->context['parameters']);
             if (preg_match($pattern, $sql)) {
               $rows = $results;
+	      break;
             }
         }
         return $rows;
