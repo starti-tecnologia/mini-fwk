@@ -18,6 +18,8 @@ class FakeConnection
 
     public $database = 'test';
 
+    private $inTransactionResult = false;
+
     public function __construct(array $context)
     {
         $this->context = $context;
@@ -71,16 +73,25 @@ class FakeConnection
 
     public function beginTransaction()
     {
+        $this->inTransactionResult = true;
         $this->context['calls'][] = ['method' => 'beginTransaction', 'arguments' => []];
     }
 
     public function commit()
     {
+        $this->inTransactionResult = false;
         $this->context['calls'][] = ['method' => 'commit', 'arguments' => []];
     }
 
     public function rollback()
     {
+        $this->inTransactionResult = false;
         $this->context['calls'][] = ['method' => 'rollback', 'arguments' => []];
+    }
+
+    public function inTransaction()
+    {
+        $this->context['calls'][] = ['method' => 'inTransaction', 'arguments' => []];
+        return $this->inTransactionResult;
     }
 }
