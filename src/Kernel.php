@@ -132,8 +132,6 @@ class Kernel
      */
     public function handleException($exception)
     {
-        if (defined('IS_CONSOLE')) throw $exception;
-
         $this->application->onException($exception);
     }
 

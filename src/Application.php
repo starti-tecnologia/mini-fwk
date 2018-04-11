@@ -25,6 +25,7 @@ class Application
 
     public function onException($exception)
     {
+        if (defined('IS_CONSOLE')) throw $exception;
         if ($exception instanceof \Mini\Validation\ValidationException) {
             response()->json([
                 'error' => [
