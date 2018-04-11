@@ -25,7 +25,12 @@ class Application
 
     public function onException($exception)
     {
-        if (defined('IS_CONSOLE')) throw $exception;
+        if (defined('IS_CONSOLE')) {
+            $c = new \Colors\Color();
+            echo $c($exception->getMessage())->white()->bold()->highlight('red') . PHP_EOL;
+            echo $c($exception->getTraceAsString())->white()->bold()->highlight('red') . PHP_EOL;
+            exit(1);
+        }
         if ($exception instanceof \Mini\Validation\ValidationException) {
             response()->json([
                 'error' => [

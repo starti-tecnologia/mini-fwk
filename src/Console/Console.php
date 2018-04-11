@@ -109,15 +109,7 @@ class Console
 
     public function run()
     {
-        $c = new \Colors\Color();
-
-        try {
-            $this->processRun();
-        } catch (Exception $e) {
-            echo $c($e->getMessage())->white()->bold()->highlight('red') . PHP_EOL;
-            echo $c($e->getTraceAsString())->white()->bold()->highlight('red') . PHP_EOL;
-            die;
-        }
+        $this->processRun();
     }
 
     public function processRun()
